@@ -17,7 +17,7 @@ open System
 //+<<abstract>>displayThumbnail():void
 
 [<AbstractClass>]
-type Shape2D(id: System.Guid, size: int, name: String, extension: String, creationTimestamp: DateTime, path: String) =
+type File(id: System.Guid, size: int, name: String, extension: String, creationTimestamp: DateTime, path: String) =
 
     let mutable size, name, extension, path = size, name, extension, path;
     member this.id = id;
