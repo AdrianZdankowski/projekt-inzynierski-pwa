@@ -5,8 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="entities\Folder.fs" />
-    <Compile Include="entities\User.fs" />
+    <Compile Include="Entities\Audio.fs" />
+    <Compile Include="Entities\Document.fs" />
+    <Compile Include="Entities\File.fs" />
+    <Compile Include="Entities\Video.fs" />
+    <Compile Include="Entities\Folder.fs" />
+    <Compile Include="Entities\User.fs" />
     <Compile Include="WeatherForecast.fs" />
     <Compile Include="Controllers/WeatherForecastController.fs" />
     <Compile Include="Program.fs" />
