@@ -6,7 +6,9 @@ type Video(id, size, name, extension, creationTimestamp, path, duration, resolut
     inherit File(id, size, name, extension, creationTimestamp, path)
 
     let durationInSeconds = duration;
-    let resolution = resolution;
+
+    //Todo: check if we can delete this
+    //let resolution = resolution;
 
     member this.duration = durationInSeconds;
     member this.resolution = resolution;

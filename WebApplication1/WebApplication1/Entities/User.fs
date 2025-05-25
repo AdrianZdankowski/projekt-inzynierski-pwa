@@ -1,18 +1,23 @@
 ﻿namespace WebApplication1
 
 open System
+open System.ComponentModel.DataAnnotations
 
-type User(id:Guid, username:string, password:string, email:string) =
-    let mutable ownedFiles: File list = []
-    let mutable ownedFolders: Folder list = []
-
-    member this.id = id
-    member this.username = username
-    member this.password = password
-    member this.email = email
+[<AllowNullLiteral>]
+type User() =
     
-    member this.AddFile file =
-        ownedFiles <- file :: ownedFiles
+    //let mutable ownedFiles: File list = []
+    //let mutable ownedFolders: Folder list = []
 
-    member this.AddFolder folder =
-        ownedFolders <- folder :: ownedFolders
+    [<Key>]
+    member val id = Guid.Empty with get, set
+    member val username = "" with get, set
+    member val password = "" with get, set
+    member val email = "" with get, set
+    
+    
+    //member this.AddFile file =
+      //  ownedFiles <- file :: ownedFiles
+
+    //member this.AddFolder folder =
+        //ownedFolders <- folder :: ownedFolders

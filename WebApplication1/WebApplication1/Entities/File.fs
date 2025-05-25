@@ -1,6 +1,7 @@
 namespace WebApplication1
 
 open System
+open System.ComponentModel.DataAnnotations
 
 //- id:UUID
 //- size:int
@@ -16,16 +17,19 @@ open System
 //+<<abstract>>display():void
 //+<<abstract>>displayThumbnail():void
 
+[<AllowNullLiteral>]
 [<AbstractClass>]
 type File(id: System.Guid, size: int, name: String, extension: String, creationTimestamp: DateTime, path: String) =
 
     let mutable size, name, extension, path = size, name, extension, path;
+
+    [<Key>]
     member this.id = id;
     member this.creationTimestamp = creationTimestamp;
 
-    
-    abstract display: float with get
-    abstract displayThumbnail: float with get
+    //Todo: check if we can delete this
+    //abstract display: float with get
+    //abstract displayThumbnail: float with get
 
     member this.Size
         with get() = size

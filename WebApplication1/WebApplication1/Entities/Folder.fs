@@ -1,7 +1,11 @@
 ﻿namespace WebApplication1
 open System
+open System.ComponentModel.DataAnnotations
 
+[<AllowNullLiteral>]
 type Folder(owner: Guid, name: string) =
+
+    [<Key>]
     let id = Guid.NewGuid()
     let mutable files: File list = []
     member this.owner = owner

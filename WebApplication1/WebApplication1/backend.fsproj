@@ -1,19 +1,31 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
+
+	<Compile Include="Entities\File.fs" />
     <Compile Include="Entities\Audio.fs" />
     <Compile Include="Entities\Document.fs" />
-    <Compile Include="Entities\File.fs" />
     <Compile Include="Entities\Video.fs" />
     <Compile Include="Entities\Folder.fs" />
     <Compile Include="Entities\User.fs" />
+	  
+	<Compile Include="Data\UserContext.fs" />
+
+	<Compile Include="Handlers\UserHandlers.fs" />
+	  
     <Compile Include="WeatherForecast.fs" />
     <Compile Include="Controllers/WeatherForecastController.fs" />
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />
   </ItemGroup>
 
 </Project>
