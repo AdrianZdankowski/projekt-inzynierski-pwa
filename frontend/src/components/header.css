@@ -1,0 +1,12 @@
+.Header {
+    color: white;
+    background-color: hsla(155, 94%, 42%, 0.623);
+    display: grid;
+    place-items: center;
+}
+
+p {
+    font-size: 3rem;
+    text-shadow: 4px 4px 4px rgba(66, 68, 90, 1);
+    font-style: italic;
+}
