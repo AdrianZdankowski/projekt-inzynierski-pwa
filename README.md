@@ -41,7 +41,7 @@ npm run dev
 npm run build
 npm run preview
 ```
-    lub
+lub
 ```bash
 npm run build
 npm install -g serve
