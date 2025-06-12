@@ -1,22 +1,21 @@
-//import { useState } from 'react'
-// import reactLogo from './assets/react.svg'
-// import appLogo from '/favicon.svg'
-import PWABadge from './PWABadge.tsx'
-import Header from './components/header.tsx'
-import ConnectionStatus from './components/ConnectionStatus.tsx'
-import ModeMessage from './components/ModeMessage.tsx'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import './App.css'
+import MainLayout from './components/MainLayout.tsx'
+import HomePage from './pages/HomePage.tsx'
+import LoginPage from './pages/LoginPage.tsx'
+import RegisterPage from './pages/RegisterPage.tsx'
 
 function App() {
-  // const [count, setCount] = useState(0)
-
   return (
-    <>
-      <Header/>
-      <ConnectionStatus/>
-      <ModeMessage/>
-      <PWABadge />
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="login" element={<LoginPage/>} />
+          <Route path="register" element={<RegisterPage/>} />
+        </Route>
+      </Routes>
+    </Router>
   )
 }
 
