@@ -4,7 +4,8 @@ import MainLayout from './components/MainLayout.tsx'
 import HomePage from './pages/HomePage.tsx'
 import LoginPage from './pages/LoginPage.tsx'
 import RegisterPage from './pages/RegisterPage.tsx'
-import DocumentExamplePage from './pages/DocumentExamplePage.tsx'
+import PDFExamplePage from './pages/PDFExamplePage.tsx'
+import TXTExamplePage from './pages/TXTExamplePage.tsx'
 
 function App() {
   return (
@@ -14,7 +15,8 @@ function App() {
           <Route index element={<HomePage />} />
           <Route path="login" element={<LoginPage/>} />
           <Route path="register" element={<RegisterPage/>} />
-          <Route path="pdf-file" element={<DocumentExamplePage/>}/>
+          <Route path="pdf-file" element={<PDFExamplePage/>}/>
+          <Route path="txt-file" element={<TXTExamplePage/>}/>
         </Route>
       </Routes>
     </Router>

@@ -11,6 +11,7 @@ const Header = () => {
         >
             <Link to="/login">Logowanie</Link>
             <Link to="/pdf-file">Dokument PDF</Link>
+            <Link to="/txt-file">Dokument DOCX</Link>
         </Stack>
         
         </header>
