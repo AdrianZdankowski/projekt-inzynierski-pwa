@@ -1,0 +1,14 @@
+.Header {
+    color: white;
+    background-color: #06d07c9f;
+    display: grid;
+    place-items: center;
+    max-height: 10%;
+}
+
+#header-p {
+    font-size: 3rem;
+    text-shadow: 4px 4px 4px rgba(66, 68, 90, 1);
+    font-style: italic;
+    margin: 2rem;
+}

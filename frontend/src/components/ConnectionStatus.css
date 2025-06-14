@@ -1,0 +1,15 @@
+.text-green {
+    font-size: 2rem;
+    color: green;
+}
+
+.text-red {
+    font-size: 2rem;
+    color: red;
+}
+
+.connectionStatus {
+    display: grid;
+    place-items: center;
+    width: 100%;
+}
