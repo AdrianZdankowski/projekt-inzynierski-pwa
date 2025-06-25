@@ -10,12 +10,40 @@ import {
 } from '@mui/material';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  const [usernameError, setUsernameError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  // walidacja nazwy użytkownika
+  const validateUsername = (name: string) => {
+    // maks. 32 znaki alfanumeryczne (bez spacji, znaków specjalnych)
+    const nameRegex = /^[a-zA-Z0-9]{1,32}$/;
+    const errorMessage = "Nazwa użytkownika może mieć maksymalnie 32 znaki alfanumeryczne!"
+    return nameRegex.test(name) ? "" : errorMessage;
+  }
+
+  // walidacja hasła
+  const validatePassword = (pass: string) => {
+    // min. 8 znaków, wielka i mała litera, liczba i znak specjalny
+    const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
+    const errorMessage = "Hasło musi zawierać min. 8 znaków, wielką i małą literę, liczbę oraz znak specjalny!";
+    return passRegex.test(pass) ? "" : errorMessage;
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Logowanie:', { email, password });
+
+    const passwordError = validatePassword(password);
+    const nameError = validateUsername(username);
+
+    setPasswordError(passwordError);
+    setUsernameError(nameError);
+
+    if (passwordError || nameError) return;
+
+    console.log('Logowanie:', { username, password });
     // TODO: Fetch here
   };
 
@@ -28,11 +56,13 @@ const LoginPage = () => {
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             fullWidth
-            label="Email"
-            type="email"
+            label="Nazwa użytkownika"
+            type="text"
             margin="normal"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            error={!!usernameError}
+            helperText= {usernameError}
             required
             sx={{
                 // tekst i etykieta
@@ -66,6 +96,8 @@ const LoginPage = () => {
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            error={!!passwordError}
+            helperText={passwordError}
             required
             sx={{
                 // tekst i etykieta
@@ -103,7 +135,7 @@ const LoginPage = () => {
           <Box
           sx={{textAlign: 'center', mt: 2, color: 'white'}}
           >
-            <Link to="/register">Nie masz konta? Zarejestruj się!</Link>
+            <Link className='clean-link' to="/register">Nie masz konta? Zarejestruj się!</Link>
           </Box>
         </Box>
       </Paper>

@@ -9,6 +9,11 @@ body {
   margin: 0;
 }
 
+.clean-link {
+  text-decoration: none;
+  color: inherit;
+}
+
 
 /* :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;

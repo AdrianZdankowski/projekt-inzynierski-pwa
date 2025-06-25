@@ -10,13 +10,51 @@ import {
 } from '@mui/material';
 
 const RegisterPage = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [repeatPassword, setRepeatPassword] = useState('')
+  const [repeatPassword, setRepeatPassword] = useState('');
+
+  const [usernameError, setUsernameError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [repeatPasswordError, setRepeatPasswordError] = useState('');
+
+  // walidacja nazwy użytkownika
+  const validateUsername = (name: string) => {
+    // maks. 32 znaki alfanumeryczne (bez spacji, znaków specjalnych)
+    const nameRegex = /^[a-zA-Z0-9]{1,32}$/;
+    const errorMessage = "Nazwa użytkownika może mieć maksymalnie 32 znaki alfanumeryczne!"
+    return nameRegex.test(name) ? "" : errorMessage;
+  }
+
+  // walidacja hasła
+  const validatePassword = (pass: string) => {
+    // min. 8 znaków, wielka i mała litera, liczba i znak specjalny
+    const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
+    const errorMessage = "Hasło musi zawierać min. 8 znaków, wielką i małą literę, liczbę oraz znak specjalny!";
+    return passRegex.test(pass) ? "" : errorMessage;
+  }
+
+  const validateRepeatPassword = (pass: string, rpass: string) => {
+    const errorMessage = "Hasła nie są identyczne!";
+    return (pass==rpass) ? "" : errorMessage;
+  }
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Rejestracja:', { email, password, repeatPassword });
+    
+    const passwordError = validatePassword(password);
+    const nameError = validateUsername(username);
+    const repeatPasswordError = validateRepeatPassword(password, repeatPassword);
+    
+    setPasswordError(passwordError);
+    setUsernameError(nameError);
+    setRepeatPasswordError(repeatPasswordError);
+
+    if (passwordError || nameError || repeatPasswordError) return;
+
+    console.log('Rejestracja:', { email: username, password, repeatPassword });
+
     // Fetch here
   };
 
@@ -29,11 +67,13 @@ const RegisterPage = () => {
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <TextField
             fullWidth
-            label="Email"
-            type="email"
+            label="Nazwa użytkownika"
+            type="text"
             margin="normal"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            error={!!usernameError}
+            helperText={usernameError}
             required
             sx={{
                 // tekst i etykieta
@@ -67,6 +107,8 @@ const RegisterPage = () => {
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            error={!!passwordError}
+            helperText={passwordError}
             required
             sx={{
                 // tekst i etykieta
@@ -100,6 +142,8 @@ const RegisterPage = () => {
             margin="normal"
             value={repeatPassword}
             onChange={(e) => setRepeatPassword(e.target.value)}
+            error={!!repeatPasswordError}
+            helperText={repeatPasswordError}
             required
             sx={{
                 // tekst i etykieta
@@ -137,7 +181,7 @@ const RegisterPage = () => {
           <Box
           sx={{textAlign: 'center', mt: 2, color: 'white'}}
           >
-            <Link to="/login">Masz konto? Zaloguj się!</Link>
+            <Link className='clean-link' to="/login">Masz konto? Zaloguj się!</Link>
           </Box>
         </Box>
       </Paper>
