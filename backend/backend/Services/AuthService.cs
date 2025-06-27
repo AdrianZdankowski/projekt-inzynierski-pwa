@@ -12,6 +12,7 @@ namespace backend.Services
 {
     public class AuthService(UserContext context, IConfiguration configuration) : IAuthService
     {
+
         public async Task<string?> LoginAsync(UserDto request)
         {
             var user = await context.Users.FirstOrDefaultAsync(u=>u.username == request.username);
