@@ -12,7 +12,7 @@ type User() =
     [<Key>]
     member val id = Guid.Empty with get, set
     member val username = "" with get, set
-    member val password = "" with get, set
+    member val passwordHash = "" with get, set
     member val email = "" with get, set
     
     

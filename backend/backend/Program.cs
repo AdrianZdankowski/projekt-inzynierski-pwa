@@ -1,4 +1,5 @@
 using backend;
+using backend.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,9 @@ builder.Services.AddSwaggerGen();
 //add dbcontext
 builder.Services.AddDbContext<UserContext>(options =>
     options.UseInMemoryDatabase("MyInMemoryDb"));
+
+//add services
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
