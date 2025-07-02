@@ -3,19 +3,28 @@
 open System
 open System.ComponentModel.DataAnnotations
 
-[<AllowNullLiteral>]
-type User() =
-    
+[<CLIMutable>]
+type User =
+    {
     //let mutable ownedFiles: File list = []
     //let mutable ownedFolders: Folder list = []
 
     [<Key>]
-    member val id = Guid.Empty with get, set
-    member val username = "" with get, set
-    member val passwordHash = "" with get, set
-    member val email = "" with get, set
+    id : Guid
+
+    [<Required>]
+    username : string
+
+    [<Required>]
+    passwordHash : string
+
+    email : string
+
+    refreshToken : string
+
+    refreshTokenExpiry : Nullable<DateTime>
     
-    
+    }
     //member this.AddFile file =
       //  ownedFiles <- file :: ownedFiles
 

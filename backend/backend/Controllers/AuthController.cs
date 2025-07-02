@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using backend.DTO;
 using backend.DTO.User;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -23,14 +24,14 @@ namespace backend.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(UserDto request)
+        public async Task<ActionResult<AuthTokensDto>> Login(UserDto request)
         {
-            var token = await authService.LoginAsync(request);
-            if (token == null)
+            var result = await authService.LoginAsync(request);
+            if (result == null)
             {
                 return BadRequest("Wrong username or password");
             }
-            return Ok(token);
+            return Ok(result);
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
+using backend.DTO;
 using backend.DTO.User;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -13,7 +15,7 @@ namespace backend.Services
     public class AuthService(UserContext context, IConfiguration configuration) : IAuthService
     {
 
-        public async Task<string?> LoginAsync(UserDto request)
+        public async Task<AuthTokensDto?> LoginAsync(UserDto request)
         {
             var user = await context.Users.FirstOrDefaultAsync(u=>u.username == request.username);
             if (user == null)
@@ -25,8 +27,13 @@ namespace backend.Services
                 return null;
             }
 
-            string token = CreateToken(user);
-            return token;
+            var response = new AuthTokensDto
+            {
+                AccessToken = CreateToken(user),
+                RefreshToken = await SetRefreshTokenAsync(user)
+            };
+
+            return response;
         }
 
         public async Task<User?> RegisterAsync(UserDto request)
@@ -67,6 +74,26 @@ namespace backend.Services
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+            }
+            var refreshToken = Convert.ToBase64String(randomNumber);
+            return refreshToken;
+        }
+
+        private async Task<string> SetRefreshTokenAsync(User user)
+        {
+            var refreshToken = GenerateRefreshToken();
+            user.refreshToken = refreshToken;
+            user.refreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+            await context.SaveChangesAsync();
+            return refreshToken;
         }
     }
 }

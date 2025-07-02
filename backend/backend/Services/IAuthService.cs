@@ -1,4 +1,5 @@
-﻿using backend.DTO.User;
+﻿using backend.DTO;
+using backend.DTO.User;
 using WebApplication1;
 
 namespace backend.Services
@@ -7,6 +8,6 @@ namespace backend.Services
     public interface IAuthService
     {
         Task<User?> RegisterAsync(UserDto request);
-        Task<string?> LoginAsync(UserDto request);
+        Task<AuthTokensDto?> LoginAsync(UserDto request);
     }
 }
