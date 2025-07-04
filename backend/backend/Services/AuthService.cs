@@ -114,7 +114,7 @@ namespace backend.Services
                 issuer: configuration.GetValue<string>("AppSettings:JwtIssuer"),
                 audience: configuration.GetValue<string>("AppSettings:JwtAudience"),
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(1),
+                expires: DateTime.UtcNow.AddMinutes(30),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
