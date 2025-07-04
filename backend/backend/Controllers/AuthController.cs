@@ -2,6 +2,7 @@
 using backend.DTO;
 using backend.DTO.User;
 using backend.Services;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using WebApplication1;
 
@@ -30,6 +31,17 @@ namespace backend.Controllers
             if (result == null)
             {
                 return BadRequest("Wrong username or password");
+            }
+            return Ok(result);
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult<AuthTokensDto>> RefreshToken(RefreshRequestDto request)
+        {
+            var result = await authService.RefreshTokensAsync(request.RefreshToken);
+            if (result == null || result.AccessToken == null || result.RefreshToken == null)
+            {
+                return Unauthorized("Invalid refresh token");
             }
             return Ok(result);
         }

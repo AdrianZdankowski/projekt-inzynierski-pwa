@@ -6,6 +6,7 @@ using backend.DTO;
 using backend.DTO.User;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using WebApplication1;
@@ -23,6 +24,24 @@ namespace backend.Services
                 return null;
             }
             if (new PasswordHasher<User>().VerifyHashedPassword(user, user.passwordHash, request.password) == PasswordVerificationResult.Failed)
+            {
+                return null;
+            }
+
+            var response = new AuthTokensDto
+            {
+                AccessToken = CreateToken(user),
+                RefreshToken = await SetRefreshTokenAsync(user)
+            };
+
+            return response;
+        }
+
+        public async Task<AuthTokensDto?> RefreshTokensAsync(string request)
+        {
+            var user = await ValidateRefreshTokenAsync(request);
+
+            if (user == null)
             {
                 return null;
             }
@@ -93,7 +112,38 @@ namespace backend.Services
             user.refreshToken = refreshToken;
             user.refreshTokenExpiry = DateTime.UtcNow.AddDays(7);
             await context.SaveChangesAsync();
-            return refreshToken;
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.id.ToString()),
+                new Claim("refresh", refreshToken)
+            };
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: user.refreshTokenExpiry);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private async Task<User?> ValidateRefreshTokenAsync(string refreshToken)
+        {
+            //extract user id and refresh token from JWT
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(refreshToken);
+
+            var userIdString = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            Guid userId = Guid.Parse(userIdString);
+            var refresh = jwt.Claims.FirstOrDefault(c => c.Type == "refresh")?.Value;
+            
+
+            //get user from db, and check refresh token
+            var user = await context.Users.FindAsync(userId);
+            if (user == null || user.refreshToken != refresh || user.refreshTokenExpiry <= DateTime.UtcNow)
+            {
+                return null;
+            }
+            return user;
         }
     }
 }
