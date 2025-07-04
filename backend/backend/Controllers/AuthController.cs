@@ -45,5 +45,15 @@ namespace backend.Controllers
             }
             return Ok(result);
         }
+        [HttpPost("logout")]
+        public async Task<ActionResult<AuthTokensDto>> Logout(LogoutRequestDto request)
+        {
+            var result = await authService.LogoutAsync(request.accessToken);
+            if (result == null)
+            {
+                return BadRequest();
+            }
+            return Ok();
+        }
     }
 }

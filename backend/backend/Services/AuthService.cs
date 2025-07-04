@@ -37,6 +37,28 @@ namespace backend.Services
             return response;
         }
 
+        public async Task<User?> LogoutAsync(string jwtToken)
+        {
+            //extract user id and refresh token from JWT
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(jwtToken);
+
+            var userIdString = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            Guid userId = Guid.Parse(userIdString);
+
+            var user = await context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return null;
+            }
+
+            //deleting refreshToken from db
+            user.refreshToken = null;
+            await context.SaveChangesAsync();
+
+            return user;
+        }
+
         public async Task<AuthTokensDto?> RefreshTokensAsync(string request)
         {
             var user = await ValidateRefreshTokenAsync(request);
@@ -142,7 +164,7 @@ namespace backend.Services
 
             //get user from db, and check refresh token
             var user = await context.Users.FindAsync(userId);
-            if (user == null || user.refreshToken != refresh || user.refreshTokenExpiry <= DateTime.UtcNow)
+            if (user == null || user.refreshToken == null || user.refreshToken != refresh || user.refreshTokenExpiry <= DateTime.UtcNow)
             {
                 return null;
             }
