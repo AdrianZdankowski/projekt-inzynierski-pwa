@@ -48,7 +48,7 @@ namespace backend.Controllers
         [HttpPost("logout")]
         public async Task<ActionResult<AuthTokensDto>> Logout(LogoutRequestDto request)
         {
-            var result = await authService.LogoutAsync(request.accessToken);
+            var result = await authService.LogoutAsync(request.AccessToken);
             if (result == null)
             {
                 return BadRequest();

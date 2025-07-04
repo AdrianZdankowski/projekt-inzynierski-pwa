@@ -2,6 +2,6 @@
 {
     public class LogoutRequestDto
     {
-        public required string accessToken { get; set; }
+        public required string AccessToken { get; set; }
     }
 }
