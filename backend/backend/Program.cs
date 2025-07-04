@@ -15,8 +15,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 //add dbcontext
+//builder.Services.AddDbContext<UserContext>(options =>
+//    options.UseInMemoryDatabase("MyInMemoryDb"));
+
 builder.Services.AddDbContext<UserContext>(options =>
-    options.UseInMemoryDatabase("MyInMemoryDb"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 //auth
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

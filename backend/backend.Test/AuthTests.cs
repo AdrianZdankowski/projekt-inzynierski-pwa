@@ -26,7 +26,8 @@ namespace backend.Test
                 email = "testEmail",
                 id = new Guid(),
                 username = "testUsername",
-                passwordHash = hashedPassword
+                passwordHash = hashedPassword,
+                role = Role.User
             };
 
 
