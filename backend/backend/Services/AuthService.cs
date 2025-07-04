@@ -68,6 +68,7 @@ namespace backend.Services
 
             user.username = request.username;
             user.passwordHash = hashedPassword;
+            user.role = Role.User;
 
             context.Users.Add(user);
             await context.SaveChangesAsync();
@@ -79,7 +80,9 @@ namespace backend.Services
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.username)
+                new Claim(ClaimTypes.Name, user.username),
+                new Claim(ClaimTypes.NameIdentifier, user.id.ToString()),
+                new Claim(ClaimTypes.Role, user.role.ToStringValue())
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.GetValue<string>("AppSettings:JwtSecret")!));
 

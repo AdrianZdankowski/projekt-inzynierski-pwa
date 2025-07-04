@@ -17,6 +17,7 @@ namespace backend.Controllers
             _context = context;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet(Name = "GetUser")]
         public async Task<IActionResult> GetUser()
         {
@@ -31,8 +32,7 @@ namespace backend.Controllers
             return Ok(users);
         }
 
-        //Todo: change this to registration endpoint, add password hashing and not use id provided by user
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPost(Name = "GetUser")]
         public async Task<IActionResult> AddUser([FromBody] User user)
         {

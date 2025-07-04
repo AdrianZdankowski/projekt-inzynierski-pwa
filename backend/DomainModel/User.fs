@@ -3,6 +3,21 @@
 open System
 open System.ComponentModel.DataAnnotations
 
+type Role =
+    | Admin
+    | User
+    with
+        member this.ToStringValue() =
+            match this with
+            | Admin -> "Admin"
+            | User -> "User"
+
+        static member FromString (str: string) =
+            match str with
+            | "Admin" -> Admin
+            | "User" -> User
+            | other -> failwith "Invalid role"
+
 [<CLIMutable>]
 type User =
     {
@@ -24,6 +39,7 @@ type User =
 
     refreshTokenExpiry : Nullable<DateTime>
     
+    role : Role
     }
     //member this.AddFile file =
       //  ownedFiles <- file :: ownedFiles
