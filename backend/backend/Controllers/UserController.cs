@@ -1,4 +1,5 @@
 ﻿using backend.DTO.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -16,6 +17,7 @@ namespace backend.Controllers
             _context = context;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet(Name = "GetUser")]
         public async Task<IActionResult> GetUser()
         {
@@ -30,7 +32,7 @@ namespace backend.Controllers
             return Ok(users);
         }
 
-        //Todo: change this to registration endpoint, add password hashing and not use id provided by user
+        [Authorize(Roles = "Admin")]
         [HttpPost(Name = "GetUser")]
         public async Task<IActionResult> AddUser([FromBody] User user)
         {

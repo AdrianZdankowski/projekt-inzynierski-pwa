@@ -1,5 +1,9 @@
+using System.Text;
 using backend;
+using backend.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,8 +15,31 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 //add dbcontext
+//builder.Services.AddDbContext<UserContext>(options =>
+//    options.UseInMemoryDatabase("MyInMemoryDb"));
+
 builder.Services.AddDbContext<UserContext>(options =>
-    options.UseInMemoryDatabase("MyInMemoryDb"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+//auth
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["AppSettings:JwtIssuer"],
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["AppSettings:JwtAudience"],
+            ValidateLifetime = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:JwtSecret"]!)),
+            ValidateIssuerSigningKey = true
+        };
+    });
+
+//add services
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 

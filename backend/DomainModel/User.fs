@@ -3,19 +3,44 @@
 open System
 open System.ComponentModel.DataAnnotations
 
-[<AllowNullLiteral>]
-type User() =
-    
+type Role =
+    | Admin
+    | User
+    with
+        member this.ToStringValue() =
+            match this with
+            | Admin -> "Admin"
+            | User -> "User"
+
+        static member FromString (str: string) =
+            match str with
+            | "Admin" -> Admin
+            | "User" -> User
+            | other -> failwith "Invalid role"
+
+[<CLIMutable>]
+type User =
+    {
     //let mutable ownedFiles: File list = []
     //let mutable ownedFolders: Folder list = []
 
     [<Key>]
-    member val id = Guid.Empty with get, set
-    member val username = "" with get, set
-    member val password = "" with get, set
-    member val email = "" with get, set
+    id : Guid
+
+    [<Required>]
+    username : string
+
+    [<Required>]
+    passwordHash : string
+
+    email : string
+
+    refreshToken : string
+
+    refreshTokenExpiry : Nullable<DateTime>
     
-    
+    role : Role
+    }
     //member this.AddFile file =
       //  ownedFiles <- file :: ownedFiles
 
