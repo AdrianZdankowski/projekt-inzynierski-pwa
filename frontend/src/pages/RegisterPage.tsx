@@ -8,6 +8,7 @@ import {
   Box,
   Paper,
 } from '@mui/material';
+import { useRegister } from '../hooks/useRegister';
 
 const RegisterPage = () => {
   const [username, setUsername] = useState('');
@@ -18,10 +19,12 @@ const RegisterPage = () => {
   const [passwordError, setPasswordError] = useState('');
   const [repeatPasswordError, setRepeatPasswordError] = useState('');
 
+  const {mutate: register} = useRegister();
+
   // walidacja nazwy użytkownika
   const validateUsername = (name: string) => {
     // maks. 32 znaki alfanumeryczne (bez spacji, znaków specjalnych)
-    const nameRegex = /^[a-zA-Z0-9]{1,32}$/;
+    const nameRegex = /^[a-zA-Z0-9]{3,32}$/;
     const errorMessage = "Nazwa użytkownika może mieć maksymalnie 32 znaki alfanumeryczne!"
     return nameRegex.test(name) ? "" : errorMessage;
   }
@@ -53,9 +56,18 @@ const RegisterPage = () => {
 
     if (passwordError || nameError || repeatPasswordError) return;
 
-    console.log('Rejestracja:', { email: username, password, repeatPassword });
+    register({username, password},
+      {
+        onSuccess: (data) => {
+          console.log("User registered: ", data);
+        },
+        onError: (error: any) => {
+          console.error("Error during registration:", error.message);
+        }
+      }
+    );
 
-    // Fetch here
+    console.log("halo")
   };
 
   return (
