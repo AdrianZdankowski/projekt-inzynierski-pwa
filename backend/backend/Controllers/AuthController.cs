@@ -2,6 +2,7 @@
 using backend.DTO;
 using backend.DTO.User;
 using backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using WebApplication1;
@@ -45,10 +46,19 @@ namespace backend.Controllers
             }
             return Ok(result);
         }
+        [Authorize]
         [HttpPost("logout")]
-        public async Task<ActionResult<AuthTokensDto>> Logout(LogoutRequestDto request)
+        public async Task<ActionResult<AuthTokensDto>> Logout()
         {
-            var result = await authService.LogoutAsync(request.AccessToken);
+            var token = Request.Headers.Authorization.ToString();
+
+            if (string.IsNullOrEmpty(token) && !token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest();
+            }
+            token = token["Bearer ".Length..].Trim();
+
+            var result = await authService.LogoutAsync(token);
             if (result == null)
             {
                 return BadRequest();
