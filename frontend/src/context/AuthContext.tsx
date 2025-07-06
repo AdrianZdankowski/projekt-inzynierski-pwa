@@ -16,12 +16,14 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     const setTokens = ({accessToken, refreshToken}: {accessToken: string, refreshToken: string}) => {
         setAccessToken(accessToken);
         setRefreshToken(refreshToken);
+        localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
     };
 
     const logout = () => {
         setAccessToken(null);
         setRefreshToken(null);
+        localStorage.removieItem('accessToken');
         localStorage.removeItem('refreshToken');
     };
 
