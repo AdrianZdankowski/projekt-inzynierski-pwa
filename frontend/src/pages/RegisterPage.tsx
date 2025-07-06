@@ -19,7 +19,8 @@ const RegisterPage = () => {
   const [passwordError, setPasswordError] = useState('');
   const [repeatPasswordError, setRepeatPasswordError] = useState('');
 
-  const {mutate: register} = useRegister();
+  // Żądanie HTTP do rejestracji
+  const {mutate: registerRequest} = useRegister();
 
   // walidacja nazwy użytkownika
   const validateUsername = (name: string) => {
@@ -56,7 +57,7 @@ const RegisterPage = () => {
 
     if (passwordError || nameError || repeatPasswordError) return;
 
-    register({username, password},
+    registerRequest({username, password},
       {
         onSuccess: (data) => {
           console.log("User registered: ", data);
@@ -66,8 +67,6 @@ const RegisterPage = () => {
         }
       }
     );
-
-    console.log("halo")
   };
 
   return (

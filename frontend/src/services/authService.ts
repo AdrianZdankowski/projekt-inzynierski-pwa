@@ -5,7 +5,10 @@ export const register = async (data: {username: string, password: string}) => {
         body: JSON.stringify(data)
     });
 
-    if (!result.ok) console.error("Register failed authservice")
+    if (!result.ok) {
+        const error = await result.json();
+        throw new Error(error.message || 'Registration failed');
+    }
 
     try {
         return await result.json();
@@ -13,4 +16,19 @@ export const register = async (data: {username: string, password: string}) => {
     catch {
         return null;
     }
+}
+
+export const login = async (data: {username: string, password: string}) => {
+    const result = await fetch('http://localhost:5105/api/Auth/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+
+    if (!result.ok) {
+        const error = await result.json();
+        throw new Error(error.message || 'Registration failed');
+    }
+
+    return result.json();
 }
