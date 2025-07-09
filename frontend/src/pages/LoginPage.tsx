@@ -23,7 +23,7 @@ const LoginPage = () => {
   // walidacja nazwy użytkownika
   const validateUsername = (name: string) => {
     // maks. 32 znaki alfanumeryczne (bez spacji, znaków specjalnych)
-    const nameRegex = /^[a-zA-Z0-9]{3,32}$/;
+    const nameRegex = /^[a-zA-Z0-9_.-]{3,32}$/;
     const errorMessage = "Nazwa użytkownika może mieć maksymalnie 32 znaki alfanumeryczne!"
     return nameRegex.test(name) ? "" : errorMessage;
   }
