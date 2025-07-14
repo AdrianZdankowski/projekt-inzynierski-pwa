@@ -5,12 +5,13 @@ interface AuthContextType {
     refreshToken: string | null;
     setTokens: (tokens: {accessToken: string, refreshToken: string}) => void;
     logout: () => void;
+    isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({children}: {children: ReactNode}) => {
-    const [accessToken, setAccessToken] = useState<string | null>(null);
+    const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'));
     const [refreshToken, setRefreshToken] = useState<string | null>(localStorage.getItem('refreshToken'));
 
     const setTokens = ({accessToken, refreshToken}: {accessToken: string, refreshToken: string}) => {
@@ -23,12 +24,12 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     const logout = () => {
         setAccessToken(null);
         setRefreshToken(null);
-        localStorage.removieItem('accessToken');
+        localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
     };
 
     return (
-        <AuthContext.Provider value={{accessToken, refreshToken, setTokens, logout}}>
+        <AuthContext.Provider value={{accessToken, refreshToken, setTokens, logout, isAuthenticated: !!accessToken && !!refreshToken}}>
             {children}
         </AuthContext.Provider>
     );
