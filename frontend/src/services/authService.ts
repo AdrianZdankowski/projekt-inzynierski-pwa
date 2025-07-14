@@ -1,3 +1,5 @@
+import { getAccessToken } from "../context/tokenUtils";
+
 export const register = async (data: {username: string, password: string}) => {
     const result = await fetch('http://localhost:5105/api/Auth/register', {
         method: 'POST',
@@ -47,4 +49,24 @@ export const refreshToken = async (refreshToken: string) => {
     }
     
     return response.json();
+};
+
+export const logout = async () => {
+    const accessToken = getAccessToken();
+    if (!accessToken) throw new Error("No access token");
+
+    const response = await fetch('http://localhost:5105/api/Auth/logout', {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        }
+    });
+
+    console.log("Wysyłam coś");
+
+    if (!response.ok) throw new Error('Failed to logout');
+    
+    if (response) return response.json();
+    
+    return null;
 };
