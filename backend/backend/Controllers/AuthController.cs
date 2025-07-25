@@ -33,18 +33,41 @@ namespace backend.Controllers
             {
                 return BadRequest("Wrong username or password");
             }
-            return Ok(result);
+            Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
+
+            return Ok(new AccessTokenDto { AccessToken = result.AccessToken });
         }
 
         [HttpPost("refresh-token")]
-        public async Task<ActionResult<AuthTokensDto>> RefreshToken(RefreshRequestDto request)
+        public async Task<ActionResult<AuthTokensDto>> RefreshToken()
         {
-            var result = await authService.RefreshTokensAsync(request.RefreshToken);
+            var existRefreshToken = Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
+            if (existRefreshToken == false)
+            {
+                return BadRequest();
+            }
+
+            var result = await authService.RefreshTokensAsync(refreshToken);
             if (result == null || result.AccessToken == null || result.RefreshToken == null)
             {
                 return Unauthorized("Invalid refresh token");
             }
-            return Ok(result);
+
+            Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
+
+            return Ok(new AccessTokenDto { AccessToken = result.AccessToken });
         }
         [Authorize]
         [HttpPost("logout")]

@@ -12,8 +12,8 @@ using backend;
 namespace backend.Migrations
 {
     [DbContext(typeof(UserContext))]
-    [Migration("20250704130053_Initial")]
-    partial class Initial
+    [Migration("20250725124235_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -39,7 +39,7 @@ namespace backend.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("refreshToken")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime?>("refreshTokenExpiry")
                         .HasColumnType("datetime2");
@@ -52,6 +52,8 @@ namespace backend.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("id");
+
+                    b.HasIndex("refreshToken");
 
                     b.ToTable("Users");
                 });
