@@ -132,10 +132,18 @@ namespace backend.Services
             return refreshToken;
         }
 
+        private string HashToken(string token)
+        {
+            using var sha256 = SHA256.Create();
+            var bytes = Encoding.UTF8.GetBytes(token);
+            var hashBytes = sha256.ComputeHash(bytes);
+            return Convert.ToBase64String(hashBytes);
+        }
+
         private async Task<string> SetRefreshTokenAsync(User user)
         {
             var refreshToken = GenerateRefreshToken();
-            user.refreshToken = refreshToken;
+            user.refreshToken = HashToken(refreshToken);
             user.refreshTokenExpiry = DateTime.UtcNow.AddDays(7);
             await context.SaveChangesAsync();
 
@@ -147,7 +155,7 @@ namespace backend.Services
             if (string.IsNullOrEmpty(refreshToken)) return null;
 
             var user = await context.Users
-                .Where(u => u.refreshToken == refreshToken && u.refreshTokenExpiry > DateTime.UtcNow)
+                .Where(u => u.refreshToken == HashToken(refreshToken) && u.refreshTokenExpiry > DateTime.UtcNow)
                 .SingleOrDefaultAsync();
 
             if (user == null)
