@@ -60,7 +60,7 @@ namespace backend.Services
             return user;
         }
 
-        public async Task<AuthTokensDto?> RefreshTokensAsync(string request)
+        public async Task<AccessTokenDto?> RefreshTokensAsync(string request)
         {
             var user = await ValidateRefreshTokenAsync(request);
 
@@ -69,10 +69,9 @@ namespace backend.Services
                 return null;
             }
 
-            var response = new AuthTokensDto
+            var response = new AccessTokenDto
             {
                 AccessToken = CreateToken(user),
-                RefreshToken = await SetRefreshTokenAsync(user)
             };
 
             return response;

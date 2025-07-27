@@ -9,7 +9,7 @@ namespace backend.Services
     {
         Task<User?> RegisterAsync(UserDto request);
         Task<AuthTokensDto?> LoginAsync(UserDto request);
-        Task<AuthTokensDto?> RefreshTokensAsync(string request);
+        Task<AccessTokenDto?> RefreshTokensAsync(string request);
         Task<User?> LogoutAsync(string request);
     }
 }

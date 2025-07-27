@@ -53,18 +53,11 @@ namespace backend.Controllers
             }
 
             var result = await authService.RefreshTokensAsync(refreshToken);
-            if (result == null || result.AccessToken == null || result.RefreshToken == null)
+            if (result == null || result.AccessToken == null)
             {
                 return Unauthorized("Invalid refresh token");
             }
 
-            Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddDays(7)
-            });
 
             return Ok(new AccessTokenDto { AccessToken = result.AccessToken });
         }
