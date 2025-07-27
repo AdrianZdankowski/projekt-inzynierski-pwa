@@ -54,12 +54,13 @@ namespace backend.Services
 
             //deleting refreshToken from db
             user.refreshToken = null;
+            user.refreshTokenExpiry = DateTime.UtcNow;
             await context.SaveChangesAsync();
 
             return user;
         }
 
-        public async Task<AuthTokensDto?> RefreshTokensAsync(string request)
+        public async Task<AccessTokenDto?> RefreshTokensAsync(string request)
         {
             var user = await ValidateRefreshTokenAsync(request);
 
@@ -68,10 +69,9 @@ namespace backend.Services
                 return null;
             }
 
-            var response = new AuthTokensDto
+            var response = new AccessTokenDto
             {
                 AccessToken = CreateToken(user),
-                RefreshToken = await SetRefreshTokenAsync(user)
             };
 
             return response;
@@ -131,40 +131,33 @@ namespace backend.Services
             return refreshToken;
         }
 
+        private string HashToken(string token)
+        {
+            using var sha256 = SHA256.Create();
+            var bytes = Encoding.UTF8.GetBytes(token);
+            var hashBytes = sha256.ComputeHash(bytes);
+            return Convert.ToBase64String(hashBytes);
+        }
+
         private async Task<string> SetRefreshTokenAsync(User user)
         {
             var refreshToken = GenerateRefreshToken();
-            user.refreshToken = refreshToken;
+            user.refreshToken = HashToken(refreshToken);
             user.refreshTokenExpiry = DateTime.UtcNow.AddDays(7);
             await context.SaveChangesAsync();
 
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.id.ToString()),
-                new Claim("refresh", refreshToken)
-            };
-
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: user.refreshTokenExpiry);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return refreshToken;
         }
 
         private async Task<User?> ValidateRefreshTokenAsync(string refreshToken)
         {
-            //extract user id and refresh token from JWT
-            var handler = new JwtSecurityTokenHandler();
-            var jwt = handler.ReadJwtToken(refreshToken);
+            if (string.IsNullOrEmpty(refreshToken)) return null;
 
-            var userIdString = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            Guid userId = Guid.Parse(userIdString);
-            var refresh = jwt.Claims.FirstOrDefault(c => c.Type == "refresh")?.Value;
-            
+            var user = await context.Users
+                .Where(u => u.refreshToken == HashToken(refreshToken) && u.refreshTokenExpiry > DateTime.UtcNow)
+                .SingleOrDefaultAsync();
 
-            //get user from db, and check refresh token
-            var user = await context.Users.FindAsync(userId);
-            if (user == null || user.refreshToken == null || user.refreshToken != refresh || user.refreshTokenExpiry <= DateTime.UtcNow)
+            if (user == null)
             {
                 return null;
             }

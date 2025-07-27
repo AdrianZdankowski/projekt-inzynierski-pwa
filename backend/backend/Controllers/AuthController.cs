@@ -18,6 +18,7 @@ namespace backend.Controllers
         public async Task<ActionResult<User>> Register(UserDto request)
         {
             var user = await authService.RegisterAsync(request);
+
             if (user == null)
             {
                 return BadRequest("User with given usernmane already exist");
@@ -29,22 +30,41 @@ namespace backend.Controllers
         public async Task<ActionResult<AuthTokensDto>> Login(UserDto request)
         {
             var result = await authService.LoginAsync(request);
+
             if (result == null)
             {
                 return BadRequest("Wrong username or password");
             }
-            return Ok(result);
+
+            Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
+
+            return Ok(new AccessTokenDto { AccessToken = result.AccessToken });
         }
 
         [HttpPost("refresh-token")]
-        public async Task<ActionResult<AuthTokensDto>> RefreshToken(RefreshRequestDto request)
+        public async Task<ActionResult<AuthTokensDto>> RefreshToken()
         {
-            var result = await authService.RefreshTokensAsync(request.RefreshToken);
-            if (result == null || result.AccessToken == null || result.RefreshToken == null)
+            var existRefreshToken = Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
+
+            if (existRefreshToken == false)
+            {
+                return BadRequest();
+            }
+
+            var result = await authService.RefreshTokensAsync(refreshToken);
+
+            if (result == null || result.AccessToken == null)
             {
                 return Unauthorized("Invalid refresh token");
             }
-            return Ok(result);
+
+
+            return Ok(new AccessTokenDto { AccessToken = result.AccessToken });
         }
         [Authorize]
         [HttpPost("logout")]
@@ -59,10 +79,18 @@ namespace backend.Controllers
             token = token["Bearer ".Length..].Trim();
 
             var result = await authService.LogoutAsync(token);
+
             if (result == null)
             {
                 return BadRequest();
             }
+
+            Response.Cookies.Delete("refreshToken", new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict
+            });
+
             return Ok();
         }
     }
