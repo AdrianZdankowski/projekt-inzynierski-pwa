@@ -18,6 +18,7 @@ namespace backend.Controllers
         public async Task<ActionResult<User>> Register(UserDto request)
         {
             var user = await authService.RegisterAsync(request);
+
             if (user == null)
             {
                 return BadRequest("User with given usernmane already exist");
@@ -29,10 +30,12 @@ namespace backend.Controllers
         public async Task<ActionResult<AuthTokensDto>> Login(UserDto request)
         {
             var result = await authService.LoginAsync(request);
+
             if (result == null)
             {
                 return BadRequest("Wrong username or password");
             }
+
             Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
             {
                 HttpOnly = true,
@@ -47,12 +50,14 @@ namespace backend.Controllers
         public async Task<ActionResult<AuthTokensDto>> RefreshToken()
         {
             var existRefreshToken = Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
+
             if (existRefreshToken == false)
             {
                 return BadRequest();
             }
 
             var result = await authService.RefreshTokensAsync(refreshToken);
+
             if (result == null || result.AccessToken == null)
             {
                 return Unauthorized("Invalid refresh token");
@@ -74,10 +79,18 @@ namespace backend.Controllers
             token = token["Bearer ".Length..].Trim();
 
             var result = await authService.LogoutAsync(token);
+
             if (result == null)
             {
                 return BadRequest();
             }
+
+            Response.Cookies.Delete("refreshToken", new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict
+            });
+
             return Ok();
         }
     }
