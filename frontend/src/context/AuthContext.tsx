@@ -1,35 +1,31 @@
 import { createContext, useContext, useState, ReactNode } from "react";
+import { decodeUserRole } from "../lib/decodeUserRole";
 
 interface AuthContextType {
     accessToken: string | null;
-    refreshToken: string | null;
-    setTokens: (tokens: {accessToken: string, refreshToken: string}) => void;
+    login: (accessToken: string) => void;
     logout: () => void;
     isAuthenticated: boolean;
+    userRole?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({children}: {children: ReactNode}) => {
-    const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'));
-    const [refreshToken, setRefreshToken] = useState<string | null>(localStorage.getItem('refreshToken'));
+    const [accessToken, setAccessToken] = useState<string | null>(null);
+    const [userRole, setUserRole] = useState<string | undefined>();
 
-    const setTokens = ({accessToken, refreshToken}: {accessToken: string, refreshToken: string}) => {
+    const login = (accessToken: string) => {
         setAccessToken(accessToken);
-        setRefreshToken(refreshToken);
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+        setUserRole(decodeUserRole(accessToken));
     };
 
     const logout = () => {
         setAccessToken(null);
-        setRefreshToken(null);
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
     };
 
     return (
-        <AuthContext.Provider value={{accessToken, refreshToken, setTokens, logout, isAuthenticated: !!accessToken && !!refreshToken}}>
+        <AuthContext.Provider value={{accessToken, login, logout, isAuthenticated: !!accessToken, userRole}}>
             {children}
         </AuthContext.Provider>
     );
