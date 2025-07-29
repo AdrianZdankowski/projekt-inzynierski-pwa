@@ -1,72 +1,72 @@
-import { getAccessToken } from "../context/tokenUtils";
+// import { getAccessToken } from "../context/tokenUtils";
 
-export const register = async (data: {username: string, password: string}) => {
-    const result = await fetch('http://localhost:5105/api/Auth/register', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-    });
+// export const register = async (data: {username: string, password: string}) => {
+//     const result = await fetch('http://localhost:5105/api/Auth/register', {
+//         method: 'POST',
+//         headers: {'Content-Type': 'application/json'},
+//         body: JSON.stringify(data)
+//     });
 
-    if (!result.ok) {
-        const error = await result.json();
-        throw new Error(error.message || 'Registration failed');
-    }
+//     if (!result.ok) {
+//         const error = await result.json();
+//         throw new Error(error.message || 'Registration failed');
+//     }
 
-    try {
-        return await result.json();
-    }
-    catch {
-        return null;
-    }
-};
+//     try {
+//         return await result.json();
+//     }
+//     catch {
+//         return null;
+//     }
+// };
 
-export const login = async (data: {username: string, password: string}) => {
-    const result = await fetch('http://localhost:5105/api/Auth/login', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-    })
+// export const login = async (data: {username: string, password: string}) => {
+//     const result = await fetch('http://localhost:5105/api/Auth/login', {
+//         method: 'POST',
+//         headers: {'Content-Type': 'application/json'},
+//         body: JSON.stringify(data)
+//     })
 
-    if (!result.ok) {
-        const error = await result.json();
-        throw new Error(error.message || 'Registration failed');
-    }
+//     if (!result.ok) {
+//         const error = await result.json();
+//         throw new Error(error.message || 'Registration failed');
+//     }
 
-    return result.json();
-};
+//     return result.json();
+// };
 
-export const refreshToken = async (refreshToken: string) => {
-    const response = await fetch('http://localhost:5105/api/Auth/refresh-token', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({refreshToken})
-    });
+// export const refreshToken = async (refreshToken: string) => {
+//     const response = await fetch('http://localhost:5105/api/Auth/refresh-token', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json'
+//         },
+//         body: JSON.stringify({refreshToken})
+//     });
 
-    if (!response.ok) {
-        throw new Error('Failed to refresh token');
-    }
+//     if (!response.ok) {
+//         throw new Error('Failed to refresh token');
+//     }
     
-    return response.json();
-};
+//     return response.json();
+// };
 
-export const logout = async () => {
-    const accessToken = getAccessToken();
-    if (!accessToken) throw new Error("No access token");
+// export const logout = async () => {
+//     const accessToken = getAccessToken();
+//     if (!accessToken) throw new Error("No access token");
 
-    const response = await fetch('http://localhost:5105/api/Auth/logout', {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-        }
-    });
+//     const response = await fetch('http://localhost:5105/api/Auth/logout', {
+//         method: 'POST',
+//         headers: {
+//             Authorization: `Bearer ${accessToken}`,
+//         }
+//     });
 
-    console.log("Wysyłam coś");
+//     console.log("Wysyłam coś");
 
-    if (!response.ok) throw new Error('Failed to logout');
+//     if (!response.ok) throw new Error('Failed to logout');
     
-    if (response) return response.json();
+//     if (response) return response.json();
     
-    return null;
-};
+//     return null;
+// };
