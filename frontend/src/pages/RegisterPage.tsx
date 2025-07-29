@@ -8,7 +8,6 @@ import {
   Box,
   Paper,
 } from '@mui/material';
-import { useRegister } from '../hooks/useRegister';
 
 const RegisterPage = () => {
   const [username, setUsername] = useState('');
@@ -18,9 +17,6 @@ const RegisterPage = () => {
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [repeatPasswordError, setRepeatPasswordError] = useState('');
-
-  // Żądanie HTTP do rejestracji
-  const {mutate: registerRequest} = useRegister();
 
   // walidacja nazwy użytkownika
   const validateUsername = (name: string) => {
@@ -57,16 +53,16 @@ const RegisterPage = () => {
 
     if (passwordError || nameError || repeatPasswordError) return;
 
-    registerRequest({username, password},
-      {
-        onSuccess: (data) => {
-          console.log("User registered: ", data);
-        },
-        onError: (error: any) => {
-          console.error("Error during registration:", error.message);
-        }
-      }
-    );
+    // registerRequest({username, password},
+    //   {
+    //     onSuccess: (data) => {
+    //       console.log("User registered: ", data);
+    //     },
+    //     onError: (error: any) => {
+    //       console.error("Error during registration:", error.message);
+    //     }
+    //   }
+    // );
   };
 
   return (

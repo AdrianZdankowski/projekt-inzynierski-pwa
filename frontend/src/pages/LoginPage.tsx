@@ -8,7 +8,6 @@ import {
   Box,
   Paper,
 } from '@mui/material';
-import { useLogin } from '../hooks/useLogin';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -16,9 +15,6 @@ const LoginPage = () => {
 
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-
-  // Żądanie HTTP do logowania
-  const {mutate: loginRequest} = useLogin();
 
   // walidacja nazwy użytkownika
   const validateUsername = (name: string) => {
@@ -47,17 +43,17 @@ const LoginPage = () => {
 
     if (passwordError || nameError) return;
 
-    loginRequest(
-      {username, password},
-      {
-        onSuccess: (data) => {
-          console.log("User logged in successfully ", data);
-        },
-        onError: (error: any) => {
-          console.error("Error during login: ", error.message);
-        }
-      }
-    )
+    // loginRequest(
+    //   {username, password},
+    //   {
+    //     onSuccess: (data) => {
+    //       console.log("User logged in successfully ", data);
+    //     },
+    //     onError: (error: any) => {
+    //       console.error("Error during login: ", error.message);
+    //     }
+    //   }
+    // )
     
   };
 
