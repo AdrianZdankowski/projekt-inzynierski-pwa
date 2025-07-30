@@ -13,7 +13,7 @@ export const useAxiosInterceptor = () => {
         if (accessToken) {
           config.headers.Authorization = `Bearer ${accessToken}`;
         }
-        config.withCredentials = true; // potrzebne, by wysyłać httpOnly cookie (refresh token)
+        config.withCredentials = true;
         return config;
       },
       (error) => Promise.reject(error)

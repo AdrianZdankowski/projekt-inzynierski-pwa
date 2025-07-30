@@ -7,9 +7,9 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedAdminRoute = ({ children }: ProtectedRouteProps) => {
-    const {isAuthenticated, authReady, userRole} = useAuth();
+    const {isAuthenticated, isRefreshing, userRole} = useAuth();
 
-    if(!authReady) return null;
+    if(!isRefreshing) return null;
 
     if (!isAuthenticated) return <Navigate to="/login"/>
 

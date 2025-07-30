@@ -7,7 +7,7 @@ interface AuthContextType {
     login: (accessToken: string) => void;
     logout: () => void;
     isAuthenticated: boolean;
-    authReady: boolean;
+    isRefreshing: boolean;
     userRole?: string;
 }
 
@@ -15,7 +15,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({children}: {children: ReactNode}) => {
     const [accessToken, setAccessToken] = useState<string | null>(null);
-    const [authReady, setAuthReady] = useState<boolean>(false);
+    const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
     const [userRole, setUserRole] = useState<string | undefined>();
 
     const login = (accessToken: string) => {
@@ -40,7 +40,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
             console.log('Sesja wygasła lub użytkownik nie był zalogowany');
         }
         finally {
-            setAuthReady(true);
+            setIsRefreshing(true);
         }
     };
 
@@ -49,7 +49,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{accessToken, login, logout, isAuthenticated: !!accessToken, authReady, userRole}}>
+        <AuthContext.Provider value={{accessToken, login, logout, isAuthenticated: !!accessToken, isRefreshing, userRole}}>
             {children}
         </AuthContext.Provider>
     );
