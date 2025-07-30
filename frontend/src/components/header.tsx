@@ -9,16 +9,6 @@ const Header = () => {
     const navigate = useNavigate();
     
     const handleLogout = async () => {
-        // try {
-        //     await logoutRequest();
-        // }
-        // catch (error) {
-        //     console.error('Logout request failed: ', error);
-        // }
-        // finally {
-        //     logout();
-        //     navigate("/", {replace: true});
-        // }
         try {
             await axiosInstance.post('/auth/logout', {});
             logout();

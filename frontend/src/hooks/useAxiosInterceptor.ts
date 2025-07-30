@@ -30,7 +30,6 @@ export const useAxiosInterceptor = () => {
           originalRequest._retry = true;
 
           try {
-            // Wyślij żądanie do endpointa odświeżania tokena
             const response = await axiosInstance.post(
               '/auth/refresh-token',
               {},
@@ -40,8 +39,6 @@ export const useAxiosInterceptor = () => {
             const newAccessToken = response.data.accessToken;
             if (newAccessToken) {
               login(newAccessToken);
-
-              // Zaktualizuj Authorization i ponów żądanie
               originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
               return axiosInstance(originalRequest);
             }
