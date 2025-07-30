@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import {Link} from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import {Link, useNavigate, useLocation} from 'react-router-dom';
 import {
   Container,
   TextField,
@@ -7,7 +7,15 @@ import {
   Typography,
   Box,
   Paper,
+  Alert
 } from '@mui/material';
+import axiosInstance from '../api/axiosInstance';
+import { useAuth } from '../context/AuthContext';
+
+interface LocationState {
+  registered?: boolean;
+}
+
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -15,6 +23,21 @@ const LoginPage = () => {
 
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+
+  const location = useLocation();
+  const state =  location.state as LocationState | null;
+  const [showAlert, setShowAlert] = useState<boolean>(
+    () => !!state?.registered
+  );
+  const navigate = useNavigate();
+
+  const {login} = useAuth();
+
+  useEffect(() => {
+        if (state?.registered) {
+            navigate('.',{replace: true, state: {} });
+        }
+  }, []);
 
   // walidacja nazwy użytkownika
   const validateUsername = (name: string) => {
@@ -32,7 +55,7 @@ const LoginPage = () => {
     return passRegex.test(pass) ? "" : errorMessage;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const passwordError = validatePassword(password);
@@ -43,23 +66,31 @@ const LoginPage = () => {
 
     if (passwordError || nameError) return;
 
-    // loginRequest(
-    //   {username, password},
-    //   {
-    //     onSuccess: (data) => {
-    //       console.log("User logged in successfully ", data);
-    //     },
-    //     onError: (error: any) => {
-    //       console.error("Error during login: ", error.message);
-    //     }
-    //   }
-    // )
-    
+    try {
+      const result = await axiosInstance.post('/auth/login', {username, password});
+      const accessToken = result.data.accessToken;
+      login(accessToken);
+      navigate('/', {
+        replace: true
+      })
+    }
+    catch (error) {
+      console.error(error);
+    }
   };
 
   return (
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ padding: 4, mt: 8 , backgroundColor: "#596275", color: 'white'}}>
+
+        {showAlert && 
+            <Alert variant="filled" 
+            severity="success" 
+            onClose={() => setShowAlert(false)} 
+            sx={{mb: 2}}>
+              {'Konto utworzone! Zaloguj się.'}
+            </Alert>}
+
         <Typography variant="h5" align="center" gutterBottom>
           Zaloguj się
         </Typography>

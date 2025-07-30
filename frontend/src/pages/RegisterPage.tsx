@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import {Link} from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import {
   Container,
   TextField,
@@ -8,6 +8,7 @@ import {
   Box,
   Paper,
 } from '@mui/material';
+import axiosInstance from '../api/axiosInstance';
 
 const RegisterPage = () => {
   const [username, setUsername] = useState('');
@@ -17,6 +18,8 @@ const RegisterPage = () => {
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [repeatPasswordError, setRepeatPasswordError] = useState('');
+
+  const navigate = useNavigate();
 
   // walidacja nazwy użytkownika
   const validateUsername = (name: string) => {
@@ -40,7 +43,7 @@ const RegisterPage = () => {
   }
 
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const passwordError = validatePassword(password);
@@ -53,16 +56,17 @@ const RegisterPage = () => {
 
     if (passwordError || nameError || repeatPasswordError) return;
 
-    // registerRequest({username, password},
-    //   {
-    //     onSuccess: (data) => {
-    //       console.log("User registered: ", data);
-    //     },
-    //     onError: (error: any) => {
-    //       console.error("Error during registration:", error.message);
-    //     }
-    //   }
-    // );
+    try {
+      await axiosInstance.post('/auth/register', {username, password});
+      navigate('/login', {
+        replace: true,
+        state: {
+          registered: true
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
