@@ -25,6 +25,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
 
     const logout = () => {
         setAccessToken(null);
+        setUserRole(undefined);
     };
 
     const restoreSession = async () => {
