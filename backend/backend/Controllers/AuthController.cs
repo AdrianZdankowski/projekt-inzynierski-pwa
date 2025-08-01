@@ -57,25 +57,7 @@ namespace backend.Controllers
                 return BadRequest("Invalid refresh token");
             }
 
-            var accessToken = Request.Headers.Authorization.ToString();
-            if (string.IsNullOrEmpty(accessToken) && !accessToken.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-            {
-                return BadRequest();
-            }
-            accessToken = accessToken["Bearer ".Length..].Trim();
-
-            ClaimsPrincipal principal = null;
-            try
-            {
-                principal = authService.GetPrincipalFromExpiredToken(accessToken);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest();
-            }
-            var userId =  principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            var result = await authService.RefreshTokensAsync(refreshToken, userId);
+            var result = await authService.RefreshTokensAsync(refreshToken);
 
             if (result == null || result.AccessToken == null)
             {
