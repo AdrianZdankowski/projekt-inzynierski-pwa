@@ -31,7 +31,6 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     };
 
     const restoreSession = async () => {
-        console.log("wale")
         try {
             const response = await axiosInstance.post('/auth/refresh-token',
                 {},
@@ -41,7 +40,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
             if (newToken) login(newToken);
         }
         catch(error) {
-            console.log('Sesja wygasła lub użytkownik nie był zalogowany');
+            console.log('Session expired');
         }
         finally {
             setIsRefreshing(true);
