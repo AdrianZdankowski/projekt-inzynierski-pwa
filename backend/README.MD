@@ -44,7 +44,7 @@ GET /api/file/generate-upload-link?fileName=video.mp4&contentType=video/mp4
 
 {
 
-&nbsp; "uploadUrl": "https://twojstorage.blob.core.windows.net/container/video.mp4?...sasToken..."
+ "uploadUrl": "https://twojstorage.blob.core.windows.net/container/video.mp4?...sasToken..."
 
 }
 
@@ -68,19 +68,19 @@ Jeśli plik jest niewielki, wystarczy **wysłać go w jednym zapytaniu PUT** na 
 
 await fetch(uploadUrl, {
 
-&nbsp; method: 'PUT',
+ method: 'PUT',
 
-&nbsp; headers: {
+ headers: {
 
-&nbsp;   'x-ms-blob-type': 'BlockBlob',
+   'x-ms-blob-type': 'BlockBlob',
 
-&nbsp;   'x-ms-version': '2020-10-02',
+   'x-ms-version': '2020-10-02',
 
-&nbsp;   'Content-Type': file.type
+   'Content-Type': file.type
 
-&nbsp; },
+ },
 
-&nbsp; body: file
+ body: file
 
 });
 
@@ -110,37 +110,37 @@ const blockIds = [];
 
 for (let start = 0; start < file.size; start += CHUNK_SIZE) {
 
-&nbsp; const end = Math.min(file.size, start + CHUNK_SIZE);
+ const end = Math.min(file.size, start + CHUNK_SIZE);
 
-&nbsp; const chunk = file.slice(start, end);
+ const chunk = file.slice(start, end);
 
-&nbsp; const blockId = btoa(String(start).padStart(6, '0')); // base64 ID
+ const blockId = btoa(String(start).padStart(6, '0')); // base64 ID
 
-&nbsp; blockIds.push(blockId);
-
-
-
-&nbsp; const chunkUrl = `${uploadUrl}&comp=block&blockid=${encodeURIComponent(blockId)}`;
+ blockIds.push(blockId);
 
 
 
-&nbsp; await fetch(chunkUrl, {
+ const chunkUrl = `${uploadUrl}&comp=block&blockid=${encodeURIComponent(blockId)}`;
 
-&nbsp;   method: 'PUT',
 
-&nbsp;   headers: {
 
-&nbsp;     'x-ms-blob-type': 'BlockBlob',
+ await fetch(chunkUrl, {
 
-&nbsp;     'x-ms-version': '2020-10-02',
+   method: 'PUT',
 
-&nbsp;     'Content-Type': file.type
+   headers: {
 
-&nbsp;   },
+     'x-ms-blob-type': 'BlockBlob',
 
-&nbsp;   body: chunk
+     'x-ms-version': '2020-10-02',
 
-&nbsp; });
+     'Content-Type': file.type
+
+   },
+
+   body: chunk
+
+ });
 
 }
 
@@ -166,7 +166,7 @@ const blockListXml = `
 
 <BlockList>
 
-&nbsp; ${blockIds.map(id => `<Latest>${id}</Latest>`).join('')}
+ ${blockIds.map(id => `<Latest>${id}</Latest>`).join('')}
 
 </BlockList>
 
@@ -176,17 +176,17 @@ const blockListXml = `
 
 await fetch(`${uploadUrl}&comp=blocklist`, {
 
-&nbsp; method: 'PUT',
+ method: 'PUT',
 
-&nbsp; headers: {
+ headers: {
 
-&nbsp;   'x-ms-version': '2020-10-02',
+   'x-ms-version': '2020-10-02',
 
-&nbsp;   'Content-Type': 'application/xml'
+   'Content-Type': 'application/xml'
 
-&nbsp; },
+ },
 
-&nbsp; body: blockListXml
+ body: blockListXml
 
 });
 
@@ -222,15 +222,15 @@ POST /api/file/commit
 
 {
 
-&nbsp; "fileName": "video.mp4",
+ "fileName": "video.mp4",
 
-&nbsp; "mimeType": "video/mp4",
+ "mimeType": "video/mp4",
 
-&nbsp; "size": 4294967296,
+ "size": 4294967296,
 
-&nbsp; "blobUri": "https://twojstorage.blob.core.windows.net/container/video.mp4",
+ "blobUri": "https://twojstorage.blob.core.windows.net/container/video.mp4",
 
-&nbsp; "uploadTimestamp": "2025-07-29T18:00:00Z"
+ "uploadTimestamp": "2025-07-29T18:00:00Z"
 
 }
 
@@ -254,19 +254,19 @@ POST /api/file/commit
 
 - Backend:
 
-&nbsp; - generuje bezpieczny link SAS do uploadu
+ - generuje bezpieczny link SAS do uploadu
 
-&nbsp; - przyjmuje metadane po zakończeniu
+ - przyjmuje metadane po zakończeniu
 
 - Frontend:
 
-&nbsp; - wysyła plik (PUT)
+ - wysyła plik (PUT)
 
-&nbsp; - w przypadku dużych – dzieli plik i wysyła chunkami
+ - w przypadku dużych – dzieli plik i wysyła chunkami
 
-&nbsp; - kończy upload przez `PutBlockList`
+ - kończy upload przez `PutBlockList`
 
-&nbsp; - wywołuje endpoint `/commit`
+ - wywołuje endpoint `/commit`
 
 
 
