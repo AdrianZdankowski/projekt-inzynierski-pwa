@@ -1,35 +1,56 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { decodeUserRole } from "../lib/decodeUserRole";
+import axiosInstance from "../api/axiosInstance";
 
 interface AuthContextType {
     accessToken: string | null;
-    refreshToken: string | null;
-    setTokens: (tokens: {accessToken: string, refreshToken: string}) => void;
+    login: (accessToken: string) => void;
     logout: () => void;
     isAuthenticated: boolean;
+    isRefreshing: boolean;
+    userRole?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({children}: {children: ReactNode}) => {
-    const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'));
-    const [refreshToken, setRefreshToken] = useState<string | null>(localStorage.getItem('refreshToken'));
+    const [accessToken, setAccessToken] = useState<string | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+    const [userRole, setUserRole] = useState<string | undefined>();
 
-    const setTokens = ({accessToken, refreshToken}: {accessToken: string, refreshToken: string}) => {
+    const login = (accessToken: string) => {
         setAccessToken(accessToken);
-        setRefreshToken(refreshToken);
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+        setUserRole(decodeUserRole(accessToken));
     };
 
     const logout = () => {
         setAccessToken(null);
-        setRefreshToken(null);
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        setUserRole(undefined);
     };
 
+    const restoreSession = async () => {
+        try {
+            const response = await axiosInstance.post('/auth/refresh-token',
+                {},
+                {withCredentials: true}
+            );
+            const newToken = response.data.accessToken;
+            if (newToken) login(newToken);
+        }
+        catch(error) {
+            console.log('Sesja wygasła lub użytkownik nie był zalogowany');
+        }
+        finally {
+            setIsRefreshing(true);
+        }
+    };
+
+    useEffect(() => {
+        restoreSession();
+    }, []);
+
     return (
-        <AuthContext.Provider value={{accessToken, refreshToken, setTokens, logout, isAuthenticated: !!accessToken && !!refreshToken}}>
+        <AuthContext.Provider value={{accessToken, login, logout, isAuthenticated: !!accessToken, isRefreshing, userRole}}>
             {children}
         </AuthContext.Provider>
     );
