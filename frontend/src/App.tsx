@@ -7,6 +7,7 @@ import RegisterPage from './pages/RegisterPage.tsx'
 import PDFExamplePage from './pages/PDFExamplePage.tsx'
 import TXTExamplePage from './pages/TXTExamplePage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
+import Unauthorized from './components/Unauthorized.tsx'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             </ProtectedRoute>
             }/>
           <Route path="txt-file" element={<TXTExamplePage/>}/>
+          <Route path="unauthorized" element={<Unauthorized/>}/>
         </Route>
       </Routes>
     </Router>
