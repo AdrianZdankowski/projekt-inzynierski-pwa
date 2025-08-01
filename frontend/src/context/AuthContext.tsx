@@ -21,14 +21,17 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     const login = (accessToken: string) => {
         setAccessToken(accessToken);
         setUserRole(decodeUserRole(accessToken));
+        localStorage.setItem("isLoggedIn", "true");
     };
 
     const logout = () => {
         setAccessToken(null);
         setUserRole(undefined);
+        localStorage.removeItem("isLoggedIn");
     };
 
     const restoreSession = async () => {
+        console.log("wale")
         try {
             const response = await axiosInstance.post('/auth/refresh-token',
                 {},
@@ -46,7 +49,8 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     };
 
     useEffect(() => {
-        restoreSession();
+        const isLoggedIn = localStorage.getItem("isLoggedIn");
+        if (isLoggedIn) restoreSession();
     }, []);
 
     return (
