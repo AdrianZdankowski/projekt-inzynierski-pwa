@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Security.Claims;
+using System.Threading.Tasks;
 using backend.DTO;
 using backend.DTO.User;
 using backend.Services;
@@ -51,9 +52,9 @@ namespace backend.Controllers
         {
             var existRefreshToken = Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
 
-            if (existRefreshToken == false)
+            if (existRefreshToken == false || refreshToken == null)
             {
-                return BadRequest();
+                return BadRequest("Invalid refresh token");
             }
 
             var result = await authService.RefreshTokensAsync(refreshToken);

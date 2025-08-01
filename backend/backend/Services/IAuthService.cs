@@ -1,4 +1,5 @@
-﻿using backend.DTO;
+﻿using System.Security.Claims;
+using backend.DTO;
 using backend.DTO.User;
 using WebApplication1;
 
@@ -9,7 +10,7 @@ namespace backend.Services
     {
         Task<User?> RegisterAsync(UserDto request);
         Task<AuthTokensDto?> LoginAsync(UserDto request);
-        Task<AccessTokenDto?> RefreshTokensAsync(string request);
+        Task<AccessTokenDto?> RefreshTokensAsync(string refreshToken);
         Task<User?> LogoutAsync(string request);
     }
 }

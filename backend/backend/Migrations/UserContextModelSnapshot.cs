@@ -36,7 +36,7 @@ namespace backend.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("refreshToken")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("refreshTokenExpiry")
                         .HasColumnType("datetime2");
@@ -49,8 +49,6 @@ namespace backend.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("id");
-
-                    b.HasIndex("refreshToken");
 
                     b.ToTable("Users");
                 });

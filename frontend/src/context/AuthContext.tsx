@@ -21,11 +21,13 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     const login = (accessToken: string) => {
         setAccessToken(accessToken);
         setUserRole(decodeUserRole(accessToken));
+        localStorage.setItem("isLoggedIn", "true");
     };
 
     const logout = () => {
         setAccessToken(null);
         setUserRole(undefined);
+        localStorage.removeItem("isLoggedIn");
     };
 
     const restoreSession = async () => {
@@ -38,7 +40,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
             if (newToken) login(newToken);
         }
         catch(error) {
-            console.log('Sesja wygasła lub użytkownik nie był zalogowany');
+            console.log('Session expired');
         }
         finally {
             setIsRefreshing(true);
@@ -46,7 +48,8 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     };
 
     useEffect(() => {
-        restoreSession();
+        const isLoggedIn = localStorage.getItem("isLoggedIn");
+        if (isLoggedIn) restoreSession();
     }, []);
 
     return (

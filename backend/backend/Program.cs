@@ -48,6 +48,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:JwtSecret"]!)),
             ValidateIssuerSigningKey = true
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = context =>
+            {
+                var tokenType = context.Principal?.FindFirst("type")?.Value;
+
+                if (tokenType != "access")
+                {
+                    context.Fail("Invalid token type");
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 
 //add services

@@ -20,9 +20,6 @@ namespace backend
             modelBuilder.Entity<User>()
                 .Property(u => u.role)
                 .HasConversion(roleConverter);
-
-            modelBuilder.Entity<User>()
-                .HasIndex(u => u.refreshToken);
         }
         
         public DbSet<User> Users { get; set; }

@@ -60,9 +60,9 @@ namespace backend.Services
             return user;
         }
 
-        public async Task<AccessTokenDto?> RefreshTokensAsync(string request)
+        public async Task<AccessTokenDto?> RefreshTokensAsync(string refreshToken)
         {
-            var user = await ValidateRefreshTokenAsync(request);
+            var user = await ValidateRefreshTokenAsync(refreshToken);
 
             if (user == null)
             {
@@ -104,7 +104,8 @@ namespace backend.Services
             {
                 new Claim(ClaimTypes.Name, user.username),
                 new Claim(ClaimTypes.NameIdentifier, user.id.ToString()),
-                new Claim(ClaimTypes.Role, user.role.ToStringValue())
+                new Claim(ClaimTypes.Role, user.role.ToStringValue()),
+                new Claim("type", "access")
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.GetValue<string>("AppSettings:JwtSecret")!));
 
@@ -146,18 +147,66 @@ namespace backend.Services
             user.refreshTokenExpiry = DateTime.UtcNow.AddDays(7);
             await context.SaveChangesAsync();
 
-            return refreshToken;
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.id.ToString()),
+                new Claim("refresh", refreshToken),
+                new Claim("type", "refresh")
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.GetValue<string>("AppSettings:JwtSecret")!));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
+
+            var token = new JwtSecurityToken(
+                issuer: configuration.GetValue<string>("AppSettings:JwtIssuer"),
+                audience: configuration.GetValue<string>("AppSettings:JwtAudience"),
+                claims: claims,
+                expires: user.refreshTokenExpiry,
+                signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         private async Task<User?> ValidateRefreshTokenAsync(string refreshToken)
         {
             if (string.IsNullOrEmpty(refreshToken)) return null;
 
-            var user = await context.Users
-                .Where(u => u.refreshToken == HashToken(refreshToken) && u.refreshTokenExpiry > DateTime.UtcNow)
-                .SingleOrDefaultAsync();
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = configuration["AppSettings:JwtIssuer"],
+                ValidateAudience = true,
+                ValidAudience = configuration["AppSettings:JwtAudience"],
+                ValidateLifetime = true,
+                IssuerSigningKey = new SymmetricSecurityKey(
+               Encoding.UTF8.GetBytes(configuration["AppSettings:JwtSecret"]!)),
+                ValidateIssuerSigningKey = true
+            };
 
-            if (user == null)
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var principal = tokenHandler.ValidateToken(refreshToken, tokenValidationParameters, out SecurityToken securityToken);
+            var jwtSecurityToken = securityToken as JwtSecurityToken;
+
+            if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512, StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new SecurityTokenException("Invalid Token");
+            }
+
+            //extract user id and refresh token from JWT
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(refreshToken);
+
+            var userIdString = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            Guid userId = Guid.Parse(userIdString);
+            var refreshString = jwt.Claims.FirstOrDefault(c => c.Type == "refresh")?.Value;
+
+
+            //get user from db, and check refresh token
+            var user = await context.Users.FindAsync(userId);
+
+            if (user == null || user.refreshToken == null || user.refreshToken != HashToken(refreshString) || user.refreshTokenExpiry <= DateTime.UtcNow)
             {
                 return null;
             }
