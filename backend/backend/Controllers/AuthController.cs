@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Security.Claims;
+using System.Threading.Tasks;
 using backend.DTO;
 using backend.DTO.User;
 using backend.Services;
@@ -51,12 +52,30 @@ namespace backend.Controllers
         {
             var existRefreshToken = Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
 
-            if (existRefreshToken == false)
+            if (existRefreshToken == false || refreshToken == null)
+            {
+                return BadRequest("Invalid refresh token");
+            }
+
+            var accessToken = Request.Headers.Authorization.ToString();
+            if (string.IsNullOrEmpty(accessToken) && !accessToken.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
                 return BadRequest();
             }
+            accessToken = accessToken["Bearer ".Length..].Trim();
 
-            var result = await authService.RefreshTokensAsync(refreshToken);
+            ClaimsPrincipal principal = null;
+            try
+            {
+                principal = authService.GetPrincipalFromExpiredToken(accessToken);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
+            var userId =  principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await authService.RefreshTokensAsync(refreshToken, userId);
 
             if (result == null || result.AccessToken == null)
             {

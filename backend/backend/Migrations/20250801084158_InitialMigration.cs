@@ -19,7 +19,7 @@ namespace backend.Migrations
                     username = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     passwordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     email = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    refreshToken = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    refreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     refreshTokenExpiry = table.Column<DateTime>(type: "datetime2", nullable: true),
                     role = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -27,11 +27,6 @@ namespace backend.Migrations
                 {
                     table.PrimaryKey("PK_Users", x => x.id);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_refreshToken",
-                table: "Users",
-                column: "refreshToken");
         }
 
         /// <inheritdoc />

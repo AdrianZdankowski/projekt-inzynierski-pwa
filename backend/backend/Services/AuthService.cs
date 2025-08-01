@@ -60,9 +60,9 @@ namespace backend.Services
             return user;
         }
 
-        public async Task<AccessTokenDto?> RefreshTokensAsync(string request)
+        public async Task<AccessTokenDto?> RefreshTokensAsync(string refreshToken, string userId)
         {
-            var user = await ValidateRefreshTokenAsync(request);
+            var user = await ValidateRefreshTokenAsync(refreshToken, userId);
 
             if (user == null)
             {
@@ -131,6 +131,32 @@ namespace backend.Services
             return refreshToken;
         }
 
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string accessToken)
+        {
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = configuration["AppSettings:JwtIssuer"],
+                ValidateAudience = true,
+                ValidAudience = configuration["AppSettings:JwtAudience"],
+                ValidateLifetime = false,
+                IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(configuration["AppSettings:JwtSecret"]!)),
+                ValidateIssuerSigningKey = true
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var principal = tokenHandler.ValidateToken(accessToken, tokenValidationParameters, out SecurityToken securityToken);
+            var jwtSecurityToken = securityToken as JwtSecurityToken;
+
+            if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512, StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new SecurityTokenException("Invalid Token");
+            }
+            return principal;
+        }
+
         private string HashToken(string token)
         {
             using var sha256 = SHA256.Create();
@@ -149,15 +175,13 @@ namespace backend.Services
             return refreshToken;
         }
 
-        private async Task<User?> ValidateRefreshTokenAsync(string refreshToken)
+        private async Task<User?> ValidateRefreshTokenAsync(string refreshToken, string userId)
         {
             if (string.IsNullOrEmpty(refreshToken)) return null;
 
-            var user = await context.Users
-                .Where(u => u.refreshToken == HashToken(refreshToken) && u.refreshTokenExpiry > DateTime.UtcNow)
-                .SingleOrDefaultAsync();
+            var user = await context.Users.FindAsync(Guid.Parse(userId));
 
-            if (user == null)
+            if (user == null || user.refreshToken == null || user.refreshToken != HashToken(refreshToken) || user.refreshTokenExpiry <= DateTime.UtcNow)
             {
                 return null;
             }
