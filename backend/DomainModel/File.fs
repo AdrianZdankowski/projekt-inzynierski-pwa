@@ -3,62 +3,28 @@ namespace WebApplication1
 open System
 open System.ComponentModel.DataAnnotations
 
-//- id:UUID
-//- size:int
-//- name:String
-//-extension:String
-//-creationTimestamp:datetime
-//-path:String
+[<CLIMutable>]
+type File = 
+    {
 
-//+ uploadFile(params):void
-//+ downloadFile(fileId:UUID):void
-//+ deleteFile(params):void
-//+editFile(params):void
-//+<<abstract>>display():void
-//+<<abstract>>displayThumbnail():void
+        [<Key>]
+        id: Guid
 
-[<AllowNullLiteral>]
-[<AbstractClass>]
-type File(id: System.Guid, size: int, name: String, extension: String, creationTimestamp: DateTime, path: String) =
+        [<Required>]
+        UserId: Guid
 
-    let mutable size, name, extension, path = size, name, extension, path;
+        [<Required>]
+        FileName: string
 
-    [<Key>]
-    member this.id = id;
-    member this.creationTimestamp = creationTimestamp;
+        [<Required>]
+        MimeType: string
 
-    //Todo: check if we can delete this
-    //abstract display: float with get
-    //abstract displayThumbnail: float with get
+        Size: int64
 
-    member this.Size
-        with get() = size
-        and set(value) = size <- value
+        [<Required>]
+        BlobUri: string
 
-    member this.Name
-        with get() = name
-        and set(value) = name <- value
+        UploadTimestamp: DateTime
+    }
 
-    member this.Extension
-        with get() = extension
-        and set(value) = extension <- value
 
-    member this.Path
-        with get() = path
-        and set(value) = path <- value
-
-    
-    member this.UploadFile(params: string) =
-        printfn "TODO" 
-
-    member this.DownloadFile(fileID: System.Guid) =
-        printfn "TODO"
-
-    member this.DeleteFile(params: string) =
-        printfn "TODO"
-
-    member this.EditFile(params: string) =
-        printfn "TODO"
-
-    abstract member Display : unit -> unit
-    abstract member DisplayThumbnail : unit -> unit
