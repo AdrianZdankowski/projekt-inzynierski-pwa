@@ -15,7 +15,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({children}: {children: ReactNode}) => {
     const [accessToken, setAccessToken] = useState<string | null>(null);
-    const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+    const [isRefreshing, setIsRefreshing] = useState<boolean>(true);
     const [userRole, setUserRole] = useState<string | undefined>();
 
     const login = (accessToken: string) => {
@@ -43,13 +43,18 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
             console.log('Session expired');
         }
         finally {
-            setIsRefreshing(true);
+            setIsRefreshing(false);
         }
     };
 
     useEffect(() => {
         const isLoggedIn = localStorage.getItem("isLoggedIn");
-        if (isLoggedIn) restoreSession();
+        if (isLoggedIn) {
+            restoreSession();
+        }
+        else {
+            setIsRefreshing(false);
+        }
     }, []);
 
     return (
