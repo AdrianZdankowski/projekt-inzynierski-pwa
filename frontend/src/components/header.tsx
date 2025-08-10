@@ -27,7 +27,10 @@ const Header = () => {
         >
             
         {isAuthenticated ? 
-            <Link className='clean-link' to="#" onClick={handleLogout}>Wyloguj</Link>
+            <>
+                <Link className='clean-link' to="/user-file-manager">Manager plików</Link>
+                <Link className='clean-link' to="#" onClick={handleLogout}>Wyloguj</Link>
+            </>
             :
             <Link className='clean-link' to="/login">Logowanie</Link>       
         }
