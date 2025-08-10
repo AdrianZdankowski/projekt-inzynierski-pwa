@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Container } from "@mui/material";
 import Hls from "hls.js";
 
@@ -6,34 +6,61 @@ interface VideoPlayerProps {
     src: string;
 }
 
+interface LevelInfo {
+    index: number;
+    height?: number;
+    bitrate: number;
+}
+
 const VideoPlayer = ({src}: VideoPlayerProps) => {
-    const videoRef = useRef<HTMLVideoElement | null>(null);
+
+    const autoQuality = -1;
+
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const hlsRef = useRef<Hls | null>(null);
+
+    const [levels, setLevels] = useState<LevelInfo[]>([]);
+    const [currentQuality, setCurrentQuality] = useState<number>(autoQuality);
+
+    
 
     useEffect(() => {
-        let hls: Hls | null = null;
         
-        if (videoRef.current) {
-            if (src.endsWith(".m3u8") && Hls.isSupported()) {
-                hls = new Hls();
-                hls.loadSource(src);
-                hls.attachMedia(videoRef.current);
-            } 
-            else if (videoRef.current.canPlayType("application/vnd.apple.mpegurl")) {
-                videoRef.current.src = src;
-            }
-            else {
-                //Plik o formacie innym niż .m3u8
-                videoRef.current.src = src;
-            }
+        if (!videoRef.current) return;
+        
+        if (Hls.isSupported() && src.endsWith(".m3u8")) {
+            const hls = new Hls();
+            hlsRef.current = hls;
+            hls.loadSource(src);
+            hls.attachMedia(videoRef.current);
+
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                const qualityLevels: LevelInfo[] = hls.levels.map((level, idx) => ({
+                    index: idx,
+                    height: level.height,
+                    bitrate: level.bitrate
+                }));
+                setLevels(qualityLevels);
+            });
+
+            hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
+                setCurrentQuality(data.level);
+            });
+        } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
+            videoRef.current.src=src;
         }
-
+        
         return () => {
-            if (hls) {
-                hls.destroy();
-            }
+            hlsRef.current?.destroy();
         };
-
     },[src]);
+
+    const changeQuality = (qualityIndex: number) => {
+        if (!hlsRef.current) return;
+
+        hlsRef.current.currentLevel = qualityIndex;
+        setCurrentQuality(qualityIndex);
+    };
 
     return (
         <Container maxWidth="md" sx={{mt: 4}}>
@@ -42,6 +69,23 @@ const VideoPlayer = ({src}: VideoPlayerProps) => {
             controls
             style={{width: "100%", maxHeight:"500px"}}
         />
+        <div style={{marginTop: 10}}>
+            <label>Jakość:</label>
+            <select
+            value={currentQuality}
+            onChange={(e) => changeQuality(Number(e.target.value))}
+            >
+                <option value={autoQuality}>Auto</option>
+                {levels.map(lvl => (
+                    <option key={lvl.index} value={lvl.index}>
+                        {lvl.height
+                        ? `${lvl.height}p (${Math.round(lvl.bitrate/1024)} kbps)`
+                        : `${Math.round(lvl.bitrate / 1024)} kbps`
+                        }
+                    </option>
+                ))}
+            </select>
+        </div>
         </Container>
     );
 };
