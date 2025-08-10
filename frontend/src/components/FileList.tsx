@@ -1,5 +1,5 @@
 
-const FileListComponent = () => {
+const FileList = () => {
     return (
         <div style={{ display: 'flex', justifyContent: 'center'}}>
             <table style={{ padding: 20, border: '1px solid black', textAlign: 'center', marginTop: 20, color: 'white' }}>
@@ -22,4 +22,4 @@ const FileListComponent = () => {
     )
 }
 
-export default FileListComponent;
+export default FileList;

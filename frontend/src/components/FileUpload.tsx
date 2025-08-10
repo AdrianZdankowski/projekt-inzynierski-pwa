@@ -13,12 +13,12 @@ import {
 
 import axiosInstance from '../api/axiosInstance';
 
-interface FileUploadComponentProps {
+interface FileUploadProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
-const FileUploadComponent = ({ isOpen, onClose }: FileUploadComponentProps) => {
+const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -34,7 +34,58 @@ const FileUploadComponent = ({ isOpen, onClose }: FileUploadComponentProps) => {
     };
 
     const handleUpload = async () => {
-        console.log("Send a file");
+        if (!selectedFile) return;
+
+        setUploading(true);
+        setMessage(null);
+
+        try {
+            const uploadLinkResponse = await axiosInstance.get('/file/generate-upload-link', {
+                params: {
+                    fileName: selectedFile.name,
+                    contentType: selectedFile.type
+                }
+            });
+
+            const { uploadUrl } = uploadLinkResponse.data;
+
+            const uploadResponse = await fetch(uploadUrl, {
+                method: 'PUT',
+                headers: {
+                    'x-ms-blob-type': 'BlockBlob',
+                    'x-ms-version': '2020-10-02',
+                    'Content-Type': selectedFile.type
+                },
+                body: selectedFile
+            });
+
+            if (!uploadResponse.ok) {
+                throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
+            }
+
+            await axiosInstance.post('/file/commit', {
+                fileName: selectedFile.name,
+                mimeType: selectedFile.type,
+                size: selectedFile.size,
+                blobUri: uploadUrl.split('?')[0], // Remove SAS token from URI
+                uploadTimestamp: new Date().toISOString()
+            });
+
+            setMessage({
+                type: 'success',
+                text: 'Plik został pomyślnie przesłany!'
+            });
+
+        } catch (error) {
+            console.error('Upload error:', error);
+            setMessage({
+                type: 'error',
+                text: 'Wystąpił błąd podczas przesyłania pliku'
+            });
+        } finally {
+            setUploading(false);
+            setSelectedFile(null)
+        }
     };
 
     const handleDragOver = (event: React.DragEvent) => {
@@ -222,4 +273,4 @@ const FileUploadComponent = ({ isOpen, onClose }: FileUploadComponentProps) => {
     );
 };
 
-export default FileUploadComponent; 
+export default FileUpload; 

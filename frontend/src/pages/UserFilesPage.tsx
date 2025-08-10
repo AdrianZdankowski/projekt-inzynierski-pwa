@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Box, Fab } from '@mui/material';
-import FileListComponent from "../components/FileListComponent";
-import FileUploadComponent from "../components/FileUploadComponent";
+import FileList from "../components/FileList";
+import FileUpload from "../components/FileUpload";
 
 const UserFilesPage = () => {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -16,8 +16,8 @@ const UserFilesPage = () => {
 
     return (
         <Box sx={{ position: 'relative', minHeight: '100vh' }}>
-            <h1 style={{ textAlign: 'center', marginTop: '20px', color: 'white' }}>Twoje pliki:</h1>
-            <FileListComponent />
+            <h1 style={{ textAlign: 'center', marginTop: '20px', color: 'white' }}>Moje pliki:</h1>
+            <FileList />
             
             <Fab
                 color="primary"
@@ -38,7 +38,7 @@ const UserFilesPage = () => {
                 +
             </Fab>
 
-            <FileUploadComponent 
+            <FileUpload 
                 isOpen={isUploadModalOpen} 
                 onClose={handleCloseUploadModal} 
             />

@@ -28,7 +28,7 @@ const Header = () => {
             
         {isAuthenticated ? 
             <>
-                <Link className='clean-link' to="/user-file-manager">Manager plików</Link>
+                <Link className='clean-link' to="/user-file-manager">Moje pliki</Link>
                 <Link className='clean-link' to="#" onClick={handleLogout}>Wyloguj</Link>
             </>
             :
