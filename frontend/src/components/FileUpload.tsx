@@ -76,6 +76,8 @@ const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
                 text: 'Plik został pomyślnie przesłany!'
             });
 
+            setSelectedFile(null)
+
         } catch (error) {
             console.error('Upload error:', error);
             setMessage({
@@ -84,7 +86,6 @@ const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
             });
         } finally {
             setUploading(false);
-            setSelectedFile(null)
         }
     };
 
