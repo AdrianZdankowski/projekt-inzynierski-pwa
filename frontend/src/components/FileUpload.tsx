@@ -25,23 +25,6 @@ const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
     const [isDragOver, setIsDragOver] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const uploadSmallFile = async () => {
-        const formData = new FormData();
-        formData.append('File', selectedFile!);
-
-        const uploadResponse = await axiosInstance.post('/file/upload', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        });
-
-        if (uploadResponse.status !== 200) {
-            throw new Error();
-        }
-
-        return uploadResponse.data;
-    };
-
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
@@ -56,15 +39,42 @@ const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
         setUploading(true);
         setMessage(null);
 
-        try {                
-            await uploadSmallFile();
+        try {
+            const uploadLinkResponse = await axiosInstance.get('/file/generate-upload-link', {
+                params: {
+                    fileName: selectedFile.name,
+                    contentType: selectedFile.type
+                }
+            });
+
+            const { uploadUrl } = uploadLinkResponse.data;
+
+            const uploadResponse = await fetch(uploadUrl, {
+                method: 'PUT',
+                headers: {
+                    'x-ms-blob-type': 'BlockBlob',
+                    'x-ms-version': '2020-10-02',
+                    'Content-Type': selectedFile.type
+                },
+                body: selectedFile
+            });
+
+            if (!uploadResponse.ok) {
+                throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
+            }
+
+            await axiosInstance.post('/file/commit', {
+                fileName: selectedFile.name,
+                mimeType: selectedFile.type,
+                size: selectedFile.size,
+                blobUri: uploadUrl.split('?')[0], // Remove SAS token from URI
+                uploadTimestamp: new Date().toISOString()
+            });
 
             setMessage({
                 type: 'success',
                 text: 'Plik został pomyślnie przesłany!'
             });
-            
-            setSelectedFile(null);
 
         } catch (error) {
             console.error('Upload error:', error);
@@ -74,6 +84,7 @@ const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
             });
         } finally {
             setUploading(false);
+            setSelectedFile(null)
         }
     };
 
