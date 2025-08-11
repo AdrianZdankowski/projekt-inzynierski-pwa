@@ -15,7 +15,8 @@ namespace backend.Controllers
     [Route("api/[controller]")]
     public class FileController(
         IFileUploadService uploadService,
-        IAzureBlobService azureBlobService) : ControllerBase
+        IAzureBlobService azureBlobService,
+        FileContext fileContext) : ControllerBase
     {
         [Authorize]
         [HttpPost("upload")]
@@ -56,11 +57,15 @@ namespace backend.Controllers
         public async Task<IActionResult> CommitUpload([FromBody] FileMetadataDto dto)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
+            }
 
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            {
                 return Unauthorized("Invalid or missing user ID");
+            }
 
             try
             {
@@ -71,6 +76,64 @@ namespace backend.Controllers
             {
                 return StatusCode(500, $"Commit failed: {ex.Message}");
             }
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult GetUserFiles()
+        {
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                return Unauthorized("Invalid or missing user ID");
+            }
+
+            var files = fileContext.Files
+                .Where(f => f.UserId == userId)
+                .Select(f => new
+                {
+                    f.id,
+                    f.FileName,
+                    f.MimeType,
+                    f.Size,
+                    f.UploadTimestamp,
+                    f.BlobUri
+                })
+                .ToList();
+
+            return Ok(files);
+        }
+
+        [Authorize]
+        [HttpGet("{id:guid}")]
+        public IActionResult GetFileWithLink(Guid id, [FromServices] FileContext fileContext, [FromServices] IAzureBlobService azureBlobService)
+        {
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                return Unauthorized("Invalid or missing user ID");
+            }
+
+            var file = fileContext.Files.FirstOrDefault(f => f.id == id);
+            if (file == null) return NotFound("File not found");
+
+            if (file.UserId != userId) return Forbid("You are not allowed to access this file");
+
+            var timeToLive = TimeSpan.FromMinutes(10);
+            var downloadUrl = azureBlobService.GenerateDownloadSasUri(file.FileName, timeToLive);
+
+            var returnDto = new FileDownloadDto
+            {
+                Id = file.id,
+                FileName = file.FileName,
+                MimeType = file.MimeType,
+                Size = file.Size,
+                UploadTimestamp = file.UploadTimestamp,
+                DownloadUrl = downloadUrl,
+                ExpiresInSeconds = (int)timeToLive.TotalSeconds
+            };
+
+            return Ok(returnDto);
         }
     }
 }

@@ -24,4 +24,21 @@ public class AzureBlobService(IConfiguration config) : IAzureBlobService
         sasBuilder.SetPermissions(BlobSasPermissions.Write | BlobSasPermissions.Create | BlobSasPermissions.Add | BlobSasPermissions.List);
         return blob.GenerateSasUri(sasBuilder).ToString();
     }
+
+    public string GenerateDownloadSasUri(string fileName, TimeSpan timeToLive)
+    {
+        var blobClient = new BlobContainerClient(_connectionString, _containerName);
+        var blob = blobClient.GetBlobClient(fileName);
+
+        var sasBuilder = new BlobSasBuilder
+        {
+            BlobContainerName = _containerName,
+            BlobName = fileName,
+            Resource = "b",
+            ExpiresOn = DateTimeOffset.UtcNow.Add(timeToLive),
+        };
+
+        sasBuilder.SetPermissions(BlobSasPermissions.Read);
+        return blob.GenerateSasUri(sasBuilder).ToString();
+    }
 }
