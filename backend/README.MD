@@ -244,6 +244,86 @@ POST /api/file/commit
 
 ---
 
+---
+
+## 📄 4. Pobieranie listy plików użytkownika
+
+Po zalogowaniu użytkownik może pobrać listę wszystkich swoich plików zapisanych w bazie (metadane).
+
+### Endpoint:
+
+```
+
+GET /api/files
+
+```
+
+### Odpowiedź:
+```json
+[
+  {
+    "id": "8f3d1e5a-0b1c-4a6f-9f89-2d12a8ffb64f",
+    "fileName": "video.mp4",
+    "mimeType": "video/mp4",
+    "size": 4294967296,
+    "uploadTimestamp": "2025-07-29T18:00:00Z",
+    "blobUri": "https://twojstorage.blob.core.windows.net/container/video.mp4"
+  },
+  {
+    "id": "1c2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+    "fileName": "photo.jpg",
+    "mimeType": "image/jpeg",
+    "size": 204800,
+    "uploadTimestamp": "2025-07-30T10:15:00Z",
+    "blobUri": "https://twojstorage.blob.core.windows.net/container/photo.jpg"
+  }
+]
+```
+---
+
+## 📥 5. Pobranie pliku z metadanymi i linkiem SAS
+
+Po kliknięciu w plik na liście, frontend może pobrać szczegółowe informacje o pliku oraz tymczasowy link do pobrania z Azure (SAS URL).
+Link wygasa po określonym czasie (np. 10 minut).
+
+### Endpoint:
+
+```
+
+GET /api/files/{id}
+
+```
+
+{id} – identyfikator pliku z bazy (pole id z listy plików).
+
+### Odpowiedź:
+```json
+[
+  {
+  "id": "8f3d1e5a-0b1c-4a6f-9f89-2d12a8ffb64f",
+  "fileName": "video.mp4",
+  "mimeType": "video/mp4",
+  "size": 4294967296,
+  "uploadTimestamp": "2025-07-29T18:00:00Z",
+  "downloadUrl": "https://twojstorage.blob.core.windows.net/container/video.mp4?...sasToken...",
+  "expiresInSeconds": 600
+}
+]
+```
+Jak użyć downloadUrl:
+Możesz wstawić go bezpośrednio jako src w ```<video>```, ```<img>```, ```<audio>``` lub pobrać go przez fetch/axios.
+
+Przykład – odtworzenie wideo:
+
+```
+<video controls src="{downloadUrl}"></video>
+```
+Przykład – pobranie pliku w JS:
+```
+window.location.href = downloadUrl;
+```
+
+Ważne: Po wygaśnięciu linku (expiresInSeconds) trzeba ponownie wywołać ten endpoint, aby pobrać nowy SAS URL.
 
 
 ## ℹ️ Uwagi końcowe
