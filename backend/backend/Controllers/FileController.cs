@@ -15,7 +15,8 @@ namespace backend.Controllers
     [Route("api/[controller]")]
     public class FileController(
         IFileUploadService uploadService,
-        IAzureBlobService azureBlobService) : ControllerBase
+        IAzureBlobService azureBlobService,
+        IFileConverter fileConverter) : ControllerBase
     {
         [Authorize]
         [HttpPost("upload")]
@@ -65,6 +66,9 @@ namespace backend.Controllers
             try
             {
                 var fileId = await uploadService.CommitUploadMetadataAsync(dto, userId);
+                string tempDirectory = Path.Combine(@"C:\temp", dto.FileName.Replace(".", ""), DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                string targetDirectory = string.Concat(userId.ToString(),"/", dto.FileName);
+                await fileConverter.CreateHlsPlaylistAsync(dto.FileName, tempDirectory, targetDirectory);
                 return Ok(new { Message = "Upload committed", FileId = fileId });
             }
             catch (Exception ex)
