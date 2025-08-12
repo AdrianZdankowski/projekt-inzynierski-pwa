@@ -33,6 +33,42 @@ const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
         }
     };
 
+    const getUploadLink = async (file: File) => {
+        const uploadLinkResponse = await axiosInstance.get('/file/generate-upload-link', {
+            params: {
+                fileName: file.name,
+                contentType: file.type
+            }
+        });
+        return uploadLinkResponse.data.uploadUrl;
+    };
+
+    const uploadFileToBlob = async (file: File, uploadUrl: string) => {
+        const uploadResponse = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: {
+                'x-ms-blob-type': 'BlockBlob',
+                'x-ms-version': '2020-10-02',
+                'Content-Type': file.type
+            },
+            body: file
+        });
+
+        if (!uploadResponse.ok) {
+            throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
+        }
+    };
+
+    const commitFileToBackend = async (file: File, uploadUrl: string) => {
+        await axiosInstance.post('/file/commit', {
+            fileName: file.name,
+            mimeType: file.type,
+            size: file.size,
+            blobUri: uploadUrl.split('?')[0], // Remove SAS token from URI
+            uploadTimestamp: new Date().toISOString()
+        });
+    };
+
     const handleUpload = async () => {
         if (!selectedFile) return;
 
@@ -40,36 +76,9 @@ const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
         setMessage(null);
 
         try {
-            const uploadLinkResponse = await axiosInstance.get('/file/generate-upload-link', {
-                params: {
-                    fileName: selectedFile.name,
-                    contentType: selectedFile.type
-                }
-            });
-
-            const { uploadUrl } = uploadLinkResponse.data;
-
-            const uploadResponse = await fetch(uploadUrl, {
-                method: 'PUT',
-                headers: {
-                    'x-ms-blob-type': 'BlockBlob',
-                    'x-ms-version': '2020-10-02',
-                    'Content-Type': selectedFile.type
-                },
-                body: selectedFile
-            });
-
-            if (!uploadResponse.ok) {
-                throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
-            }
-
-            await axiosInstance.post('/file/commit', {
-                fileName: selectedFile.name,
-                mimeType: selectedFile.type,
-                size: selectedFile.size,
-                blobUri: uploadUrl.split('?')[0], // Remove SAS token from URI
-                uploadTimestamp: new Date().toISOString()
-            });
+            const uploadUrl = await getUploadLink(selectedFile);
+            await uploadFileToBlob(selectedFile, uploadUrl);
+            await commitFileToBackend(selectedFile, uploadUrl);
 
             setMessage({
                 type: 'success',
