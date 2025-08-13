@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Container } from "@mui/material";
+import { 
+    Container, 
+    InputLabel, 
+    MenuItem, 
+    FormControl, 
+    Select 
+} from "@mui/material";
 import Hls from "hls.js";
 
 interface VideoPlayerProps {
@@ -69,23 +75,24 @@ const VideoPlayer = ({src}: VideoPlayerProps) => {
             controls
             style={{width: "100%", maxHeight:"500px"}}
         />
-        <div style={{marginTop: 10}}>
-            <label>Jakość:</label>
-            <select
-            value={currentQuality}
-            onChange={(e) => changeQuality(Number(e.target.value))}
-            >
-                <option value={autoQuality}>Auto</option>
-                {levels.map(lvl => (
-                    <option key={lvl.index} value={lvl.index}>
-                        {lvl.height
-                        ? `${lvl.height}p (${Math.round(lvl.bitrate/1024)} kbps)`
-                        : `${Math.round(lvl.bitrate / 1024)} kbps`
-                        }
-                    </option>
-                ))}
-            </select>
-        </div>
+        <FormControl>
+            <InputLabel id="quality-select-label">Jakość wideo</InputLabel>
+            <Select
+                id="quality-select"
+                variant="filled"
+                labelId="quality-select-label"
+                value={currentQuality}
+                onChange={(e) => changeQuality(Number(e.target.value))}
+                >
+                    <MenuItem value={autoQuality}
+                    >Auto</MenuItem>
+                    {levels.map(lvl => (
+                        <MenuItem value={lvl.index}>
+                        {`${lvl.height}p`}
+                        </MenuItem>
+                    ))}
+            </Select>
+        </FormControl>
         </Container>
     );
 };

@@ -9,6 +9,8 @@ import TXTExamplePage from './pages/TXTExamplePage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 import Unauthorized from './components/Unauthorized.tsx'
 import VideoTestPage from './pages/VideoTestPage.tsx'
+import VideoPlayerTheme from './themes/VideoPlayerTheme.ts'
+import { ThemeProvider } from '@emotion/react'
 
 function App() {
   return (
@@ -25,7 +27,11 @@ function App() {
             }/>
           <Route path="txt-file" element={<TXTExamplePage/>}/>
           <Route path="unauthorized" element={<Unauthorized/>}/>
-          <Route path="video" element={<VideoTestPage/>}/>
+          <Route path="video" element={
+            <ThemeProvider theme={VideoPlayerTheme}>
+              <VideoTestPage/>
+            </ThemeProvider>
+            }/>
         </Route>
       </Routes>
     </Router>
