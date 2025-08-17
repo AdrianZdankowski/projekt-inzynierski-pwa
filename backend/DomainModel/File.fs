@@ -3,10 +3,15 @@ namespace WebApplication1
 open System
 open System.ComponentModel.DataAnnotations
 
-[<CLIMutable>]
-type File = 
-    {
+type FileStatus =
+    | Pending = 0
+    | Uploaded = 1
+    | Failed = 2
+    | Expired = 3
 
+[<CLIMutable>]
+type File =
+    {
         [<Key>]
         id: Guid
 
@@ -22,9 +27,11 @@ type File =
         Size: int64
 
         [<Required>]
-        BlobUri: string
+        BlobName: string
 
         UploadTimestamp: DateTime
+
+        Status: FileStatus
+
+        Checksum: string
     }
-
-

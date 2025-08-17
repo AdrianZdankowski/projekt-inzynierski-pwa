@@ -2,6 +2,9 @@
 
 public interface IAzureBlobService
 {
-    string GenerateUploadSasUri(string fileName, string contentType);
-    string GenerateDownloadSasUri(string fileName, TimeSpan timeToLive);
+    string BuildUserScopedBlobName(Guid userId, Guid fileId, string originalFileName);
+
+    string GenerateUploadSasUri(string blobName, string contentType, TimeSpan ttl);
+
+    string GenerateDownloadSasUri(string blobName, TimeSpan ttl);
 }

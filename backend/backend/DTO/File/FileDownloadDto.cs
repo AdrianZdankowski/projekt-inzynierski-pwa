@@ -7,7 +7,11 @@
         public string MimeType { get; set; }
         public long Size { get; set; }
         public DateTime UploadTimestamp { get; set; }
-        public string DownloadUrl { get; set; }    
-        public int ExpiresInSeconds { get; set; }   
+        public string DownloadUrl { get; set; }
+        public int ExpiresInSeconds { get; set; }
+
+        public Guid UserId { get; set; }
+
+        public string OwnerName { get; set; }
     }
 }

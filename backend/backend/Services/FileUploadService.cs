@@ -1,11 +1,10 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using backend.Contexts;
-using backend.DTO.File;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using WebApplication1;
 using FileEntity = WebApplication1.File;
@@ -17,63 +16,73 @@ namespace backend.Services
         private readonly string _connectionString;
         private readonly string _containerName;
         private readonly FileContext _context;
+        private readonly IAzureBlobService _blobSvc;
 
-        public FileUploadService(IConfiguration config, FileContext context)
+        public FileUploadService(IConfiguration config, FileContext context, IAzureBlobService blobSvc)
         {
             _connectionString = config.GetValue<string>("AzureStorage:ConnectionString")!;
             _containerName = config.GetValue<string>("AzureStorage:ContainerName")!;
             _context = context;
+            _blobSvc = blobSvc;
         }
 
-        public async Task<string> UploadFileAsync(IFormFile file, Guid userId)
+        public async Task<Guid> UploadSmallFileAsync(IFormFile file, Guid userId)
         {
-            var containerClient = new BlobContainerClient(_connectionString, _containerName);
-            await containerClient.CreateIfNotExistsAsync();
+            if (file is null || file.Length == 0)
+                throw new ArgumentException("No file content", nameof(file));
 
-            var blobName = $"{Guid.NewGuid()}_{file.FileName}";
-            var blobClient = containerClient.GetBlobClient(blobName);
+            var container = new BlobContainerClient(_connectionString, _containerName);
+            await container.CreateIfNotExistsAsync();
+
+            var fileId = Guid.NewGuid();
+            var blobName = _blobSvc.BuildUserScopedBlobName(userId, fileId, file.FileName);
+            var blob = container.GetBlobClient(blobName);
+
+            try
+            {
+                if (await blob.ExistsAsync())
+                    throw new InvalidOperationException("Blob already exists for this fileId.");
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+                
+            }
 
             using var stream = file.OpenReadStream();
-            await blobClient.UploadAsync(stream, new BlobHttpHeaders
-            {
-                ContentType = file.ContentType
-            });
+            var headers = new BlobHttpHeaders { ContentType = file.ContentType };
 
-            var metadata = new FileEntity
+            await blob.UploadAsync(stream, headers);
+
+            try
             {
-                id = Guid.NewGuid(),
+                await blob.SetTagsAsync(new System.Collections.Generic.Dictionary<string, string>
+                {
+                    ["owner"] = userId.ToString("D"),
+                    ["fileId"] = fileId.ToString("D")
+                });
+            }
+            catch (RequestFailedException)
+            {
+                
+            }
+
+            var entity = new FileEntity
+            {
+                id = fileId,
                 UserId = userId,
                 FileName = file.FileName,
-                MimeType = file.ContentType,
+                MimeType = file.ContentType ?? "application/octet-stream",
                 Size = file.Length,
-                BlobUri = blobClient.Uri.ToString(),
-                UploadTimestamp = DateTime.UtcNow
+                BlobName = blobName,
+                UploadTimestamp = DateTime.UtcNow,
+                Status = FileStatus.Uploaded, 
+                Checksum = null
             };
 
-            _context.Files.Add(metadata);
+            _context.Files.Add(entity);
             await _context.SaveChangesAsync();
 
-            return metadata.BlobUri;
+            return fileId;
         }
-
-        public async Task<Guid> CommitUploadMetadataAsync(FileMetadataDto dto, Guid userId)
-        {
-            var metadata = new FileEntity
-            {
-                id = Guid.NewGuid(),
-                UserId = userId,
-                FileName = dto.FileName,
-                MimeType = dto.MimeType,
-                Size = dto.Size,
-                BlobUri = dto.BlobUri,
-                UploadTimestamp = dto.UploadTimestamp
-            };
-
-            _context.Files.Add(metadata);
-            await _context.SaveChangesAsync();
-
-            return metadata.id;
-        }
-
     }
 }

@@ -2,7 +2,7 @@
 
 
 
-Ten dokument opisuje sposób implementacji uploadu plików z poziomu frontendowej aplikacji SPA (np. Vue/React) przy użyciu backendowego API oraz Azure Blob Storage. Obsługiwane są zarówno **małe pliki** (do ok. 250MB), jak i **duże pliki** (do 4GB) poprzez **chunked upload z PutBlock/PutBlockList**.
+Ten dokument opisuje sposób implementacji uploadu plików z poziomu frontendowej aplikacji SPA (np. Vue/React) przy użyciu backendowego API oraz Azure Blob Storage. Obsługiwane są zarówno **małe pliki**, jak i **duże pliki** (do 4GB) poprzez **chunked upload z PutBlock/PutBlockList**.
 
 
 
@@ -22,18 +22,18 @@ Wywołaj endpoint backendu w celu otrzymania podpisanego linku SAS (Shared Acces
 
 ```
 
-GET /api/file/generate-upload-link?fileName={nazwaPliku}&contentType={mimeType}
+GET /api/file/generate-upload-link
 
 ```
 
 
-
-### Przykład:
-
-```
-
-GET /api/file/generate-upload-link?fileName=video.mp4&contentType=video/mp4
-
+### Payload:
+```json
+{
+  "fileName": "video.mp4",
+  "mimeType": "video/mp4",
+  "expectedSize": 4294967296
+}
 ```
 
 
@@ -43,9 +43,8 @@ GET /api/file/generate-upload-link?fileName=video.mp4&contentType=video/mp4
 ```json
 
 {
-
- "uploadUrl": "https://twojstorage.blob.core.windows.net/container/video.mp4?...sasToken..."
-
+  "fileId": "c8a6c6e5-3f32-4d56-9c62-abc123...",
+  "uploadUrl": "https://twojstorage.blob.core.windows.net/container/{userId}/{fileId}/video.mp4?...sasToken..."
 }
 
 ```
@@ -93,7 +92,11 @@ await fetch(uploadUrl, {
 
 
 ## 🔹 2B. Upload dużego pliku (chunking)
+```
 
+Azure wymaga, aby block ID było Base64 oraz tej samej długości dla wszystkich bloków. 
+Należy je zero-pad’ować przed konwersją btoa.
+```
 
 
 ### 🔁 Podział pliku na fragmenty (np. 4MB)
@@ -221,26 +224,26 @@ POST /api/file/commit
 ```json
 
 {
-
- "fileName": "video.mp4",
-
- "mimeType": "video/mp4",
-
- "size": 4294967296,
-
- "blobUri": "https://twojstorage.blob.core.windows.net/container/video.mp4",
-
- "uploadTimestamp": "2025-07-29T18:00:00Z"
-
+  "fileId": "c8a6c6e5-3f32-4d56-9c62-abc123...",
+  "mimeType": "video/mp4",
+  "size": 4294967296,
+  "checksum": "Opcjonalnie_MD5_Base64"
 }
 
 ```
 
 
-
+- checksum jest polem opcjonalnym (może być pominięte). 
+- NA RAZIE NIE WYSYŁAJCIE checksum, zadziała bez:)
 - Pole `userId` nie jest wymagane – backend pobierze je z JWT.
 
-
+### Odpowiedź
+```
+{
+  "message": "Upload committed",
+  "fileId": "c8a6c6e5-3f32-4d56-9c62-abc123..."
+}
+```
 
 ---
 
@@ -248,7 +251,7 @@ POST /api/file/commit
 
 ## 📄 4. Pobieranie listy plików użytkownika
 
-Po zalogowaniu użytkownik może pobrać listę wszystkich swoich plików zapisanych w bazie (metadane).
+Po zalogowaniu użytkownik może pobrać listę wszystkich swoich plików zapisanych w bazie (metadane) + pliki współdzielone.
 
 ### Endpoint:
 
@@ -267,7 +270,9 @@ GET /api/files
     "mimeType": "video/mp4",
     "size": 4294967296,
     "uploadTimestamp": "2025-07-29T18:00:00Z",
-    "blobUri": "https://twojstorage.blob.core.windows.net/container/video.mp4"
+    "blobUri": "https://twojstorage.blob.core.windows.net/container/video.mp4",
+    "userId": "id",
+    "ownerName": "username"
   },
   {
     "id": "1c2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
@@ -275,7 +280,9 @@ GET /api/files
     "mimeType": "image/jpeg",
     "size": 204800,
     "uploadTimestamp": "2025-07-30T10:15:00Z",
-    "blobUri": "https://twojstorage.blob.core.windows.net/container/photo.jpg"
+    "blobUri": "https://twojstorage.blob.core.windows.net/container/photo.jpg",
+    "userId": "id",
+    "ownerName": "username"
   }
 ]
 ```
@@ -306,8 +313,10 @@ GET /api/files/{id}
   "size": 4294967296,
   "uploadTimestamp": "2025-07-29T18:00:00Z",
   "downloadUrl": "https://twojstorage.blob.core.windows.net/container/video.mp4?...sasToken...",
-  "expiresInSeconds": 600
-}
+  "expiresInSeconds": 600,
+   "userId": "id",
+   "ownerName": "username"
+   }
 ]
 ```
 Jak użyć downloadUrl:
