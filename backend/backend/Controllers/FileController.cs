@@ -24,7 +24,7 @@ namespace backend.Controllers
     {
         [Authorize]
         [HttpPost("upload")]
-        public async Task<IActionResult> UploadFile([FromForm] FileUploadDto request, [FromServices] IAzureBlobService azureBlobService, [FromServices] FileContext fileContext)
+        public async Task<IActionResult> UploadFile([FromForm] FileUploadDto request)
         {
             if (request.File == null || request.File.Length == 0)
             {
