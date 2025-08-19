@@ -6,10 +6,11 @@ import {
     FormControl, 
     Select 
 } from "@mui/material";
-import Hls from "hls.js";
+import Hls, { LoaderCallbacks, LoaderConfiguration, LoaderContext } from "hls.js";
 
 interface VideoPlayerProps {
     src: string;
+    token?: string;
 }
 
 interface LevelInfo {
@@ -18,7 +19,15 @@ interface LevelInfo {
     bitrate: number;
 }
 
-const VideoPlayer = ({src}: VideoPlayerProps) => {
+// class CustomLoader extends Hls.DefaultConfig.loader {
+//     load(context: any, config: any, callbacks: any) {
+//         const separator = context.url.includes("?") ? "&" : "?";
+//         context.url = context.url + separator + "token=test";
+//         super.load(context, config, callbacks);
+//     }
+// }
+
+const VideoPlayer = ({src, token = "test"}: VideoPlayerProps) => {
 
     const autoQuality = -1;
 
@@ -28,14 +37,24 @@ const VideoPlayer = ({src}: VideoPlayerProps) => {
     const [levels, setLevels] = useState<LevelInfo[]>([]);
     const [currentQuality, setCurrentQuality] = useState<number>(autoQuality);
 
-    
-
     useEffect(() => {
         
         if (!videoRef.current) return;
         
         if (Hls.isSupported() && src.endsWith(".m3u8")) {
-            const hls = new Hls();
+            const hls = new Hls({
+                loader: class CustomLoader extends Hls.DefaultConfig.loader {
+                    load(
+                        context: LoaderContext,
+                        config: LoaderConfiguration,
+                        callbacks: LoaderCallbacks<LoaderContext>
+                    ) {
+                        const separator = context.url.includes("?") ? "&" : "?";
+                        context.url = `${context.url}${separator}token=${token}`;
+                        super.load(context,config,callbacks);
+                    }
+                }
+            });
             hlsRef.current = hls;
             hls.loadSource(src);
             hls.attachMedia(videoRef.current);
