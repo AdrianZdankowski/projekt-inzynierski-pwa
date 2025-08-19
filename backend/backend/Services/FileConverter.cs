@@ -6,16 +6,10 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace backend.Services
 {
-    public class FileConverter : IFileConverter
+    public class FileConverter(IConfiguration config) : IFileConverter
     {
-        private readonly string _connectionString;
-        private readonly string _containerName;
-
-        public FileConverter(IConfiguration config)
-        {
-            _connectionString = config.GetValue<string>("AzureStorage:ConnectionString")!;
-            _containerName = config.GetValue<string>("AzureStorage:ContainerName")!;
-        }
+        private readonly string _connectionString = config.GetValue<string>("AzureStorage:ConnectionString")!;
+        private readonly string _containerName = config.GetValue<string>("AzureStorage:ContainerName")!;
 
         static void RunProcess(string exePath, string arguments)
         {
