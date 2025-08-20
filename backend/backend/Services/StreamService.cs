@@ -11,21 +11,10 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace backend.Services
 {
-    public class StreamService(UserContext context, FileContext fileContext, IConfiguration config) : IStreamService
+    public class StreamService(UserContext context, FileContext fileContext, IConfiguration config, IAzureBlobService azureBlobService) : IStreamService
     {
         private readonly string _connectionString = config.GetValue<string>("AzureStorage:ConnectionString")!;
         private readonly string _containerName = config.GetValue<string>("AzureStorage:ContainerName")!;
-
-        private async Task<Stream> GetFile(string blobName)
-        {
-
-            BlobServiceClient blobServiceClient = new BlobServiceClient(_connectionString);
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(_containerName);
-            BlobClient blobClient = containerClient.GetBlobClient(blobName);
-
-            var response = await blobClient.DownloadAsync();
-            return response.Value.Content;
-        }
 
         private async Task<bool> ValidateUserAccess(string accessToken, WebApplication1.File video)
         {
@@ -92,7 +81,7 @@ namespace backend.Services
             //var file = GetFile(string.Concat(video.BlobUri, "/files/", fileName));
 
             //todo: refactor - add method for creating blobNames
-            var file = GetFile(string.Concat(video.UserId, "/", video.FileName, "/", fileName));
+            var file = azureBlobService.GetFile(string.Concat(video.UserId, "/", video.FileName, "/", fileName));
 
             return file.Result;
         }

@@ -24,4 +24,15 @@ public class AzureBlobService(IConfiguration config) : IAzureBlobService
         sasBuilder.SetPermissions(BlobSasPermissions.Write | BlobSasPermissions.Create | BlobSasPermissions.Add | BlobSasPermissions.List);
         return blob.GenerateSasUri(sasBuilder).ToString();
     }
+
+    public async Task<Stream> GetFile(string blobName)
+    {
+
+        BlobServiceClient blobServiceClient = new BlobServiceClient(_connectionString);
+        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(_containerName);
+        BlobClient blobClient = containerClient.GetBlobClient(blobName);
+
+        var response = await blobClient.DownloadAsync();
+        return response.Value.Content;
+    }
 }

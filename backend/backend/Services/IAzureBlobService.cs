@@ -3,4 +3,5 @@
 public interface IAzureBlobService
 {
     string GenerateUploadSasUri(string fileName, string contentType);
+    Task<Stream> GetFile(string blobName);
 }
