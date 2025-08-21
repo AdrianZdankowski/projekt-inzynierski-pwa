@@ -5,7 +5,8 @@ import {
     FormControl, 
     Select, 
     Typography,
-    Box
+    Box,
+    Button
 } from "@mui/material";
 import Hls, { LoaderCallbacks, LoaderConfiguration, LoaderContext } from "hls.js";
 import { useAuth } from "../context/AuthContext";
@@ -14,7 +15,7 @@ interface VideoPlayerProps {
     src: string;
     fileName?: string;
     ownerName?: string;
-    onwerId?: string;
+    ownerId?: string;
     uploadTimestamp?: string;
 }
 
@@ -24,7 +25,7 @@ interface LevelInfo {
     bitrate: number;
 }
 
-const VideoPlayer = ({src, fileName, ownerName, onwerId, uploadTimestamp}: VideoPlayerProps) => {
+const VideoPlayer = ({src, fileName, ownerName, ownerId, uploadTimestamp}: VideoPlayerProps) => {
 
     const autoQuality = -1;
 
@@ -96,47 +97,55 @@ const VideoPlayer = ({src, fileName, ownerName, onwerId, uploadTimestamp}: Video
     };
 
     return (
-        <Container maxWidth="md" sx={{mt: 6}}>
-        <video
-            ref={videoRef}
-            controls
-            style={{width: "100%", maxHeight:"50%"}}
-        />
-        <Box sx={{display: "flex", justifyContent: "space-between"}}>
-            <Box sx={{display: "flex", flexDirection: "column"}}>
-                <Typography variant="h6" gutterBottom mt={1}>
-                    {fileName}
+        <Container maxWidth="md" sx={{mt: 3.5}}>
+            <video
+                ref={videoRef}
+                controls
+                style={{width: "100%", maxHeight:"70%"}}
+            />
+            <Box sx={{display: "flex", justifyContent: "space-between", flexDirection: {xs: "column", sm: "row"}}}>
+                <Box sx={{display: "flex", flexDirection: "column"}}>
+                    <Typography variant="h6" gutterBottom mt={1}>
+                        {fileName}
+                    </Typography>
+                
+                    <Typography variant="body2" gutterBottom>
+                    Przesłane: {uploadDate} {uploadTime}
                 </Typography>
-               
-                <Typography variant="body2" gutterBottom>
-                Przesłane: {uploadDate} {uploadTime}
-            </Typography>
-            <Typography variant="subtitle1" gutterBottom>
-                Udostępnione przez: {ownerName}
-            </Typography>
-            </Box>
-            <Box sx={{display: "flex", gap: 2, alignItems: "baseline"}}>
-            <Typography variant="subtitle1" mt={1}>
-                Jakość wideo: 
-            </Typography>
-             <FormControl size="small">
-                    <Select
-                        id="quality-select"
-                        
-                        value={currentQuality}
-                        onChange={(e) => changeQuality(Number(e.target.value))}
-                        >
-                            <MenuItem value={autoQuality}
-                            >Auto</MenuItem>
-                            {levels.map(lvl => (
-                                <MenuItem value={lvl.index}>
-                                {`${lvl.height}p`}
-                                </MenuItem>
-                            ))}
-                    </Select>
-                </FormControl>
+                <Typography variant="subtitle1" gutterBottom>
+                    Udostępnione przez: {ownerName}
+                </Typography>
                 </Box>
-        </Box>
+                <Box sx={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr auto",
+                    gridTemplateRows: "auto auto",
+                    gap: 1,
+                    alignItems: "center"
+                    }}>
+                    <Typography variant="subtitle1" mt={1}>
+                        Jakość wideo: 
+                    </Typography>
+                        <FormControl size="small">
+                            <Select
+                                id="quality-select"
+                                value={currentQuality}
+                                onChange={(e) => changeQuality(Number(e.target.value))}
+                            >
+                                <MenuItem value={autoQuality}
+                                >Auto</MenuItem>
+                                {levels.map(lvl => (
+                                    <MenuItem value={lvl.index}>
+                                    {`${lvl.height}p`}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <Button variant="contained" sx={{
+                            gridColumn: "1 / span 2"
+                            }}>Pobierz</Button>
+                </Box>
+            </Box>
         </Container>
     );
 };
