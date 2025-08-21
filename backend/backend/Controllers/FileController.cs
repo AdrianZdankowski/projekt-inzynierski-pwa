@@ -20,8 +20,7 @@ namespace backend.Controllers
         IFileUploadService uploadService,
         FileContext fileContext,
         UserContext userContext,
-        IConfiguration config) : ControllerBase
-        IAzureBlobService azureBlobService,
+        IConfiguration config,
         IFileConverter fileConverter) : ControllerBase
     {
         [Authorize]
@@ -173,10 +172,9 @@ namespace backend.Controllers
                     file.UploadTimestamp = DateTime.UtcNow;
 
                     await fileContext.SaveChangesAsync();
-                    var fileId = await uploadService.CommitUploadMetadataAsync(dto, userId);
-                    string tempDirectory = Path.Combine(@"C:\temp", dto.FileName.Replace(".", ""), DateTime.Now.ToString("yyyyMMdd_HHmmss"));
-                    string targetDirectory = string.Concat(userId.ToString(), "/", dto.FileName);
-                    await fileConverter.CreateHlsPlaylistAsync(dto.FileName, tempDirectory, targetDirectory);
+                    string tempDirectory = Path.Combine(@"C:\temp", dto.FileId.ToString().Replace(".", ""), DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                    string targetDirectory = string.Concat(userId.ToString(), "/", dto.FileId.ToString());
+                    await fileConverter.CreateHlsPlaylistAsync(dto.FileId.ToString(), tempDirectory, targetDirectory);
                     return Ok(new { Message = "Upload committed", FileId = file.id });
                 }
                 catch (RequestFailedException ex) when (ex.Status == 404)

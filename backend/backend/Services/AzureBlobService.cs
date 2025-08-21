@@ -66,8 +66,8 @@ public class AzureBlobService(IConfiguration config) : IAzureBlobService
     public async Task<Stream> GetFile(string blobName)
     {
 
-        BlobServiceClient blobServiceClient = new BlobServiceClient(_connectionString);
-        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(_containerName);
+        BlobServiceClient blobServiceClient = new BlobServiceClient(_cs);
+        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(_cn);
         BlobClient blobClient = containerClient.GetBlobClient(blobName);
 
         var response = await blobClient.DownloadAsync();

@@ -64,7 +64,6 @@ namespace backend.Test
                 id = Guid.NewGuid(),
                 UserId = user.id,
                 FileName = "test",
-                BlobUri = "test",
                 MimeType = "test",
                 Size = 1234,
                 UploadTimestamp = DateTime.UtcNow
@@ -75,7 +74,6 @@ namespace backend.Test
                 id = Guid.NewGuid(),
                 UserId = Guid.NewGuid(),
                 FileName = "test",
-                BlobUri = "test",
                 MimeType = "test",
                 Size = 1234,
                 UploadTimestamp = DateTime.UtcNow
