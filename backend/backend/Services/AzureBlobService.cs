@@ -1,28 +1,66 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
 using Microsoft.Extensions.Configuration;
+using System.IO;
+using System.Linq;
 
 public class AzureBlobService(IConfiguration config) : IAzureBlobService
 {
-    private readonly string _connectionString = config["AzureStorage:ConnectionString"];
-    private readonly string _containerName = config["AzureStorage:ContainerName"];
+    private readonly string _cs = config["AzureStorage:ConnectionString"];
+    private readonly string _cn = config["AzureStorage:ContainerName"];
 
-    public string GenerateUploadSasUri(string fileName, string contentType)
+    private BlobClient Blob(string blobName)
+        => new BlobContainerClient(_cs, _cn).GetBlobClient(blobName);
+
+    public string BuildUserScopedBlobName(Guid userId, Guid fileId, string originalFileName)
     {
-        var blobClient = new BlobContainerClient(_connectionString, _containerName);
-        var blob = blobClient.GetBlobClient(fileName);
+        var safe = Sanitize(originalFileName);
+        return $"{userId:D}/{fileId:D}/{safe}";
+    }
 
-        var sasBuilder = new BlobSasBuilder
+    public string GenerateUploadSasUri(string blobName, string contentType, TimeSpan ttl)
+    {
+        var blob = Blob(blobName);
+        if (!blob.CanGenerateSasUri) throw new InvalidOperationException("Cannot generate SAS");
+
+        var b = new BlobSasBuilder
         {
-            BlobContainerName = _containerName,
-            BlobName = fileName,
+            BlobContainerName = _cn,
+            BlobName = blobName,
             Resource = "b",
-            ExpiresOn = DateTimeOffset.UtcNow.AddHours(1),
+            StartsOn = DateTimeOffset.UtcNow.AddMinutes(-2),
+            ExpiresOn = DateTimeOffset.UtcNow.Add(ttl),
+            Protocol = SasProtocol.Https,
             ContentType = contentType
         };
+        b.SetPermissions(BlobSasPermissions.Create | BlobSasPermissions.Write);
+        return blob.GenerateSasUri(b).ToString();
+    }
 
-        sasBuilder.SetPermissions(BlobSasPermissions.Write | BlobSasPermissions.Create | BlobSasPermissions.Add | BlobSasPermissions.List);
-        return blob.GenerateSasUri(sasBuilder).ToString();
+    public string GenerateDownloadSasUri(string blobName, TimeSpan ttl)
+    {
+        var blob = Blob(blobName);
+        if (!blob.CanGenerateSasUri) throw new InvalidOperationException("Cannot generate SAS");
+
+        var b = new BlobSasBuilder
+        {
+            BlobContainerName = _cn,
+            BlobName = blobName,
+            Resource = "b",
+            StartsOn = DateTimeOffset.UtcNow.AddMinutes(-2),
+            ExpiresOn = DateTimeOffset.UtcNow.Add(ttl),
+            Protocol = SasProtocol.Https
+        };
+        b.SetPermissions(BlobSasPermissions.Read);
+        return blob.GenerateSasUri(b).ToString();
+    }
+
+    private static string Sanitize(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "file";
+        var invalid = Path.GetInvalidFileNameChars();
+        var safe = new string(name.Select(c => invalid.Contains(c) ? '_' : c).ToArray());
+        return safe.Length > 200 ? safe[..200] : safe;
     }
 
     public async Task<Stream> GetFile(string blobName)
