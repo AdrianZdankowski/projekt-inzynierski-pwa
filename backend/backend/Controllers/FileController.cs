@@ -172,8 +172,11 @@ namespace backend.Controllers
                     file.UploadTimestamp = DateTime.UtcNow;
 
                     await fileContext.SaveChangesAsync();
-                    string tempDirectory = Path.Combine(@"C:\temp", dto.FileId.ToString().Replace(".", ""), DateTime.Now.ToString("yyyyMMdd_HHmmss"));
-                    await fileConverter.CreateHlsPlaylistAsync(tempDirectory, file, userId);
+                    if (file.MimeType == "video/mp4")
+                    {
+                        string tempDirectory = Path.Combine(@"C:\temp", dto.FileId.ToString().Replace(".", ""), DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                        await fileConverter.CreateHlsPlaylistAsync(tempDirectory, file, userId);
+                    }
                     return Ok(new { Message = "Upload committed", FileId = file.id });
                 }
                 catch (RequestFailedException ex) when (ex.Status == 404)
