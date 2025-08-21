@@ -8,4 +8,6 @@ public interface IAzureBlobService
 
     string GenerateDownloadSasUri(string blobName, TimeSpan ttl);
     Task<Stream> GetFile(string blobName);
+    Task DonwloadFileToDirectory(string blobName, string targetDirectory, string fileName);
+    Task UploadFileAsync(string blobName, string filePath, string targetDirectory);
 }

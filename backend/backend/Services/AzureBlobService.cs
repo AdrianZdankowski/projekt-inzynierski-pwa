@@ -73,4 +73,26 @@ public class AzureBlobService(IConfiguration config) : IAzureBlobService
         var response = await blobClient.DownloadAsync();
         return response.Value.Content;
     }
+    public async Task DonwloadFileToDirectory(string blobName, string targetDirectory, string fileName)
+    {
+        if (!Directory.Exists(targetDirectory))
+        {
+            Directory.CreateDirectory(targetDirectory);
+        }
+
+        BlobServiceClient blobServiceClient = new BlobServiceClient(_cs);
+        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(_cn);
+        BlobClient blobClient = containerClient.GetBlobClient(blobName);
+
+        await blobClient.DownloadToAsync(Path.Combine(targetDirectory, fileName));
+    }
+
+    public async Task UploadFileAsync(string blobName, string filePath, string targetDirectory)
+    {
+        BlobServiceClient blobServiceClient = new BlobServiceClient(_cs);
+        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(_cn);
+        BlobClient blobClient = containerClient.GetBlobClient(string.Concat(targetDirectory, "/", blobName));
+
+        await blobClient.UploadAsync(filePath);
+    }
 }

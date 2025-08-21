@@ -78,10 +78,8 @@ namespace backend.Services
             {
                 throw new UnauthorizedAccessException("User does not have access to this file");
             }
-            //var file = GetFile(string.Concat(video.BlobUri, "/files/", fileName));
 
-            //todo: refactor - add method for creating blobNames
-            var file = azureBlobService.GetFile(string.Concat(video.UserId, "/", video.FileName, "/", fileName));
+            var file = azureBlobService.GetFile(azureBlobService.BuildUserScopedBlobName(video.UserId, video.id, fileName));
 
             return file.Result;
         }

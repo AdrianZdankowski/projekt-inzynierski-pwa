@@ -2,6 +2,6 @@
 {
     public interface IFileConverter
     {
-        Task CreateHlsPlaylistAsync(string sourceFile, string localDirectory, string targetDirectory);
+        Task CreateHlsPlaylistAsync(string localDirectory, WebApplication1.File file, Guid userId);
     }
 }

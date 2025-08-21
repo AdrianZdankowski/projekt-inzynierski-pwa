@@ -6,10 +6,8 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace backend.Services
 {
-    public class FileConverter(IConfiguration config) : IFileConverter
+    public class FileConverter(IConfiguration config, IAzureBlobService azureBlobService) : IFileConverter
     {
-        private readonly string _connectionString = config.GetValue<string>("AzureStorage:ConnectionString")!;
-        private readonly string _containerName = config.GetValue<string>("AzureStorage:ContainerName")!;
 
         static void RunProcess(string exePath, string arguments)
         {
@@ -30,44 +28,24 @@ namespace backend.Services
             process.BeginErrorReadLine();
             process.WaitForExit();
         }
-
-        private async Task GetFile(string blobName, string targetDirectory)
-        {
-            if (!Directory.Exists(targetDirectory))
-            {
-                Directory.CreateDirectory(targetDirectory);
-            }
-
-            BlobServiceClient blobServiceClient = new BlobServiceClient(_connectionString);
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(_containerName);
-            BlobClient blobClient = containerClient.GetBlobClient(blobName);
-
-            await blobClient.DownloadToAsync(Path.Combine(targetDirectory, blobName));
-        }
-
-        private async Task UploadFileAsync(string blobName, string filePath, string targetDirectory)
-        {
-            BlobServiceClient blobServiceClient = new BlobServiceClient(_connectionString);
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(_containerName);
-            BlobClient blobClient = containerClient.GetBlobClient(string.Concat(targetDirectory,"/", blobName));
-
-            await blobClient.UploadAsync(filePath);
-        }
-
+        
         private async Task UploadAllFilesAsync(string sourceDirectory, string targetDirectory)
         {
             var files = Directory.GetFiles(sourceDirectory);
             foreach (var file in files)
             {
                 string blobName = Path.GetFileName(file);
-                await UploadFileAsync(blobName, file, targetDirectory);
+                await azureBlobService.UploadFileAsync(blobName, file, targetDirectory);
             }
         }
 
-        public async Task CreateHlsPlaylistAsync(string sourceFile, string localDirectory, string targetDirectory)
+        public async Task CreateHlsPlaylistAsync(string localDirectory, WebApplication1.File file, Guid userId)
         {
             //download video file from azure to temp directory
-            await GetFile(sourceFile, localDirectory);
+            var blobName = azureBlobService.BuildUserScopedBlobName(userId, file.id, file.FileName);
+            var targetDirectory = Path.GetDirectoryName(blobName);
+
+            await azureBlobService.DonwloadFileToDirectory(blobName, localDirectory, file.FileName);
 
             var filesDirectory = Path.Combine(localDirectory, "files");
 
@@ -89,7 +67,7 @@ namespace backend.Services
             //create .ts segments and .m3u8 files 
             foreach (var version in versions)
             {
-                string args = $"-i \"{Path.Combine(localDirectory,sourceFile)}\" -vf scale=w={version.Width}:h={version.Height} " +
+                string args = $"-i \"{Path.Combine(localDirectory,file.FileName)}\" -vf scale=w={version.Width}:h={version.Height} " +
                                $"-c:a aac -ar 48000 -c:v h264 -profile:v main -crf 20 -sc_threshold 0 " +
                                $"-g 48 -keyint_min 48 -hls_time 4 -hls_playlist_type vod " +
                                $"-hls_segment_filename \"{Path.Combine(filesDirectory, version.Name)}_%03d.ts\" " +

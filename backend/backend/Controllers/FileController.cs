@@ -173,8 +173,7 @@ namespace backend.Controllers
 
                     await fileContext.SaveChangesAsync();
                     string tempDirectory = Path.Combine(@"C:\temp", dto.FileId.ToString().Replace(".", ""), DateTime.Now.ToString("yyyyMMdd_HHmmss"));
-                    string targetDirectory = string.Concat(userId.ToString(), "/", dto.FileId.ToString());
-                    await fileConverter.CreateHlsPlaylistAsync(dto.FileId.ToString(), tempDirectory, targetDirectory);
+                    await fileConverter.CreateHlsPlaylistAsync(tempDirectory, file, userId);
                     return Ok(new { Message = "Upload committed", FileId = file.id });
                 }
                 catch (RequestFailedException ex) when (ex.Status == 404)

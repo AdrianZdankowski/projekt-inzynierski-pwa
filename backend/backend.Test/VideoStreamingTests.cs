@@ -93,10 +93,15 @@ namespace backend.Test
             fileContext.SaveChanges();
 
             var azureBlobServiceMock = new Mock<IAzureBlobService>();
-            azureBlobServiceMock.Setup(s => s.GetFile(string.Concat(user.id,"/",file.FileName, "/test")))
+            azureBlobServiceMock.Setup(s => s.BuildUserScopedBlobName(user.id, file.id, "test"))
+               .Returns("test");
+            azureBlobServiceMock.Setup(s => s.BuildUserScopedBlobName(user.id, file.id, "test"))
+               .Returns("test2");
+            azureBlobServiceMock.Setup(s => s.GetFile("test"))
                 .ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 }));
-            azureBlobServiceMock.Setup(s => s.GetFile(string.Concat(user.id, "/", accessDeniedFile.FileName, "/test")))
+            azureBlobServiceMock.Setup(s => s.GetFile("test2"))
                .ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 }));
+
 
             streamService = new StreamService(context, fileContext,configuration, azureBlobServiceMock.Object);
             authService = new AuthService(context, configuration);
