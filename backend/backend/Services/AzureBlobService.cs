@@ -62,4 +62,37 @@ public class AzureBlobService(IConfiguration config) : IAzureBlobService
         var safe = new string(name.Select(c => invalid.Contains(c) ? '_' : c).ToArray());
         return safe.Length > 200 ? safe[..200] : safe;
     }
+
+    public async Task<Stream> GetFile(string blobName)
+    {
+
+        BlobServiceClient blobServiceClient = new BlobServiceClient(_cs);
+        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(_cn);
+        BlobClient blobClient = containerClient.GetBlobClient(blobName);
+
+        var response = await blobClient.DownloadAsync();
+        return response.Value.Content;
+    }
+    public async Task DonwloadFileToDirectory(string blobName, string targetDirectory, string fileName)
+    {
+        if (!Directory.Exists(targetDirectory))
+        {
+            Directory.CreateDirectory(targetDirectory);
+        }
+
+        BlobServiceClient blobServiceClient = new BlobServiceClient(_cs);
+        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(_cn);
+        BlobClient blobClient = containerClient.GetBlobClient(blobName);
+
+        await blobClient.DownloadToAsync(Path.Combine(targetDirectory, fileName));
+    }
+
+    public async Task UploadFileAsync(string blobName, string filePath, string targetDirectory)
+    {
+        BlobServiceClient blobServiceClient = new BlobServiceClient(_cs);
+        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(_cn);
+        BlobClient blobClient = containerClient.GetBlobClient(string.Concat(targetDirectory, "/", blobName));
+
+        await blobClient.UploadAsync(filePath);
+    }
 }

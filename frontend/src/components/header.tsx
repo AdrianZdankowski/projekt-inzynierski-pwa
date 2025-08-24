@@ -34,6 +34,7 @@ const Header = () => {
             
             <Link className='clean-link' to="/pdf-file">Dokument PDF</Link>
             <Link className='clean-link' to="/txt-file">Plik TXT</Link>
+            <Link className='clean-link' to="/video">Wideo</Link>
         </Stack>
         
         </header>
