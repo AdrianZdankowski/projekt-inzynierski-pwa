@@ -54,15 +54,15 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 //add dbcontext
-builder.Services.AddDbContext<UserContext>(options =>
-    options.UseInMemoryDatabase("MyInMemoryDb"));
-builder.Services.AddDbContext<FileContext>(options =>
-    options.UseInMemoryDatabase("MyInMemoryDb"));
-
 //builder.Services.AddDbContext<UserContext>(options =>
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//    options.UseInMemoryDatabase("MyInMemoryDb"));
 //builder.Services.AddDbContext<FileContext>(options =>
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//    options.UseInMemoryDatabase("MyInMemoryDb"));
+
+builder.Services.AddDbContext<UserContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<FileContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 //auth
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -99,6 +99,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
 builder.Services.AddScoped<IFileConverter, FileConverter>();
+builder.Services.AddScoped<IStreamService, StreamService>();
 
 builder.Services.Configure<FormOptions>(options =>
 {

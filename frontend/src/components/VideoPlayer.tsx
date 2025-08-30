@@ -13,10 +13,10 @@ import { useAuth } from "../context/AuthContext";
 
 interface VideoPlayerProps {
     src: string;
-    fileName?: string;
-    ownerName?: string;
+    fileName: string;
+    ownerName: string;
     ownerId?: string;
-    uploadTimestamp?: string;
+    uploadTimestamp: string;
 }
 
 interface LevelInfo {
@@ -40,7 +40,7 @@ const VideoPlayer = ({src, fileName, ownerName, ownerId, uploadTimestamp}: Video
     let uploadDate;
     let uploadTime;
 
-    if (uploadTimestamp?.length == 20) {
+    if (uploadTimestamp.length == 20) {
         uploadDate = uploadTimestamp.slice(0,10).split("-");
         uploadDate = `${uploadDate[2]}-${uploadDate[1]}-${uploadDate[0]}`;
         uploadTime = uploadTimestamp.slice(11,16);
@@ -59,7 +59,7 @@ const VideoPlayer = ({src, fileName, ownerName, ownerId, uploadTimestamp}: Video
                         callbacks: LoaderCallbacks<LoaderContext>
                     ) {
                         const separator = context.url.includes("?") ? "&" : "?";
-                        context.url = `${context.url}${separator}token=${accessToken}`;
+                        context.url = `${context.url}${separator}accessToken=${accessToken}`;
                         super.load(context,config,callbacks);
                     }
                 }

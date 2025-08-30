@@ -28,9 +28,11 @@ function App() {
           <Route path="txt-file" element={<TXTExamplePage/>}/>
           <Route path="unauthorized" element={<Unauthorized/>}/>
           <Route path="video" element={
-            <ThemeProvider theme={VideoPlayerTheme}>
-              <VideoTestPage/>
-            </ThemeProvider>
+            <ProtectedRoute>
+              <ThemeProvider theme={VideoPlayerTheme}>
+                <VideoTestPage videoId="448cb6b1-6f01-408a-8f98-a49ef327f365"/>
+              </ThemeProvider>
+            </ProtectedRoute>
             }/>
         </Route>
       </Routes>
