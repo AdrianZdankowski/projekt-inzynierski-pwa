@@ -10,6 +10,8 @@ import ProtectedRoute from './components/ProtectedRoute.tsx'
 import Unauthorized from './components/Unauthorized.tsx'
 import UserFileManagerPage from './pages/UserFilesPage.tsx'
 import { useAuth } from './context/AuthContext.tsx'
+import { ThemeProvider } from '@emotion/react'
+import UserFilesTheme from './themes/UserFilesTheme.ts'
 
 function App() {
   const {isAuthenticated} = useAuth();
@@ -23,7 +25,9 @@ function App() {
           <Route path="register" element={<RegisterPage/>} />
           <Route path="user-files" element={
             <ProtectedRoute>
-              <UserFileManagerPage/>
+              <ThemeProvider theme={UserFilesTheme}>
+                <UserFileManagerPage/>   
+              </ThemeProvider>
             </ProtectedRoute>
             }/>
           <Route path="pdf-file" element={
