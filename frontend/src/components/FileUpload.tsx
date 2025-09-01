@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import CloseIcon from '@mui/icons-material/Close';
 import { 
     Box, 
     Button, 
@@ -12,6 +13,8 @@ import {
 } from '@mui/material';
 
 import axiosInstance from '../api/axiosInstance';
+import { DragDropBox } from '../themes/boxes/DragDropBox';
+import { UploadFileBox } from '../themes/boxes/UploadFileBox';
 
 interface FileUploadProps {
     isOpen: boolean;
@@ -205,80 +208,40 @@ const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
             aria-labelledby="file-upload-modal"
             aria-describedby="file-upload-modal-description"
         >
-            <Box
-                sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: 500,
-                    height: 500,
-                    bgcolor: 'background.paper',
-                    borderRadius: 2,
-                    boxShadow: 24,
-                    p: 0,
-                    outline: 'none'
-                }}
+            <DragDropBox
             >
                 <Paper 
                     elevation={3} 
-                    sx={{ 
-                        p: 3, 
-                        backgroundColor: '#f5f5f5',
-                        height: '100%',
-                        borderRadius: 2,
-                        display: 'flex',
-                        flexDirection: 'column'
-                    }}
                 >
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                         <Typography variant="h5">
                             Prześlij plik
                         </Typography>
-                        <IconButton onClick={handleClose} size="small">
-                            ×
+                        <IconButton onClick={handleClose}>
+                            <CloseIcon />
                         </IconButton>
                     </Box>
                     
                     {message && (
                         <Alert 
                             severity={message.type} 
-                            sx={{ mb: 2 }}
                             onClose={() => setMessage(null)}
                         >
                             {message.text}
                         </Alert>
                     )}
 
-                    <Box
+                    <UploadFileBox
                         onDragOver={selectedFile ? undefined : handleDragOver}
                         onDragLeave={selectedFile ? undefined : handleDragLeave}
                         onDrop={selectedFile ? undefined : handleDrop}
-                        sx={{
-                            border: `2px dashed ${selectedFile ? '#ccc' : (isDragOver ? '#1976d2' : '#ccc')}`,
-                            borderRadius: 2,
-                            p: 3,
-                            textAlign: 'center',
-                            mb: 2,
-                            backgroundColor: selectedFile ? '#f0f0f0' : (isDragOver ? '#e3f2fd' : 'white'),
-                            transition: 'all 0.2s ease-in-out',
-                            transform: selectedFile ? 'scale(1)' : (isDragOver ? 'scale(1.02)' : 'scale(1)'),
-                            flex: 1,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            opacity: selectedFile ? 0.6 : 1,
-                            pointerEvents: selectedFile ? 'none' : 'auto',
-                            '&:hover': selectedFile ? {} : {
-                                borderColor: '#1976d2',
-                                backgroundColor: '#f8f9fa'
-                            }
-                        }}
+                        selectedFile={!!selectedFile}
+                        isDragOver={isDragOver}
                     >
-                        <Typography variant="h3" sx={{ color: selectedFile ? '#999' : (isDragOver ? '#1976d2' : '#666'), mb: 2, transition: 'color 0.2s ease-in-out' }}>
+                        <Typography variant="h3" className={selectedFile ? "selectedFile" : isDragOver ? "dragOver" : "defaultState"}>
                             {selectedFile ? '📄' : (isDragOver ? '📤' : '📁')}
                         </Typography>
-                        <Typography variant="body1" color="text.secondary" gutterBottom>
+                        <Typography variant="body1" gutterBottom>
                             {selectedFile ? 'Plik już wybrany' : (isDragOver ? 'Upuść plik tutaj!' : 'Przeciągnij i upuść plik tutaj lub kliknij aby wybrać')}
                         </Typography>
                         
@@ -296,36 +259,30 @@ const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
                                 <Button
                                     variant="outlined"
                                     onClick={() => fileInputRef.current?.click()}
-                                    sx={{ minWidth: '100px', maxWidth: '180px' }}
                                 >
                                     Wybierz plik
                                 </Button>
                             </Box>
                         )}
-                    </Box>
+                    </UploadFileBox>
 
                     {selectedFile && (
                         <Box sx={{ mb: 2 }}>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="body2">
                                 Wybrany plik: <strong>{selectedFile.name}</strong>
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                Rozmiar: {(selectedFile.size / 1024).toFixed(2)} KB
+                            <Typography variant="body2">
+                                Rozmiar: <strong>{(selectedFile.size / 1024).toFixed(2)} KB</strong>
                             </Typography>
                         </Box>
                     )}
 
-                    <Stack direction="row" spacing={2} justifyContent="center">
+                    <Stack direction="row" spacing={2}>
                         <Button
                             variant="contained"
                             onClick={handleUpload}
                             disabled={!selectedFile || uploading}
                             startIcon={uploading ? <CircularProgress size={20} /> : null}
-                            sx={{ 
-                                backgroundColor: '#06d07c9f',
-                                '&:hover': { backgroundColor: '#58B19F' },
-                                minWidth: '120px'
-                            }}
                         >
                             {uploading ? 'Wysyłanie...' : 'Wyślij plik'}
                         </Button>
@@ -341,14 +298,13 @@ const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
                                     }
                                 }}
                                 disabled={uploading}
-                                sx={{ minWidth: '120px' }}
                             >
                                 Resetuj
                             </Button>
                         )}
                     </Stack>
                 </Paper>
-            </Box>
+            </DragDropBox>
         </Modal>
     );
 };

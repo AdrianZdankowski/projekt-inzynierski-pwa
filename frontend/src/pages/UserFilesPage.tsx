@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Container, Fab, Typography } from '@mui/material';
 import FileList from "../components/FileList";
 import FileUpload from "../components/FileUpload";
+import { ThemeProvider } from '@emotion/react';
+import UploadFileTheme from '../themes/components/UploadFileTheme';
 
 const UserFilesPage = () => {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -28,10 +30,12 @@ const UserFilesPage = () => {
                 +
             </Fab>
 
-            <FileUpload 
-                isOpen={isUploadModalOpen} 
-                onClose={handleCloseUploadModal} 
-            />
+            <ThemeProvider theme={UploadFileTheme}>
+                <FileUpload 
+                    isOpen={isUploadModalOpen} 
+                    onClose={handleCloseUploadModal} 
+                />
+            </ThemeProvider>
         </Container>
     );
 }

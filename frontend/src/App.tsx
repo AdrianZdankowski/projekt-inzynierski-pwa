@@ -11,7 +11,7 @@ import Unauthorized from './components/Unauthorized.tsx'
 import UserFileManagerPage from './pages/UserFilesPage.tsx'
 import { useAuth } from './context/AuthContext.tsx'
 import { ThemeProvider } from '@emotion/react'
-import UserFilesTheme from './themes/UserFilesTheme.ts'
+import UserFilesTheme from './themes/pages/UserFilesTheme.ts'
 
 function App() {
   const {isAuthenticated} = useAuth();

@@ -17,6 +17,7 @@ const UserFilesTheme = createTheme({
           mt: 20,
           color: "white",
           fontSize: 24,
+          marginTop: "12px",
         },
       },
     },
