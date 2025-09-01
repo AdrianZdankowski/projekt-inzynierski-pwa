@@ -10,6 +10,7 @@ using WebApplication1;
 
 namespace backend.Test
 {
+    [TestFixture]
     public class AuthTests
     {
         private AuthService authService;
@@ -33,7 +34,7 @@ namespace backend.Test
 
             //Mock db context
             var options = new DbContextOptionsBuilder<UserContext>()
-            .UseInMemoryDatabase(databaseName: "AuthTestDb")
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
             var context = new UserContext(options);
 

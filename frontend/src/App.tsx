@@ -8,10 +8,13 @@ import PDFExamplePage from './pages/PDFExamplePage.tsx'
 import TXTExamplePage from './pages/TXTExamplePage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 import Unauthorized from './components/Unauthorized.tsx'
-import UserFileManagerPage from './pages/UserFilesPage.tsx'
+import UserFilesPage from './pages/UserFilesPage.tsx'
 import { useAuth } from './context/AuthContext.tsx'
 import { ThemeProvider } from '@emotion/react'
 import UserFilesTheme from './themes/pages/UserFilesTheme.ts'
+import VideoTestPage from './pages/VideoTestPage.tsx'
+import VideoPlayerTheme from './themes/VideoPlayerTheme.ts'
+
 
 function App() {
   const {isAuthenticated} = useAuth();
@@ -26,7 +29,7 @@ function App() {
           <Route path="user-files" element={
             <ProtectedRoute>
               <ThemeProvider theme={UserFilesTheme}>
-                <UserFileManagerPage/>   
+                <UserFilesPage/>   
               </ThemeProvider>
             </ProtectedRoute>
             }/>
@@ -38,6 +41,11 @@ function App() {
           <Route path="txt-file" element={<TXTExamplePage/>}/>
           <Route path="unauthorized" element={<Unauthorized/>}/>
           <Route path="*" element={isAuthenticated ? <Navigate to="/user-files" replace/> : <Navigate to="/login" replace/>}/>
+          <Route path="video" element={
+            <ThemeProvider theme={VideoPlayerTheme}>
+              <VideoTestPage/>
+            </ThemeProvider>
+            }/>
         </Route>
       </Routes>
     </Router>
