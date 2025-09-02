@@ -14,7 +14,7 @@ import { ThemeProvider } from '@emotion/react'
 import UserFilesPageTheme from './themes/pages/UserFilesPageTheme.ts'
 import VideoTestPage from './pages/VideoTestPage.tsx'
 import VideoPlayerTheme from './themes/components/VideoPlayerTheme.ts'
-import LoginPageTheme from './themes/pages/LoginPageTheme.ts'
+import AuthTheme from './themes/auth/AuthTheme.ts'
 
 
 function App() {
@@ -26,11 +26,15 @@ function App() {
         <Route path="/" element={<MainLayout />}>
           <Route index element={<HomePage />} />
           <Route path="login" element={
-            <ThemeProvider theme={LoginPageTheme}>
+            <ThemeProvider theme={AuthTheme}>
               <LoginPage/>
             </ThemeProvider>
             } />
-          <Route path="register" element={<RegisterPage/>} />
+          <Route path="register" element={
+            <ThemeProvider theme={AuthTheme}>
+              <RegisterPage/>
+            </ThemeProvider>
+            } />
           <Route path="user-files" element={
             <ProtectedRoute>
               <ThemeProvider theme={UserFilesPageTheme}>

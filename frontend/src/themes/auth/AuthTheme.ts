@@ -1,6 +1,6 @@
 import { createTheme } from "@mui/material/styles";
 
-const LoginPageTheme = createTheme({
+const AuthTheme = createTheme({
   components: {
     MuiContainer: {
       styleOverrides: {
@@ -40,6 +40,10 @@ const LoginPageTheme = createTheme({
         root: {
           "& .MuiInputBase-input": {
             color: "white",
+            "&:-webkit-autofill": {
+              WebkitBoxShadow: "0 0 0 1000px #596275 inset",
+              WebkitTextFillColor: "white",
+            },
           },
           "& .MuiInputLabel-root": {
             color: "rgba(255, 255, 255, 0.7)",
@@ -78,4 +82,4 @@ const LoginPageTheme = createTheme({
   },
 });
 
-export default LoginPageTheme;
+export default AuthTheme;

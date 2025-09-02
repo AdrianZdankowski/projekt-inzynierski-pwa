@@ -71,8 +71,8 @@ const RegisterPage = () => {
 
   return (
     <Container maxWidth="sm">
-      <Paper elevation={3} sx={{ padding: 4, mt: 8 , backgroundColor: "#596275", color: 'white'}}>
-        <Typography variant="h5" align="center" gutterBottom>
+      <Paper elevation={3}>
+        <Typography variant="h5" gutterBottom>
           Zarejestruj się
         </Typography>
         <Box component="form" onSubmit={handleSubmit} noValidate>
@@ -86,30 +86,6 @@ const RegisterPage = () => {
             error={!!usernameError}
             helperText={usernameError}
             required
-            sx={{
-                // tekst i etykieta
-                '& .MuiInputBase-input': {
-                color: 'white', 
-                },
-                '& .MuiInputLabel-root': { 
-                color: 'rgba(255, 255, 255, 0.7)' 
-                },
-                '& .MuiInputLabel-root.Mui-focused': { 
-                color: 'white' 
-                },
-                // obramowanie
-                '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.7)',
-                },
-                '&:hover fieldset': {
-                    borderColor: 'white',
-                },
-                '&.Mui-focused fieldset': {
-                    borderColor: 'white',
-                },
-                },
-            }}
           />
           <TextField
             fullWidth
@@ -121,30 +97,6 @@ const RegisterPage = () => {
             error={!!passwordError}
             helperText={passwordError}
             required
-            sx={{
-                // tekst i etykieta
-                '& .MuiInputBase-input': {
-                color: 'white', 
-                },
-                '& .MuiInputLabel-root': { 
-                color: 'rgba(255, 255, 255, 0.7)' 
-                },
-                '& .MuiInputLabel-root.Mui-focused': { 
-                color: 'white' 
-                },
-                // obramowanie
-                '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.7)',
-                },
-                '&:hover fieldset': {
-                    borderColor: 'white',
-                },
-                '&.Mui-focused fieldset': {
-                    borderColor: 'white',
-                },
-                },
-            }}
           />
           <TextField
             fullWidth
@@ -156,35 +108,10 @@ const RegisterPage = () => {
             error={!!repeatPasswordError}
             helperText={repeatPasswordError}
             required
-            sx={{
-                // tekst i etykieta
-                '& .MuiInputBase-input': {
-                color: 'white', 
-                },
-                '& .MuiInputLabel-root': { 
-                color: 'rgba(255, 255, 255, 0.7)' 
-                },
-                '& .MuiInputLabel-root.Mui-focused': { 
-                color: 'white' 
-                },
-                // obramowanie
-                '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.7)',
-                },
-                '&:hover fieldset': {
-                    borderColor: 'white',
-                },
-                '&.Mui-focused fieldset': {
-                    borderColor: 'white',
-                },
-                },
-            }}
           />
           <Button
             type="submit"
             variant="contained"
-            sx={{ mt: 2 , display: 'block', mx: 'auto', backgroundColor: "#06d07c9f", '&:hover': {backgroundColor: "#58B19F"}}}
           >
             Zarejestruj
           </Button>
