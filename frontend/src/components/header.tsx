@@ -12,7 +12,7 @@ const Header = () => {
         try {
             await axiosInstance.post('/auth/logout', {});
             logout();
-            navigate('/', {replace: true});
+            navigate('/login', {replace: true});
         }
         catch(error) {
             console.error(error);
