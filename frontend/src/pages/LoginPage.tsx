@@ -80,18 +80,17 @@ const LoginPage = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Paper elevation={3} sx={{ padding: 4, mt: 8 , backgroundColor: "#596275", color: 'white'}}>
+    <Container>
+      <Paper elevation={3}>
 
         {showAlert && 
             <Alert variant="filled" 
             severity="success" 
-            onClose={() => setShowAlert(false)} 
-            sx={{mb: 2}}>
+            onClose={() => setShowAlert(false)}>
               {'Konto utworzone! Zaloguj się.'}
             </Alert>}
 
-        <Typography variant="h5" align="center" gutterBottom>
+        <Typography variant="h5" gutterBottom>
           Zaloguj się
         </Typography>
         <Box component="form" onSubmit={handleSubmit}>
@@ -105,30 +104,6 @@ const LoginPage = () => {
             error={!!usernameError}
             helperText= {usernameError}
             required
-            sx={{
-                // tekst i etykieta
-                '& .MuiInputBase-input': {
-                color: 'white', 
-                },
-                '& .MuiInputLabel-root': { 
-                color: 'rgba(255, 255, 255, 0.7)' 
-                },
-                '& .MuiInputLabel-root.Mui-focused': { 
-                color: 'white' 
-                },
-                // obramowanie
-                '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.7)',
-                },
-                '&:hover fieldset': {
-                    borderColor: 'white',
-                },
-                '&.Mui-focused fieldset': {
-                    borderColor: 'white',
-                },
-                },
-            }}
           />
           <TextField
             fullWidth
@@ -140,35 +115,10 @@ const LoginPage = () => {
             error={!!passwordError}
             helperText={passwordError}
             required
-            sx={{
-                // tekst i etykieta
-                '& .MuiInputBase-input': {
-                color: 'white', 
-                },
-                '& .MuiInputLabel-root': { 
-                color: 'rgba(255, 255, 255, 0.7)' 
-                },
-                '& .MuiInputLabel-root.Mui-focused': { 
-                color: 'white' 
-                },
-                // obramowanie
-                '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.7)',
-                },
-                '&:hover fieldset': {
-                    borderColor: 'white',
-                },
-                '&.Mui-focused fieldset': {
-                    borderColor: 'white',
-                },
-                },
-            }}
           />
           <Button
             type="submit"
             variant="contained"
-            sx={{ mt: 2 , display: 'block', mx: 'auto', backgroundColor: "#06d07c9f", '&:hover': {backgroundColor: "#58B19F"}}}
           >
             Zaloguj
           </Button>
