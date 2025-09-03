@@ -16,6 +16,9 @@ import axiosInstance from '../api/axiosInstance';
 import { DragDropBox } from '../themes/boxes/DragDropBox';
 import { UploadFileBox } from '../themes/boxes/UploadFileBox';
 
+// @ts-ignore
+import SparkMD5 from "spark-md5";
+
 interface FileUploadProps {
     isOpen: boolean;
     onClose: () => void;
@@ -41,13 +44,15 @@ const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
     };
 
     const getUploadLink = async (file: File) => {
-        const uploadLinkResponse = await axiosInstance.get('/file/generate-upload-link', {
-            params: {
-                fileName: file.name,
-                contentType: file.type
-            }
+        const uploadLinkResponse = await axiosInstance.post('/file/generate-upload-link', {
+            fileName: file.name,
+            mimeType: file.type,
+            expectedSize: file.size
         });
-        return uploadLinkResponse.data.uploadUrl;
+        return {
+            fileId: uploadLinkResponse.data.fileId,
+            uploadUrl: uploadLinkResponse.data.uploadUrl
+        };
     };
 
     const uploadChunk = async (chunk: Blob, chunkUrl: string) => {
@@ -85,7 +90,7 @@ const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
         const prefix = `block-${index.toString().padStart(6, '0')}`;
         const padded = prefix.padEnd(64, ' ');
         return btoa(padded);
-      };
+    };
 
     const uploadFileChunked = async (file: File, uploadUrl: string) => {
         const blockIds: string[] = [];
@@ -128,20 +133,31 @@ const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
         }
     };
 
-    const commitFileToBackend = async (file: File, uploadUrl: string) => {
+    const calculateMD5Checksum = async (file: File): Promise<string> => {
+        const buffer = await file.arrayBuffer();
+    
+        const md5Hex = SparkMD5.ArrayBuffer.hash(buffer);
+    
+        const md5Bytes = new Uint8Array(md5Hex.match(/.{2}/g)!.map((byte: string) => parseInt(byte, 16)));
+        const md5Base64 = btoa(String.fromCharCode(...md5Bytes));
+    
+        return md5Base64;
+    };
+
+    const commitFileToBackend = async (fileId: string, file: File) => {
+        const checksum = await calculateMD5Checksum(file);
         await axiosInstance.post('/file/commit', {
-            fileName: file.name,
+            fileId: fileId,
             mimeType: file.type,
             size: file.size,
-            blobUri: uploadUrl.split('?')[0], // Remove SAS token from URI
-            uploadTimestamp: new Date().toISOString()
+            checksum: checksum
         });
     };
 
     const uploadFile = async (file: File) => {
-        const uploadUrl = await getUploadLink(file);
+        const { fileId, uploadUrl } = await getUploadLink(file);
         await uploadFileToBlob(file, uploadUrl);
-        await commitFileToBackend(file, uploadUrl);
+        await commitFileToBackend(fileId, file);
     };
 
     const handleUpload = async () => {
