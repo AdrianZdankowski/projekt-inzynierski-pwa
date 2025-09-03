@@ -19,43 +19,46 @@ const Header = () => {
     }
 
     return (
-        <AppBar position="static" color="primary" sx={{ backgroundColor: "#06d07c9f" }}>
-          <Toolbar sx={{ justifyContent: "space-between" }}>
-            {/* Lewa strona */}
+        <AppBar>
+          <Toolbar>
             <Typography
               variant="h6"
               component={Link}
               to="/"
-              style={{ textDecoration: "none", color: "inherit" }}
             >
               Aplikacja PWA
             </Typography>
     
             {/* Prawa strona */}
             <Stack direction="row" spacing={2}>
-              <Button component={Link} to="/pdf-file" color="inherit" sx={{ "&:hover": { backgroundColor: "#58B19F" } }}>
-                Dokument PDF
+              <Button 
+                component={Link} 
+                to="/pdf-file" 
+              >
+                  Dokument PDF
               </Button>
-              <Button component={Link} to="/txt-file" color="inherit" sx={{ "&:hover": { backgroundColor: "#58B19F" } }}>
-                Plik TXT
+              <Button 
+                component={Link} 
+                to="/txt-file" 
+              >
+                 Plik TXT
               </Button>
-              <Button component={Link} to="/video" color="inherit" sx={{ "&:hover": { backgroundColor: "#58B19F" } }}>
-                Wideo
+              <Button 
+                component={Link} 
+                to="/video" 
+              >
+                 Wideo
               </Button>
               {isAuthenticated ? (
                 <>
                   <Button
                     component={Link}
                     to="/user-file-manager"
-                    color="inherit"
-                    sx={{ "&:hover": { backgroundColor: "#58B19F" } }}
                   >
                     Moje pliki
                   </Button>
                   <Button
                     onClick={handleLogout}
-                    color="inherit"
-                    sx={{ "&:hover": { backgroundColor: "#58B19F" } }}
                   >
                     Wyloguj
                   </Button>
@@ -64,8 +67,6 @@ const Header = () => {
                 <Button
                   component={Link}
                   to="/login"
-                  color="inherit"
-                  sx={{ "&:hover": { backgroundColor: "#58B19F" } }}
                 >
                   Logowanie
                 </Button>
