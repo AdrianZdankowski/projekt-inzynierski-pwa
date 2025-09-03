@@ -1,6 +1,6 @@
 import { createTheme } from "@mui/material/styles";
 
-const UserFilesTheme = createTheme({
+const UserFilesPageTheme = createTheme({
   components: {
     MuiContainer: {
       styleOverrides: {
@@ -40,4 +40,4 @@ const UserFilesTheme = createTheme({
   },
 });
 
-export default UserFilesTheme;
+export default UserFilesPageTheme;
