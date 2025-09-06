@@ -1,5 +1,4 @@
-import './header.css';
-import { Stack } from '@mui/material';
+import { AppBar, Toolbar, Typography, Stack, Button } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../api/axiosInstance';
@@ -19,28 +18,63 @@ const Header = () => {
         }
     }
 
-    return <header className="Header">
-        <Link className='clean-link' to="/"><p id="header-p">Aplikacja PWA</p></Link>
-        <Stack
-        direction="row"
-        spacing={2}
-        >
-            
-        {isAuthenticated ? 
-            <>
-                <Link className='clean-link' to="/user-file-manager">Moje pliki</Link>
-                <Link className='clean-link' to="#" onClick={handleLogout}>Wyloguj</Link>
-            </>
-            :
-            <Link className='clean-link' to="/login">Logowanie</Link>       
-        }
-            
-            <Link className='clean-link' to="/pdf-file">Dokument PDF</Link>
-            <Link className='clean-link' to="/txt-file">Plik TXT</Link>
-            <Link className='clean-link' to="/video">Wideo</Link>
-        </Stack>
-        
-        </header>
-}
+    return (
+        <AppBar>
+          <Toolbar>
+            <Typography
+              variant="h6"
+              component={Link}
+              to="/"
+            >
+              Aplikacja PWA
+            </Typography>
+    
+            {/* Prawa strona */}
+            <Stack direction="row" spacing={2}>
+              <Button 
+                component={Link} 
+                to="/pdf-file" 
+              >
+                  Dokument PDF
+              </Button>
+              <Button 
+                component={Link} 
+                to="/txt-file" 
+              >
+                 Plik TXT
+              </Button>
+              <Button 
+                component={Link} 
+                to="/video" 
+              >
+                 Wideo
+              </Button>
+              {isAuthenticated ? (
+                <>
+                  <Button
+                    component={Link}
+                    to="/user-file-manager"
+                  >
+                    Moje pliki
+                  </Button>
+                  <Button
+                    onClick={handleLogout}
+                  >
+                    Wyloguj
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  component={Link}
+                  to="/login"
+                >
+                  Logowanie
+                </Button>
+              )}
+            </Stack>
+          </Toolbar>
+        </AppBar>
+      );
+};
 
 export default Header;
