@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using WebApplication1;
 
 namespace backend.Controllers
 {
@@ -198,6 +199,15 @@ namespace backend.Controllers
             try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
 
             var files = fileContext.Files.Where(f => f.UserId == userId).Select(f => new { f.id, f.FileName, f.MimeType, f.Size, f.UploadTimestamp, f.Status, f.UserId }).ToList();
+            
+            //add shared files to the final list
+            var SharedWithUserFileIds = userContext.FileAccesses.Where(f => f.user.id == userId).Select(f => f.file.id).ToList();
+            var SharedWithUserFiles = await fileContext.Files
+                .Where(f => SharedWithUserFileIds.Contains(f.id))
+                .Select(f => new { f.id, f.FileName, f.MimeType, f.Size, f.UploadTimestamp, f.Status, f.UserId })
+                .ToListAsync();
+            files.AddRange(SharedWithUserFiles);
+
             var userIds = files.Select(f => f.UserId).Distinct().ToList();
             var users = await userContext.Users
                 .Where(u => userIds.Contains(u.id))
@@ -219,6 +229,29 @@ namespace backend.Controllers
             });
 
             return Ok(result);
+        }
+
+        [Authorize]
+        [HttpPost("share")]
+        public async Task<IActionResult> ShareFile(ShareFileDto sharedFileDto)
+        {
+            //todo: validate that user who sends request is file owner
+            var user = userContext.Users.Where(u => u.username == sharedFileDto.UserName).FirstOrDefault();
+
+            var file = fileContext.Files.Where(f => f.id == sharedFileDto.FileId).FirstOrDefault();
+            if (file == null || user == null)
+            {
+                return BadRequest("Incorrect username or file id");
+            }
+
+            var fileAccess = new WebApplication1.FileAccess();
+            fileAccess.file = file;
+            fileAccess.user = user;
+
+            userContext.FileAccesses.Add(fileAccess);
+            userContext.SaveChanges();
+
+            return Ok();
         }
 
         [Authorize]
