@@ -57,7 +57,7 @@ namespace backend.Migrations
 
                     b.HasKey("id");
 
-                    b.ToTable("File");
+                    b.ToTable("Files");
                 });
 
             modelBuilder.Entity("WebApplication1.FileAccess", b =>

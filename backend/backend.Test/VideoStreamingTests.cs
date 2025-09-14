@@ -103,7 +103,7 @@ namespace backend.Test
                .ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 }));
 
 
-            streamService = new StreamService(context, fileContext,configuration, azureBlobServiceMock.Object);
+            streamService = new StreamService(context, fileContext,configuration, azureBlobServiceMock.Object, new FileAccessValidator(context, configuration));
             authService = new AuthService(context, configuration);
 
             var userDto = new DTO.User.UserDto

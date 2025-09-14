@@ -12,8 +12,8 @@ using backend;
 namespace backend.Migrations
 {
     [DbContext(typeof(UserContext))]
-    [Migration("20250914142931_FileAccess")]
-    partial class FileAccess
+    [Migration("20250914162418_FileAcces")]
+    partial class FileAcces
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -60,7 +60,7 @@ namespace backend.Migrations
 
                     b.HasKey("id");
 
-                    b.ToTable("File");
+                    b.ToTable("Files");
                 });
 
             modelBuilder.Entity("WebApplication1.FileAccess", b =>

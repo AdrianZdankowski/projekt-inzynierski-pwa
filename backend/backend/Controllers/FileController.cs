@@ -22,7 +22,8 @@ namespace backend.Controllers
         FileContext fileContext,
         UserContext userContext,
         IConfiguration config,
-        IFileConverter fileConverter) : ControllerBase
+        IFileConverter fileConverter,
+        IFileAccessValidator fileAccessValidator) : ControllerBase
     {
         [Authorize]
         [HttpPost("upload")]
@@ -235,7 +236,17 @@ namespace backend.Controllers
         [HttpPost("share")]
         public async Task<IActionResult> ShareFile(ShareFileDto sharedFileDto)
         {
-            //todo: validate that user who sends request is file owner
+            //todo: add validation to unable adding the same access multiple times
+            Guid userId;
+            try
+            {
+                userId = GetUserIdOrThrow();
+            }
+            catch
+            {
+                return Unauthorized("Invalid or missing user ID");
+            }
+
             var user = userContext.Users.Where(u => u.username == sharedFileDto.UserName).FirstOrDefault();
 
             var file = fileContext.Files.Where(f => f.id == sharedFileDto.FileId).FirstOrDefault();
@@ -243,6 +254,14 @@ namespace backend.Controllers
             {
                 return BadRequest("Incorrect username or file id");
             }
+
+            if (file.UserId != userId)
+            {
+                return Unauthorized("User needs to be owner of the shared file");
+            }
+
+            //file is from different context, so it is needed to attach, so it won't try to insert it to the same table
+            userContext.Attach(file);
 
             var fileAccess = new WebApplication1.FileAccess();
             fileAccess.file = file;
@@ -263,7 +282,7 @@ namespace backend.Controllers
 
             var file = fileContext.Files.FirstOrDefault(f => f.id == id);
             if (file == null) return NotFound("File not found");
-            if (file.UserId != userId) return Forbid("You are not allowed to access this file");
+            if (!fileAccessValidator.ValidateUserAccess(userId, file).Result) return Forbid("You are not allowed to access this file");
             if (file.Status != WebApplication1.FileStatus.Uploaded) return Conflict("File is not ready for download");
 
             var ttl = TimeSpan.FromMinutes(10);

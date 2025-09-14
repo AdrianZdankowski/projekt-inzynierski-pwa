@@ -100,6 +100,7 @@ builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
 builder.Services.AddScoped<IFileConverter, FileConverter>();
 builder.Services.AddScoped<IStreamService, StreamService>();
+builder.Services.AddScoped<IFileAccessValidator, FileAccessValidator>();
 
 builder.Services.Configure<FormOptions>(options =>
 {

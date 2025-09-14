@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace backend.Migrations
 {
     /// <inheritdoc />
-    public partial class FileAccess : Migration
+    public partial class FileAcces : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "File",
+                name: "Files",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -27,7 +27,7 @@ namespace backend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_File", x => x.id);
+                    table.PrimaryKey("PK_Files", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -42,9 +42,9 @@ namespace backend.Migrations
                 {
                     table.PrimaryKey("PK_FileAccesses", x => x.id);
                     table.ForeignKey(
-                        name: "FK_FileAccesses_File_fileid",
+                        name: "FK_FileAccesses_Files_fileid",
                         column: x => x.fileid,
-                        principalTable: "File",
+                        principalTable: "Files",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -73,7 +73,7 @@ namespace backend.Migrations
                 name: "FileAccesses");
 
             migrationBuilder.DropTable(
-                name: "File");
+                name: "Files");
         }
     }
 }
