@@ -54,15 +54,15 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 //add dbcontext
-builder.Services.AddDbContext<UserContext>(options =>
-    options.UseInMemoryDatabase("MyInMemoryDb"));
-builder.Services.AddDbContext<FileContext>(options =>
-    options.UseInMemoryDatabase("MyInMemoryDb"));
-
 //builder.Services.AddDbContext<UserContext>(options =>
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//    options.UseInMemoryDatabase("MyInMemoryDb"));
 //builder.Services.AddDbContext<FileContext>(options =>
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//    options.UseInMemoryDatabase("MyInMemoryDb"));
+
+builder.Services.AddDbContext<UserContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<FileContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 //auth
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -116,7 +116,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
@@ -125,8 +125,15 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<UserContext>();
-    await DbSeeder.SeedSuperAdminAsync(context);
+    var userContext = services.GetRequiredService<UserContext>();
+    var fileContext = services.GetRequiredService<FileContext>();
+    
+    // Run migrations
+    await userContext.Database.MigrateAsync();
+    await fileContext.Database.MigrateAsync();
+    
+    // Seed data
+    await DbSeeder.SeedSuperAdminAsync(userContext);
 }
 
 app.Run();
