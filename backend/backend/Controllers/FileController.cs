@@ -236,7 +236,6 @@ namespace backend.Controllers
         [HttpPost("share")]
         public async Task<IActionResult> ShareFile(ShareFileDto sharedFileDto)
         {
-            //todo: add validation to unable adding the same access multiple times
             Guid userId;
             try
             {
@@ -258,6 +257,12 @@ namespace backend.Controllers
             if (file.UserId != userId)
             {
                 return Unauthorized("User needs to be owner of the shared file");
+            }
+
+            if (userContext.FileAccesses.Where(fa => fa.file.id == file.id && fa.user.id == user.id).FirstOrDefault() != null)
+            {
+                //in case of existing file access in db
+                return Ok(file);
             }
 
             //file is from different context, so it is needed to attach, so it won't try to insert it to the same table
