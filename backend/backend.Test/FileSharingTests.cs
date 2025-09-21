@@ -53,44 +53,46 @@ namespace backend.Test
             FileDownloadDto returnedFileDto = (FileDownloadDto)okResult.Value;
             Assert.That(returnedFileDto.FileName.Equals(file.FileName));
         }
-        //[Test]
-        //public async Task GetFile_sharedFile_ReturnOk()
-        //{
-        //    //shareFile
-        //    var newUser = new User
-        //    {
-        //        email = "testEmail",
-        //        id = Guid.NewGuid(),
-        //        username = "newUser",
-        //        passwordHash = "hashedPassword",
-        //        role = Role.User
-        //    };
-        //    userContext.Users.Add(newUser);
-        //    userContext.SaveChanges();
 
-        //    var shareResult = await fileController.ShareFile(new ShareFileDto { FileId = file.id, UserName = newUser.username });
-        //    Assert.IsInstanceOf<OkResult>(shareResult);
+        [Test]
+        public async Task GetFile_SharedFile_ReturnOk()
+        {
+           //shareFile
+           var newUser = new User
+           {
+               email = "testEmail",
+               id = Guid.NewGuid(),
+               username = "newUser",
+               passwordHash = "hashedPassword",
+               role = Role.User
+           };
+           userContext.Users.Add(newUser);
+           userContext.SaveChanges();
 
-        //    //change HttpContext to newUser
-        //    var claims = new List<Claim>
-        //    {
-        //        new Claim(ClaimTypes.Name, newUser.username),
-        //        new Claim(ClaimTypes.NameIdentifier, newUser.id.ToString()),
-        //        new Claim(ClaimTypes.Role, newUser.role.ToStringValue()),
-        //        new Claim("type", "access")
-        //    };
+           var shareResult = await fileController.ShareFile(new ShareFileDto { FileId = file.id, UserName = newUser.username });
+           Assert.IsInstanceOf<OkResult>(shareResult);
 
-        //    var identity = new ClaimsIdentity(claims, "jwt");
-        //    var user = new ClaimsPrincipal(identity);
+           //change HttpContext to newUser
+           var claims = new List<Claim>
+           {
+               new Claim(ClaimTypes.Name, newUser.username),
+               new Claim(ClaimTypes.NameIdentifier, newUser.id.ToString()),
+               new Claim(ClaimTypes.Role, newUser.role.ToStringValue()),
+               new Claim("type", "access")
+           };
 
-        //    fileController.ControllerContext.HttpContext = new DefaultHttpContext
-        //    {
-        //        User = user
-        //    };
-        //    var accesses = userContext.FileAccesses.ToList();
-        //    var result = await fileController.GetFileWithLink(file.id);
-        //    Assert.IsInstanceOf<OkResult>(result);
-        //}
+           var identity = new ClaimsIdentity(claims, "jwt");
+           var user = new ClaimsPrincipal(identity);
+
+           fileController.ControllerContext.HttpContext = new DefaultHttpContext
+           {
+               User = user
+           };
+           var accesses = userContext.FileAccesses.ToList();
+           var result = await fileController.GetFileWithLink(file.id);
+           Assert.IsInstanceOf<OkObjectResult>(result);
+        }
+        
         [Test]
         public async Task GetFile_NoAccess_ReturnForbidden()
         {

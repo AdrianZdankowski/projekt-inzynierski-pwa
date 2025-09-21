@@ -248,7 +248,7 @@ namespace backend.Controllers
 
             var user = userContext.Users.Where(u => u.username == sharedFileDto.UserName).FirstOrDefault();
 
-            var file = fileContext.Files.Where(f => f.id == sharedFileDto.FileId).FirstOrDefault();
+            var file = userContext.Files.Where(f => f.id == sharedFileDto.FileId).FirstOrDefault();
             if (file == null || user == null)
             {
                 return BadRequest("Incorrect username or file id");
@@ -265,12 +265,14 @@ namespace backend.Controllers
                 return Ok(file);
             }
 
-            //file is from different context, so it is needed to attach, so it won't try to insert it to the same table
             userContext.Attach(file);
 
-            var fileAccess = new WebApplication1.FileAccess();
-            fileAccess.file = file;
-            fileAccess.user = user;
+            var fileAccess = new WebApplication1.FileAccess
+            {
+                id = Guid.NewGuid(),
+                file = file,
+                user = user
+            };
 
             userContext.FileAccesses.Add(fileAccess);
             userContext.SaveChanges();

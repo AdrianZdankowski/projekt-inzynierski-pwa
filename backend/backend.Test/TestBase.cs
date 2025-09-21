@@ -90,6 +90,10 @@ namespace backend.Test
             fileContext.Files.Add(file);
             fileContext.Files.Add(accessDeniedFile);
             fileContext.SaveChanges();
+            
+            userContext.Files.Add(file);
+            userContext.Files.Add(accessDeniedFile);
+            userContext.SaveChanges();
 
             azureBlobServiceMock = new Mock<IAzureBlobService>();
             azureBlobServiceMock.Setup(s => s.BuildUserScopedBlobName(testUser.id, file.id, "test"))

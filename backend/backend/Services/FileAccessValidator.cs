@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using backend.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace backend.Services
@@ -19,7 +20,10 @@ namespace backend.Services
                 return true;
             }
 
-            var fileAccess = context.FileAccesses.FirstOrDefault(f => f.file.id == file.id && f.user.id == userId);
+            var fileAccess = context.FileAccesses
+                .Include(f => f.file)
+                .Include(f => f.user)
+                .FirstOrDefault(f => f.file.id == file.id && f.user.id == userId);
             if (fileAccess != null)
             {
                 return true;
