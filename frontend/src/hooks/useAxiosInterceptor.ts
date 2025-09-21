@@ -4,6 +4,8 @@ import { AxiosError } from 'axios';
 import axiosInstance from '../api/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 
+let refreshPromise: Promise<string> | null = null;
+
 export const useAxiosInterceptor = () => {
   const { accessToken, login, logout } = useAuth();
   const navigate = useNavigate();
@@ -27,27 +29,34 @@ export const useAxiosInterceptor = () => {
       async (error) => {
         const originalRequest = error.config;
 
-        // Czy to 401 i czy to nie jest już retry?
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
+          if (!refreshPromise) {
+            refreshPromise = axiosInstance
+            .post('/auth/refresh-token', {}, {withCredentials: true})
+            .then((res) => {
+              const newAccessToken = res.data.accessToken;
+              if (newAccessToken) {
+                login(newAccessToken);
+                return newAccessToken;
+              }
+              throw new Error("No access token in response!");
+            })
+            .finally(() => {
+              refreshPromise = null;
+            });
+          }
+          
           try {
-            const response = await axiosInstance.post(
-              '/auth/refresh-token',
-              {},
-              { withCredentials: true }
-            );
-
-            const newAccessToken = response.data.accessToken;
-            if (newAccessToken) {
-              login(newAccessToken);
-              originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-              return axiosInstance(originalRequest);
-            }
-          } catch (refreshError) {
+            const newToken = await refreshPromise;
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            return axiosInstance(originalRequest);
+          }
+          catch (refreshError) {
             if ((refreshError as AxiosError).response?.status === 401) {
               logout();
-              navigate('/login', { replace: true });
+              navigate('/login', {replace: true});
             }
             return Promise.reject(refreshError);
           }

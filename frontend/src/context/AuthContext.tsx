@@ -31,30 +31,32 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     };
 
     const restoreSession = async () => {
-        try {
-            const response = await axiosInstance.post('/auth/refresh-token',
-                {},
+       try {
+        const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+        if (isLoggedIn) {
+            const response = await axiosInstance.post('/auth/refresh-token', 
+                {}, 
                 {withCredentials: true}
             );
+
             const newToken = response.data.accessToken;
-            if (newToken) login(newToken);
+            newToken ? login(newToken) : logout();
         }
-        catch(error) {
-            console.log('Session expired');
+        else {
+            logout();
         }
-        finally {
-            setIsRefreshing(false);
-        }
+       } 
+       catch (error) {
+        console.log("No active session or session expired");
+        logout();
+       } finally {
+        setIsRefreshing(false);
+       }
     };
 
     useEffect(() => {
-        const isLoggedIn = localStorage.getItem("isLoggedIn");
-        if (isLoggedIn) {
-            restoreSession();
-        }
-        else {
-            setIsRefreshing(false);
-        }
+        restoreSession();
     }, []);
 
     return (
