@@ -59,7 +59,6 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Clear previous errors
     setLoginError('');
     setUsernameError('');
     setPasswordError('');
@@ -83,7 +82,6 @@ const LoginPage = () => {
     catch (error: any) {
       console.error(error);
       
-      // Check if it's a login error (400 status)
       if (error.response?.status === 400) {
         setLoginError('Użytkownik o podanej nazwie oraz wprowadzonym haśle nie istnieje. Spróbuj ponownie.');
       } else {
