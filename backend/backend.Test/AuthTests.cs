@@ -33,10 +33,10 @@ namespace backend.Test
 
 
             //Mock db context
-            var options = new DbContextOptionsBuilder<UserContext>()
+            var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-            var context = new UserContext(options);
+            var context = new AppDbContext(options);
 
             //add test user
             context.Users.Add(user);

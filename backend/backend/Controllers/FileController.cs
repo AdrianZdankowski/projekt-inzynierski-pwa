@@ -1,6 +1,5 @@
 ﻿using Azure;
 using Azure.Storage.Blobs;
-using backend.Contexts;
 using backend.DTO.File;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using WebApplication1;
 
 namespace backend.Controllers
 {
@@ -18,10 +18,10 @@ namespace backend.Controllers
     public class FileController(
         IAzureBlobService azureBlobService,
         IFileUploadService uploadService,
-        FileContext fileContext,
-        UserContext userContext,
+        AppDbContext appDbContext,
         IConfiguration config,
-        IFileConverter fileConverter) : ControllerBase
+        IFileConverter fileConverter,
+        IFileAccessValidator fileAccessValidator) : ControllerBase
     {
         [Authorize]
         [HttpPost("upload")]
@@ -42,7 +42,7 @@ namespace backend.Controllers
             {
                 var fileId = await uploadService.UploadSmallFileAsync(request.File, userId);
 
-                var file = await fileContext.Files.FindAsync(fileId);
+                var file = await appDbContext.Files.FindAsync(fileId);
                 var ttl = TimeSpan.FromMinutes(10);
                 var downloadUrl = azureBlobService.GenerateDownloadSasUri(file.BlobName, ttl);
 
@@ -106,8 +106,8 @@ namespace backend.Controllers
                 Checksum = null
             };
 
-            fileContext.Files.Add(entity);
-            await fileContext.SaveChangesAsync();
+            appDbContext.Files.Add(entity);
+            await appDbContext.SaveChangesAsync();
 
             var uploadUrl = azureBlobService.GenerateUploadSasUri(blobName, req.MimeType, TimeSpan.FromMinutes(30));
 
@@ -132,7 +132,7 @@ namespace backend.Controllers
             }
             try
             {
-                var file = await fileContext.Files.FindAsync(dto.FileId);
+                var file = await appDbContext.Files.FindAsync(dto.FileId);
                 if (file == null) return NotFound("File not found.");
                 if (file.UserId != userId) return Forbid("You are not allowed to access this file");
                 if (file.Status != WebApplication1.FileStatus.Pending) return Conflict("Upload not in pending state");
@@ -171,7 +171,7 @@ namespace backend.Controllers
                     file.Size = props.Value.ContentLength;
                     file.UploadTimestamp = DateTime.UtcNow;
 
-                    await fileContext.SaveChangesAsync();
+                    await appDbContext.SaveChangesAsync();
                     if (file.MimeType == "video/mp4")
                     {
                         string tempDirectory = Path.Combine(@"C:\temp", dto.FileId.ToString().Replace(".", ""), DateTime.Now.ToString("yyyyMMdd_HHmmss"));
@@ -197,9 +197,18 @@ namespace backend.Controllers
             Guid userId;
             try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
 
-            var files = fileContext.Files.Where(f => f.UserId == userId).Select(f => new { f.id, f.FileName, f.MimeType, f.Size, f.UploadTimestamp, f.Status, f.UserId }).ToList();
+            var files = appDbContext.Files.Where(f => f.UserId == userId).Select(f => new { f.id, f.FileName, f.MimeType, f.Size, f.UploadTimestamp, f.Status, f.UserId }).ToList();
+            
+            //add shared files to the final list
+            var SharedWithUserFileIds = appDbContext.FileAccesses.Where(f => f.user.id == userId).Select(f => f.file.id).ToList();
+            var SharedWithUserFiles = await appDbContext.Files
+                .Where(f => SharedWithUserFileIds.Contains(f.id))
+                .Select(f => new { f.id, f.FileName, f.MimeType, f.Size, f.UploadTimestamp, f.Status, f.UserId })
+                .ToListAsync();
+            files.AddRange(SharedWithUserFiles);
+
             var userIds = files.Select(f => f.UserId).Distinct().ToList();
-            var users = await userContext.Users
+            var users = await appDbContext.Users
                 .Where(u => userIds.Contains(u.id))
                 .Select(u => new { u.id, u.username })
                 .ToListAsync();
@@ -222,21 +231,67 @@ namespace backend.Controllers
         }
 
         [Authorize]
+        [HttpPost("share")]
+        public async Task<IActionResult> ShareFile(ShareFileDto sharedFileDto)
+        {
+            Guid userId;
+            try
+            {
+                userId = GetUserIdOrThrow();
+            }
+            catch
+            {
+                return Unauthorized("Invalid or missing user ID");
+            }
+
+            var user = appDbContext.Users.Where(u => u.username == sharedFileDto.UserName).FirstOrDefault();
+
+            var file = appDbContext.Files.Where(f => f.id == sharedFileDto.FileId).FirstOrDefault();
+            if (file is null || user is null)
+            {
+                return BadRequest("Incorrect username or file id");
+            }
+
+            if (file.UserId != userId)
+            {
+                return Unauthorized("User needs to be owner of the shared file");
+            }
+
+            if (appDbContext.FileAccesses.Where(fa => fa.file.id == file.id && fa.user.id == user.id).FirstOrDefault() is not null)
+            {
+                //in case of existing file access in db
+                return Ok(file);
+            }
+
+            var fileAccess = new WebApplication1.FileAccess
+            {
+                id = Guid.NewGuid(),
+                file = file,
+                user = user
+            };
+
+            appDbContext.FileAccesses.Add(fileAccess);
+            appDbContext.SaveChanges();
+
+            return Ok();
+        }
+
+        [Authorize]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetFileWithLink(Guid id)
         {
             Guid userId;
             try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
 
-            var file = fileContext.Files.FirstOrDefault(f => f.id == id);
+            var file = appDbContext.Files.FirstOrDefault(f => f.id == id);
             if (file == null) return NotFound("File not found");
-            if (file.UserId != userId) return Forbid("You are not allowed to access this file");
+            if (!fileAccessValidator.ValidateUserAccess(userId, file).Result) return Forbid("You are not allowed to access this file");
             if (file.Status != WebApplication1.FileStatus.Uploaded) return Conflict("File is not ready for download");
 
             var ttl = TimeSpan.FromMinutes(10);
             var downloadUrl = azureBlobService.GenerateDownloadSasUri(file.BlobName, ttl);
 
-            var owner = await userContext.Users
+            var owner = await appDbContext.Users
                 .Where(u => u.id == file.UserId)
                 .Select(u => u.username)
                 .FirstOrDefaultAsync();

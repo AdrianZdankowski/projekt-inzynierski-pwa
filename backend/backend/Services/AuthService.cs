@@ -13,7 +13,7 @@ using WebApplication1;
 
 namespace backend.Services
 {
-    public class AuthService(UserContext context, IConfiguration configuration) : IAuthService
+    public class AuthService(AppDbContext context, IConfiguration configuration) : IAuthService
     {
 
         public async Task<AuthTokensDto?> LoginAsync(UserDto request)
