@@ -23,6 +23,7 @@ const LoginPage = () => {
 
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [loginError, setLoginError] = useState('');
 
   const location = useLocation();
   const state =  location.state as LocationState | null;
@@ -58,6 +59,10 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setLoginError('');
+    setUsernameError('');
+    setPasswordError('');
+
     const passwordError = validatePassword(password);
     const nameError = validateUsername(username);
 
@@ -74,8 +79,14 @@ const LoginPage = () => {
         replace: true
       })
     }
-    catch (error) {
+    catch (error: any) {
       console.error(error);
+      
+      if (error.response?.status === 400) {
+        setLoginError('Użytkownik o podanej nazwie oraz wprowadzonym haśle nie istnieje. Spróbuj ponownie.');
+      } else {
+        setLoginError('Wystąpił błąd podczas logowania. Spróbuj ponownie.');
+      }
     }
   };
 
@@ -88,6 +99,13 @@ const LoginPage = () => {
             severity="success" 
             onClose={() => setShowAlert(false)}>
               {'Konto utworzone! Zaloguj się.'}
+            </Alert>}
+
+        {loginError && 
+            <Alert variant="filled" 
+            severity="error" 
+            onClose={() => setLoginError('')}>
+              {loginError}
             </Alert>}
 
         <Typography variant="h5" gutterBottom>

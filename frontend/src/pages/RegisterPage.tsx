@@ -7,6 +7,7 @@ import {
   Typography,
   Box,
   Paper,
+  Alert
 } from '@mui/material';
 import axiosInstance from '../api/axiosInstance';
 
@@ -18,6 +19,7 @@ const RegisterPage = () => {
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [repeatPasswordError, setRepeatPasswordError] = useState('');
+  const [registerError, setRegisterError] = useState('');
 
   const navigate = useNavigate();
 
@@ -46,6 +48,11 @@ const RegisterPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    setRegisterError('');
+    setPasswordError('');
+    setUsernameError('');
+    setRepeatPasswordError('');
+    
     const passwordError = validatePassword(password);
     const nameError = validateUsername(username);
     const repeatPasswordError = validateRepeatPassword(password, repeatPassword);
@@ -64,14 +71,27 @@ const RegisterPage = () => {
           registered: true
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      
+      if (error.response?.status === 400) {
+        setRegisterError('Użytkownik o podanej nazwie już istnieje. Wybierz inną nazwę użytkownika.');
+      } else {
+        setRegisterError('Wystąpił błąd podczas rejestracji. Spróbuj ponownie.');
+      }
     }
   };
 
   return (
     <Container maxWidth="sm">
       <Paper elevation={3}>
+        {registerError && 
+            <Alert variant="filled" 
+            severity="error" 
+            onClose={() => setRegisterError('')}>
+              {registerError}
+            </Alert>}
+
         <Typography variant="h5" gutterBottom>
           Zarejestruj się
         </Typography>

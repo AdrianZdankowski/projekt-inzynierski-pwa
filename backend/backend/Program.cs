@@ -113,7 +113,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
@@ -123,6 +123,11 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<AppDbContext>();
+    
+    // Run migrations
+    await context.Database.MigrateAsync();
+    
+    // Seed data
     await DbSeeder.SeedSuperAdminAsync(context);
 }
 
