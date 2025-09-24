@@ -1,7 +1,7 @@
 ﻿using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using backend.Contexts;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -15,10 +15,10 @@ namespace backend.Services
     {
         private readonly string _connectionString;
         private readonly string _containerName;
-        private readonly FileContext _context;
+        private readonly AppDbContext _context;
         private readonly IAzureBlobService _blobSvc;
 
-        public FileUploadService(IConfiguration config, FileContext context, IAzureBlobService blobSvc)
+        public FileUploadService(IConfiguration config, AppDbContext context, IAzureBlobService blobSvc)
         {
             _connectionString = config.GetValue<string>("AzureStorage:ConnectionString")!;
             _containerName = config.GetValue<string>("AzureStorage:ContainerName")!;

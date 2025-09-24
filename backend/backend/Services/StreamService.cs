@@ -4,14 +4,13 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
-using backend.Contexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace backend.Services
 {
-    public class StreamService(UserContext context, FileContext fileContext, IConfiguration config, IAzureBlobService azureBlobService, IFileAccessValidator fileAccessValidator) : IStreamService
+    public class StreamService(AppDbContext context, IConfiguration config, IAzureBlobService azureBlobService, IFileAccessValidator fileAccessValidator) : IStreamService
     {
         private readonly string _connectionString = config.GetValue<string>("AzureStorage:ConnectionString")!;
         private readonly string _containerName = config.GetValue<string>("AzureStorage:ContainerName")!;
@@ -58,7 +57,7 @@ namespace backend.Services
 
         public async Task<Stream> GetVideo(string accessToken, Guid videoId, string fileName)
         {
-            var video = await fileContext.Files.FirstOrDefaultAsync(f => f.id == videoId);
+            var video = await context.Files.FirstOrDefaultAsync(f => f.id == videoId);
 
             if (await fileAccessValidator.ValidateUserAccess(GetUserFromJwt(accessToken).Result.id, video) == false)
             {

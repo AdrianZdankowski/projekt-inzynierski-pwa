@@ -24,8 +24,8 @@ namespace backend.Test
         public void FileSharingTestSetUp()
         {
             fileUploadServiceMock = new Mock<IFileUploadService>();
-            fileAccessValidator = new FileAccessValidator(userContext, configuration);
-            fileController = new FileController(azureBlobServiceMock.Object, fileUploadServiceMock.Object, fileContext,userContext, configuration, new FileConverter(configuration, azureBlobServiceMock.Object), fileAccessValidator);
+            fileAccessValidator = new FileAccessValidator(appDbContext, configuration);
+            fileController = new FileController(azureBlobServiceMock.Object, fileUploadServiceMock.Object, appDbContext, configuration, new FileConverter(configuration, azureBlobServiceMock.Object), fileAccessValidator);
 
             //creating HttpContext for test user
             var claims = new List<Claim>
@@ -66,8 +66,8 @@ namespace backend.Test
                passwordHash = "hashedPassword",
                role = Role.User
            };
-           userContext.Users.Add(newUser);
-           userContext.SaveChanges();
+            appDbContext.Users.Add(newUser);
+            appDbContext.SaveChanges();
 
            var shareResult = await fileController.ShareFile(new ShareFileDto { FileId = file.id, UserName = newUser.username });
            Assert.IsInstanceOf<OkResult>(shareResult);
@@ -88,7 +88,7 @@ namespace backend.Test
            {
                User = user
            };
-           var accesses = userContext.FileAccesses.ToList();
+           var accesses = appDbContext.FileAccesses.ToList();
            var result = await fileController.GetFileWithLink(file.id);
            Assert.IsInstanceOf<OkObjectResult>(result);
         }

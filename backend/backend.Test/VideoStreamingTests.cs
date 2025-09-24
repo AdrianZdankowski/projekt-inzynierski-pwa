@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using backend.Contexts;
 using backend.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -26,15 +25,10 @@ namespace backend.Test
         public void StreamingTestsSetUp()
         {
             //Mock db context
-            var options = new DbContextOptionsBuilder<UserContext>()
+            var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-            var context = new UserContext(options);
-
-            var fileContextOptions = new DbContextOptionsBuilder<FileContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-            var fileContext = new FileContext(fileContextOptions);
+            var context = new AppDbContext(options);
 
             //Mock config with jwt settings
             var inMemorySettings = new Dictionary<string, string> {
@@ -88,9 +82,9 @@ namespace backend.Test
             context.Users.Add(user);
             context.SaveChanges();
 
-            fileContext.Files.Add(file);
-            fileContext.Files.Add(accessDeniedFile);
-            fileContext.SaveChanges();
+            context.Files.Add(file);
+            context.Files.Add(accessDeniedFile);
+            context.SaveChanges();
 
             var azureBlobServiceMock = new Mock<IAzureBlobService>();
             azureBlobServiceMock.Setup(s => s.BuildUserScopedBlobName(user.id, file.id, "test"))
@@ -103,7 +97,7 @@ namespace backend.Test
                .ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 }));
 
 
-            streamService = new StreamService(context, fileContext,configuration, azureBlobServiceMock.Object, new FileAccessValidator(context, configuration));
+            streamService = new StreamService(context,configuration, azureBlobServiceMock.Object, new FileAccessValidator(context, configuration));
             authService = new AuthService(context, configuration);
 
             var userDto = new DTO.User.UserDto

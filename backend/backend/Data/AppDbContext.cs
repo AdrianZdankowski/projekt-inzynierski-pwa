@@ -5,9 +5,9 @@ using WebApplication1;
 
 namespace backend
 {
-    public class UserContext : DbContext
+    public class AppDbContext : DbContext
     {
-        public UserContext(DbContextOptions<UserContext> options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

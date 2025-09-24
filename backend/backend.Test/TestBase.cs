@@ -1,4 +1,4 @@
-﻿using backend.Contexts;
+﻿
 using backend.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -16,8 +16,7 @@ namespace backend.Test
         protected WebApplication1.File file;
         protected WebApplication1.File accessDeniedFile;
         protected Mock<IAzureBlobService> azureBlobServiceMock;
-        protected UserContext userContext;
-        protected FileContext fileContext;
+        protected AppDbContext appDbContext;
         protected IConfiguration configuration;
         protected User testUser;
 
@@ -25,15 +24,10 @@ namespace backend.Test
         public void TestSetUp()
         {
             //Mock db context
-            var options = new DbContextOptionsBuilder<UserContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase("test")
             .Options;
-            userContext = new UserContext(options);
-
-            var fileContextOptions = new DbContextOptionsBuilder<FileContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-            fileContext = new FileContext(fileContextOptions);
+            appDbContext = new AppDbContext(options);
 
             //Mock config with jwt settings
             var inMemorySettings = new Dictionary<string, string> {
@@ -84,16 +78,20 @@ namespace backend.Test
                 UploadTimestamp = DateTime.UtcNow
             };
 
-            userContext.Users.Add(testUser);
-            userContext.SaveChanges();
+            appDbContext.Users.Add(testUser);
+            appDbContext.SaveChanges();
 
-            fileContext.Files.Add(file);
-            fileContext.Files.Add(accessDeniedFile);
-            fileContext.SaveChanges();
-            
-            userContext.Files.Add(file);
-            userContext.Files.Add(accessDeniedFile);
-            userContext.SaveChanges();
+            appDbContext.Files.Add(file);
+            appDbContext.Files.Add(accessDeniedFile);
+            appDbContext.SaveChanges();
+
+            //userContext.Files.Add(file);
+            //userContext.Files.Add(accessDeniedFile);
+            //userContext.SaveChanges();
+
+            //userContext.Attach(file);
+            //userContext.Attach(accessDeniedFile);
+            //userContext.SaveChanges();
 
             azureBlobServiceMock = new Mock<IAzureBlobService>();
             azureBlobServiceMock.Setup(s => s.BuildUserScopedBlobName(testUser.id, file.id, "test"))
@@ -106,8 +104,8 @@ namespace backend.Test
                .ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 }));
 
 
-            streamService = new StreamService(userContext, fileContext, configuration, azureBlobServiceMock.Object, new FileAccessValidator(userContext, configuration));
-            authService = new AuthService(userContext, configuration);
+            streamService = new StreamService(appDbContext, configuration, azureBlobServiceMock.Object, new FileAccessValidator(appDbContext, configuration));
+            authService = new AuthService(appDbContext, configuration);
 
             var userDto = new DTO.User.UserDto
             {
@@ -120,8 +118,7 @@ namespace backend.Test
         [TearDown]
         public void TearDown()
         {
-            userContext.Dispose();
-            fileContext.Dispose();
+            appDbContext.Dispose();
         }
     }
 }
