@@ -20,6 +20,13 @@ import { UserIconBox } from '../themes/boxes/UserIconBox';
 import { CardBox } from '../themes/boxes/CardBox';
 import { FileTypeBox } from '../themes/boxes/FileTypeBox';
 
+const SORT_OPTIONS = [
+  { field: 'fileName', label: 'Nazwa' },
+  { field: 'size', label: 'Rozmiar' },
+  { field: 'uploadTimestamp', label: 'Data dodania' },
+  { field: 'ownerName', label: 'Właściciel' }
+] as const;
+
 export interface FileListRef {
   refreshFiles: () => void;
 }
@@ -226,77 +233,35 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
               </IconButton>
             </Tooltip>
           
-          <Menu
-            anchorEl={sortMenuAnchor}
-            open={Boolean(sortMenuAnchor)}
-            onClose={handleSortMenuClose}
-            PaperProps={{
-              className: 'sort-menu'
-            }}
-            transformOrigin={{ horizontal: 'left', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-          >
-            <MenuItem 
-              onClick={() => handleSort('fileName')} 
-              className={`sort-menu-item ${sortField === 'fileName' ? 'active' : ''}`}
+            <Menu
+              anchorEl={sortMenuAnchor}
+              open={Boolean(sortMenuAnchor)}
+              onClose={handleSortMenuClose}
+              PaperProps={{
+                className: 'sort-menu'
+              }}
+              transformOrigin={{ horizontal: 'left', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
             >
-              <MenuItemContainerBox>
-                <MenuItemBox sx={{ backgroundColor: sortField === 'fileName' ? '#2e7d32' : 'transparent' }}>
-                  {sortField === 'fileName' && (sortOrder === 'asc' ? <ArrowUpIcon sx={{ fontSize: 14 }} /> : <ArrowDownIcon sx={{ fontSize: 14 }} />)}
-                </MenuItemBox>
-                <Typography 
-                  className={`sort-menu-text ${sortField === 'fileName' ? 'active' : ''}`}
+              {SORT_OPTIONS.map(({ field, label }) => (
+                <MenuItem 
+                  key={field}
+                  onClick={() => handleSort(field as any)} 
+                  className={`sort-menu-item ${sortField === field ? 'active' : ''}`}
                 >
-                  Nazwa
-                </Typography>
-              </MenuItemContainerBox>
-            </MenuItem>
-            <MenuItem 
-              onClick={() => handleSort('size')} 
-              className={`sort-menu-item ${sortField === 'size' ? 'active' : ''}`}
-            >
-              <MenuItemContainerBox>
-                <MenuItemBox sx={{ backgroundColor: sortField === 'size' ? '#2e7d32' : 'transparent' }}>
-                  {sortField === 'size' && (sortOrder === 'asc' ? <ArrowUpIcon sx={{ fontSize: 14 }} /> : <ArrowDownIcon sx={{ fontSize: 14 }} />)}
-                </MenuItemBox>
-                <Typography 
-                  className={`sort-menu-text ${sortField === 'size' ? 'active' : ''}`}
-                >
-                  Rozmiar
-                </Typography>
-              </MenuItemContainerBox>
-            </MenuItem>
-            <MenuItem 
-              onClick={() => handleSort('uploadTimestamp')} 
-              className={`sort-menu-item ${sortField === 'uploadTimestamp' ? 'active' : ''}`}
-            >
-              <MenuItemContainerBox>
-                <MenuItemBox sx={{ backgroundColor: sortField === 'uploadTimestamp' ? '#2e7d32' : 'transparent' }}>
-                  {sortField === 'uploadTimestamp' && (sortOrder === 'asc' ? <ArrowUpIcon sx={{ fontSize: 14 }} /> : <ArrowDownIcon sx={{ fontSize: 14 }} />)}
-                </MenuItemBox>
-                <Typography 
-                  className={`sort-menu-text ${sortField === 'uploadTimestamp' ? 'active' : ''}`}
-                >
-                  Data dodania
-                </Typography>
-              </MenuItemContainerBox>
-            </MenuItem>
-            <MenuItem 
-              onClick={() => handleSort('ownerName')} 
-              className={`sort-menu-item ${sortField === 'ownerName' ? 'active' : ''}`}
-            >
-              <MenuItemContainerBox>
-                <MenuItemBox sx={{ backgroundColor: sortField === 'ownerName' ? '#2e7d32' : 'transparent' }}>
-                  {sortField === 'ownerName' && (sortOrder === 'asc' ? <ArrowUpIcon sx={{ fontSize: 14 }} /> : <ArrowDownIcon sx={{ fontSize: 14 }} />)}
-                </MenuItemBox>
-                <Typography 
-                  className={`sort-menu-text ${sortField === 'ownerName' ? 'active' : ''}`}
-                >
-                  Właściciel
-                </Typography>
-              </MenuItemContainerBox>
-            </MenuItem>
-          </Menu>
+                  <MenuItemContainerBox>
+                    <MenuItemBox sx={{ backgroundColor: sortField === field ? '#2e7d32' : 'transparent' }}>
+                      {sortField === field && (sortOrder === 'asc' ? <ArrowUpIcon sx={{ fontSize: 14 }} /> : <ArrowDownIcon sx={{ fontSize: 14 }} />)}
+                    </MenuItemBox>
+                    <Typography 
+                      className={`sort-menu-text ${sortField === field ? 'active' : ''}`}
+                    >
+                      {label}
+                    </Typography>
+                  </MenuItemContainerBox>
+                </MenuItem>
+              ))}
+            </Menu>
 
             {/* View Toggle */}
             <Tooltip title={viewMode === 'grid' ? 'Widok listy' : 'Widok kafelków'}>
