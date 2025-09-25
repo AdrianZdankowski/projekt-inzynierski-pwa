@@ -1,15 +1,5 @@
-import axiosInstance from '../api/axiosInstance';
-
-export interface FileMetadata {
-  id: string;
-  fileName: string;
-  mimeType: string;
-  size: number;
-  uploadTimestamp: string;
-  status: string;
-  userId: string;
-  ownerName: string;
-}
+  import axiosInstance from '../api/axiosInstance';
+  import { FileMetadata } from '../types/FileMetadata';
 
 export const FileService = {
   async getUserFiles(): Promise<FileMetadata[]> {
