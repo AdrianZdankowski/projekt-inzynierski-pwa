@@ -147,6 +147,42 @@ const FileListTheme = createTheme({
           '&.file-date': {
             fontSize: '0.75rem',
             color: 'rgba(0, 0, 0, 0.7)'
+          },
+          '&.alert-title': {
+            marginBottom: 1,
+            fontWeight: 'bold',
+            color: 'blue',
+            textAlign: 'center'
+          },
+          '&.alert-subtitle': {
+            marginBottom: 1,
+            color: 'blue',
+            textAlign: 'center'
+          },
+          '&.table-file-name': {
+            fontWeight: 'medium',
+            fontSize: '0.9rem',
+            color: '#000000',
+            lineHeight: 1,
+            mt: 0.3
+          },
+          '&.table-owner-name': {
+            fontSize: '0.9rem',
+            color: '#000000',
+            lineHeight: 1,
+            mt: 0.3
+          },
+          '&.table-date': {
+            fontSize: '0.9rem',
+            color: '#000000',
+            lineHeight: 1,
+            mt: 0.3
+          },
+          '&.table-size': {
+            fontSize: '0.9rem',
+            color: '#000000',
+            lineHeight: 1,
+            mt: 0.3
           }
         }
       }
@@ -211,6 +247,18 @@ const FileListTheme = createTheme({
             '&:hover': {
               backgroundColor: 'rgba(0, 0, 0, 0.7)'
             }
+          },
+          '&.table-share-button': {
+            color: '#1976d2',
+            '&:hover': {
+              backgroundColor: 'rgba(25, 118, 210, 0.1)'
+            }
+          },
+          '&.table-delete-button': {
+            color: '#757575',
+            '&:hover': {
+              backgroundColor: 'rgba(117, 117, 117, 0.1)'
+            }
           }
         }
       }
@@ -253,6 +301,82 @@ const FileListTheme = createTheme({
             paddingTop: 0,
             marginBottom: 6,
             minHeight: 'auto'
+          }
+        }
+      }
+    },
+    MuiAlert: {
+      styleOverrides: {
+        root: {
+          '&.empty-files-alert': {
+            margin: 'auto',
+            maxWidth: '800px',
+            '& .MuiAlert-message': {
+              width: '100%',
+              textAlign: 'center',
+              alignItems: 'center'
+            }
+          }
+        }
+      }
+    },
+    MuiTableContainer: {
+      styleOverrides: {
+        root: {
+          '&.files-table-container': {
+            maxWidth: '100%',
+            margin: '0 auto',
+            boxShadow: 2,
+            borderRadius: 2,
+            overflow: 'hidden'
+          }
+        }
+      }
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          '&.table-header-cell': {
+            fontWeight: 'bold',
+            fontSize: '0.9rem'
+          },
+          '&.table-header-cell-center': {
+            fontWeight: 'bold',
+            fontSize: '0.9rem',
+            textAlign: 'center'
+          },
+          '&.table-body-cell': {
+            py: 1.5
+          },
+          '&.table-body-cell-center': {
+            py: 1.5,
+            textAlign: 'center'
+          },
+          '&.table-actions-cell': {
+            py: 2
+          }
+        }
+      }
+    },
+    MuiTableRow: {
+      styleOverrides: {
+        root: {
+          '&.table-header-row': {
+            backgroundColor: '#f5f5f5'
+          },
+          '&.table-body-row': {
+            cursor: 'pointer',
+            backgroundColor: '#ffffff',
+            '&:hover': {
+              backgroundColor: '#f0f0f0'
+            }
+          },
+          '&.table-body-row-odd': {
+            cursor: 'pointer',
+            backgroundColor: '#f8f9fa',
+            '&:hover': {
+              backgroundColor: '#e8e8e8'
+            }
           }
         }
       }

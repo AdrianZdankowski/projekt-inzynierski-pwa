@@ -412,26 +412,20 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
           );
         })}
         </Box>
-      ) : files.length > 0 ? (
+      ) : files.length > 0 && paginatedFiles.length > 0 ? (
         /* List View */
         <TableContainer 
           component={Paper} 
-          sx={{ 
-            maxWidth: '100%', 
-            margin: '0 auto',
-            boxShadow: 2,
-            borderRadius: 2,
-            overflow: 'hidden'
-          }}
+          className="files-table-container"
         >
           <Table>
             <TableHead>
-              <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                <TableCell sx={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Nazwa</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', fontSize: '0.9rem', textAlign: 'center' }}>Właściciel</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', fontSize: '0.9rem', textAlign: 'center' }}>Data modyfikacji</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', fontSize: '0.9rem', textAlign: 'center' }}>Rozmiar pliku</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Akcje</TableCell>
+              <TableRow className="table-header-row">
+                <TableCell className="table-header-cell">Nazwa</TableCell>
+                <TableCell className="table-header-cell-center">Właściciel</TableCell>
+                <TableCell className="table-header-cell-center">Data modyfikacji</TableCell>
+                <TableCell className="table-header-cell-center">Rozmiar pliku</TableCell>
+                <TableCell align="center" className="table-header-cell-center">Akcje</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -445,25 +439,19 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                   <TableRow 
                     key={file.id}
                     hover
-                    sx={{ 
-                      cursor: 'pointer',
-                      backgroundColor: isEvenRow ? '#ffffff' : '#f8f9fa',
-                      '&:hover': {
-                        backgroundColor: isEvenRow ? '#f0f0f0' : '#e8e8e8'
-                      }
-                    }}
+                    className={isEvenRow ? 'table-body-row' : 'table-body-row-odd'}
                     onClick={() => handleFileClick(file)}
                   >
-                    <TableCell sx={{ py: 1.5 }}>
+                    <TableCell className="table-body-cell">
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                         <FileIcon sx={{ color: fileColor, fontSize: 24 }} />
                         {isShared && <SharedIcon sx={{ fontSize: 18, color: '#4CAF50' }} />}
-                        <Typography variant="body2" sx={{ fontWeight: 'medium', fontSize: '0.9rem', color: '#000000', lineHeight: 1, mt: 0.3 }}>
+                        <Typography className="table-file-name">
                           {file.fileName}
                         </Typography>
                       </Box>
                     </TableCell>
-                    <TableCell sx={{ py: 1.5, textAlign: 'center' }}>
+                    <TableCell className="table-body-cell-center">
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
                         <Box
                           sx={{
@@ -481,30 +469,27 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                         >
                           {file.ownerName.charAt(0).toUpperCase()}
                         </Box>
-                        <Typography variant="body2" sx={{ fontSize: '0.9rem', color: '#000000', lineHeight: 1, mt: 0.3 }}>
+                        <Typography className="table-owner-name">
                           {file.ownerName}
                         </Typography>
                       </Box>
                     </TableCell>
-                    <TableCell sx={{ py: 1.5, textAlign: 'center' }}>
-                      <Typography variant="body2" sx={{ fontSize: '0.9rem', color: '#000000', lineHeight: 1, mt: 0.3 }}>
+                    <TableCell className="table-body-cell-center">
+                      <Typography className="table-date">
                         {formatDate(file.uploadTimestamp)}
                       </Typography>
                     </TableCell>
-                    <TableCell sx={{ py: 1.5, textAlign: 'center' }}>
-                      <Typography variant="body2" sx={{ fontSize: '0.9rem', color: '#000000', lineHeight: 1, mt: 0.3 }}>
+                    <TableCell className="table-body-cell-center">
+                      <Typography className="table-size">
                         {formatFileSize(file.size)}
                       </Typography>
                     </TableCell>
-                    <TableCell align="center" sx={{ py: 2 }}>
+                    <TableCell align="center" className="table-actions-cell">
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                         <Tooltip title="Udostępnij">
                           <IconButton
                             size="small"
-                            sx={{ 
-                              color: '#1976d2',
-                              '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.1)' }
-                            }}
+                            className="table-share-button"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleShareFile(file.id);
@@ -516,10 +501,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                         <Tooltip title="Usuń">
                           <IconButton
                             size="small"
-                            sx={{ 
-                              color: '#757575',
-                              '&:hover': { backgroundColor: 'rgba(117, 117, 117, 0.1)' }
-                            }}
+                            className="table-delete-button"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteFile(file.id);
@@ -542,20 +524,12 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
         <Box sx={{ marginTop: 4 }}>
           <Alert 
             severity="info" 
-            sx={{ 
-              margin: 'auto',
-              maxWidth: '800px',
-              '& .MuiAlert-message': {
-                width: '100%',
-                textAlign: 'center',
-                alignItems: 'center'
-              }
-            }}
+            className="empty-files-alert"
           >
-            <Typography variant="h6" sx={{ marginBottom: 1, fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
+            <Typography className="alert-title">
               {files.length === 0 ? 'Nie masz żadnych plików obecnie' : 'Nie znaleziono plików'}
             </Typography>
-            <Typography variant="body2" sx={{ marginBottom: 1, color: 'blue', textAlign: 'center' }}>
+            <Typography className="alert-subtitle">
               {files.length === 0 ? 'Prześlij pliki, aby rozpocząć korzystanie z aplikacji' : 'Spróbuj zmienić kryteria wyszukiwania'}
             </Typography>
           </Alert>
