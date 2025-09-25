@@ -22,7 +22,8 @@ import {
   Menu,
   MenuItem,
   Select,
-  FormControl
+  FormControl,
+  TextField
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
@@ -34,7 +35,8 @@ import {
   ArrowUpward as ArrowUpIcon,
   ArrowDownward as ArrowDownIcon,
   KeyboardArrowLeft as ArrowLeftIcon,
-  KeyboardArrowRight as ArrowRightIcon
+  KeyboardArrowRight as ArrowRightIcon,
+  Search as SearchIcon
 } from '@mui/icons-material';
 import { FileService, FileMetadata } from '../services/FileService';
 import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
@@ -60,6 +62,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const [sortMenuAnchor, setSortMenuAnchor] = useState<null | HTMLElement>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [searchQuery, setSearchQuery] = useState('');
   const { accessToken, isRefreshing } = useAuth();
   const hasFetched = useRef(false);
 
@@ -118,7 +121,12 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     setSortMenuAnchor(null);
   };
 
-  const sortedFiles = [...files].sort((a, b) => {
+  // Filter files by search query
+  const filteredFiles = files.filter(file => 
+    file.fileName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const sortedFiles = [...filteredFiles].sort((a, b) => {
     let aValue: any, bValue: any;
     
     switch (sortField) {
@@ -158,10 +166,10 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     setCurrentPage(1);
   }, [itemsPerPage]);
 
-  // Reset to first page when files change
+  // Reset to first page when files change or search query changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [files.length]);
+  }, [files.length, searchQuery]);
 
   // Expose refresh function to parent via ref
   useImperativeHandle(ref, () => ({
@@ -229,10 +237,41 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
         padding: '0 20px'
       }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          Pliki ({startIndex + 1}-{Math.min(endIndex, files.length)} z {files.length})
+          Pliki ({startIndex + 1}-{Math.min(endIndex, sortedFiles.length)} z {sortedFiles.length})
+          {searchQuery && ` (z ${files.length} wszystkich)`}
         </Typography>
         
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          {/* Search Input */}
+          <TextField
+            size="small"
+            placeholder="Szukaj plików..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }} />,
+            }}
+            sx={{
+              minWidth: 200,
+              '& .MuiOutlinedInput-root': {
+                color: 'white',
+                '& fieldset': {
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                },
+                '&:hover fieldset': {
+                  borderColor: 'rgba(255, 255, 255, 0.5)',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: 'white',
+                },
+              },
+              '& .MuiInputBase-input::placeholder': {
+                color: 'rgba(255, 255, 255, 0.7)',
+                opacity: 1,
+              },
+            }}
+          />
+
           {/* Sort Menu */}
           <Tooltip title="Sortuj">
             <IconButton onClick={handleSortMenuOpen} size="small" sx={{ color: 'white' }}>
@@ -723,19 +762,19 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
         </TableContainer>
       )}
 
-      {files.length === 0 && (
+      {sortedFiles.length === 0 && (
         <Box textAlign="center" sx={{ marginTop: 4 }}>
           <Typography variant="h6" color="text.secondary">
-            Brak plików
+            {searchQuery ? 'Nie znaleziono plików' : 'Brak plików'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Prześlij pliki, aby rozpocząć
+            {searchQuery ? 'Spróbuj zmienić kryteria wyszukiwania' : 'Prześlij pliki, aby rozpocząć'}
           </Typography>
         </Box>
       )}
 
       {/* Pagination Controls */}
-      {files.length > 0 && (
+      {sortedFiles.length > 0 && (
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
