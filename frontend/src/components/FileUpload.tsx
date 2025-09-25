@@ -18,9 +18,10 @@ import { FileUploadService } from '../services/FileUploadService';
 interface FileUploadProps {
     isOpen: boolean;
     onClose: () => void;
+    onFileUploaded?: () => void;
 }
 
-const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
+const FileUpload = ({ isOpen, onClose, onFileUploaded }: FileUploadProps) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -49,7 +50,12 @@ const FileUpload = ({ isOpen, onClose }: FileUploadProps) => {
                 text: 'Plik został pomyślnie przesłany!'
             });
 
-            setSelectedFile(null)
+            setSelectedFile(null);
+            
+            // Notify parent component that file was uploaded
+            if (onFileUploaded) {
+                onFileUploaded();
+            }
 
         } catch (error) {
             console.error('Upload error:', error);

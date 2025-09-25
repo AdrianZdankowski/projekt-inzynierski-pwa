@@ -1,12 +1,13 @@
-import { useState } from 'react';
-import { Container, Fab, Typography } from '@mui/material';
-import FileList from "../components/FileList";
+import { useState, useRef } from 'react';
+import { Container, Fab } from '@mui/material';
+import FileList, { FileListRef } from "../components/FileList";
 import FileUpload from "../components/FileUpload";
 import { ThemeProvider } from '@emotion/react';
 import UploadFileTheme from '../themes/components/UploadFileTheme';
 
 const UserFilesPage = () => {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+    const fileListRef = useRef<FileListRef>(null);
 
     const handleOpenUploadModal = () => {
         setIsUploadModalOpen(true);
@@ -16,10 +17,14 @@ const UserFilesPage = () => {
         setIsUploadModalOpen(false);
     };
 
+    const handleFileUploaded = () => {
+        // Trigger refresh of file list using ref
+        fileListRef.current?.refreshFiles();
+    };
+
     return (
         <Container>
-            <Typography>Moje pliki:</Typography>
-            <FileList />
+            <FileList ref={fileListRef} />
                 
             <Fab
                 color="primary"
@@ -33,7 +38,8 @@ const UserFilesPage = () => {
             <ThemeProvider theme={UploadFileTheme}>
                 <FileUpload 
                     isOpen={isUploadModalOpen} 
-                    onClose={handleCloseUploadModal} 
+                    onClose={handleCloseUploadModal}
+                    onFileUploaded={handleFileUploaded}
                 />
             </ThemeProvider>
         </Container>
