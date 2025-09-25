@@ -20,7 +20,9 @@ import {
   TableRow,
   Paper,
   Menu,
-  MenuItem
+  MenuItem,
+  Select,
+  FormControl
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
@@ -30,7 +32,9 @@ import {
   ViewList as ListViewIcon,
   Sort as SortIcon,
   ArrowUpward as ArrowUpIcon,
-  ArrowDownward as ArrowDownIcon
+  ArrowDownward as ArrowDownIcon,
+  KeyboardArrowLeft as ArrowLeftIcon,
+  KeyboardArrowRight as ArrowRightIcon
 } from '@mui/icons-material';
 import { FileService, FileMetadata } from '../services/FileService';
 import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
@@ -54,6 +58,8 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const [sortField, setSortField] = useState<SortField>('fileName');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [sortMenuAnchor, setSortMenuAnchor] = useState<null | HTMLElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const { accessToken, isRefreshing } = useAuth();
   const hasFetched = useRef(false);
 
@@ -141,6 +147,22 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     return 0;
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(sortedFiles.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedFiles = sortedFiles.slice(startIndex, endIndex);
+
+  // Reset to first page when items per page changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [itemsPerPage]);
+
+  // Reset to first page when files change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [files.length]);
+
   // Expose refresh function to parent via ref
   useImperativeHandle(ref, () => ({
     refreshFiles: fetchFiles
@@ -207,7 +229,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
         padding: '0 20px'
       }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          Pliki ({files.length})
+          Pliki ({startIndex + 1}-{Math.min(endIndex, files.length)} z {files.length})
         </Typography>
         
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -418,7 +440,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
             backgroundColor: 'linear-gradient(135deg, #ffffff, #f0f7ff)',
           }}
         >
-        {sortedFiles.map((file, index) => {
+        {paginatedFiles.map((file, index) => {
           const FileIcon = getFileIcon(file.mimeType);
           const fileColor = getFileTypeColor(file.mimeType);
           const isShared = isSharedFile(file);
@@ -598,7 +620,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {sortedFiles.map((file, index) => {
+              {paginatedFiles.map((file, index) => {
                 const FileIcon = getFileIcon(file.mimeType);
                 const fileColor = getFileTypeColor(file.mimeType);
                 const isShared = isSharedFile(file);
@@ -709,6 +731,129 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
           <Typography variant="body2" color="text.secondary">
             Prześlij pliki, aby rozpocząć
           </Typography>
+        </Box>
+      )}
+
+      {/* Pagination Controls */}
+      {files.length > 0 && (
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          marginTop: 4,
+          gap: 2,
+          padding: '20px 0'
+        }}>
+          {/* Left spacer */}
+          <Box sx={{ width: 120 }} />
+          
+          {/* Center pagination - only show if more than 1 page */}
+          {totalPages > 1 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {/* Previous Page Button */}
+              <IconButton
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                sx={{
+                  color: currentPage === 1 ? 'rgba(0, 0, 0, 0.26)' : '#2e7d32',
+                  '&:hover': {
+                    backgroundColor: currentPage === 1 ? 'transparent' : 'rgba(46, 125, 50, 0.1)'
+                  }
+                }}
+              >
+                <ArrowLeftIcon />
+              </IconButton>
+
+              {/* Page Numbers */}
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                  // Show first page, last page, current page, and pages around current page
+                  const shouldShow = 
+                    page === 1 || 
+                    page === totalPages || 
+                    Math.abs(page - currentPage) <= 1;
+                  
+                  if (!shouldShow) {
+                    // Show ellipsis for gaps
+                    if (page === 2 && currentPage > 4) {
+                      return <Typography key={`ellipsis-${page}`} sx={{ px: 1 }}>...</Typography>;
+                    }
+                    if (page === totalPages - 1 && currentPage < totalPages - 3) {
+                      return <Typography key={`ellipsis-${page}`} sx={{ px: 1 }}>...</Typography>;
+                    }
+                    return null;
+                  }
+
+                  return (
+                    <Button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      variant={currentPage === page ? 'contained' : 'outlined'}
+                      size="small"
+                      sx={{
+                        minWidth: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        backgroundColor: currentPage === page ? '#2e7d32' : 'transparent',
+                        color: currentPage === page ? 'white' : '#2e7d32',
+                        borderColor: '#2e7d32',
+                        '&:hover': {
+                          backgroundColor: currentPage === page ? '#1b5e20' : 'rgba(46, 125, 50, 0.1)',
+                          borderColor: '#2e7d32'
+                        }
+                      }}
+                    >
+                      {page}
+                    </Button>
+                  );
+                })}
+              </Box>
+
+              {/* Next Page Button */}
+              <IconButton
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                sx={{
+                  color: currentPage === totalPages ? 'rgba(0, 0, 0, 0.26)' : '#2e7d32',
+                  '&:hover': {
+                    backgroundColor: currentPage === totalPages ? 'transparent' : 'rgba(46, 125, 50, 0.1)'
+                  }
+                }}
+              >
+                <ArrowRightIcon />
+              </IconButton>
+            </Box>
+          )}
+
+          {/* Items per page selector - Always visible on the right */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <FormControl size="small" sx={{ minWidth: 80 }}>
+                <Select
+                  value={itemsPerPage}
+                  onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                  sx={{
+                    color: 'white',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'white',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'white',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'white',
+                    },
+                    '& .MuiSvgIcon-root': {
+                      color: 'white',
+                    }
+                  }}
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={15}>15</MenuItem>
+                <MenuItem value={20}>20</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
       )}
     </Box>
