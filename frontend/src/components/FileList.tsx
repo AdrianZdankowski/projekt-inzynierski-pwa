@@ -321,47 +321,20 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
             backgroundColor: 'linear-gradient(135deg, #ffffff, #f0f7ff)',
           }}
         >
-        {paginatedFiles.map((file, index) => {
+        {paginatedFiles.map((file) => {
           const FileIcon = getFileIcon(file.mimeType);
           const fileColor = getFileTypeColor(file.mimeType);
           const isShared = isSharedFile(file);
-          const isEvenRow = index % 2 === 0;
 
           return (
             <Box key={file.id}>
               <Card
-                sx={{
-                  height: '280px',
-                  width: '280px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  background: isEvenRow ? '#ffffff' : '#f8f9fa',
-                  color: '#000000',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 4,
-                    background: isEvenRow ? '#f0f0f0' : '#e8e8e8'
-                  },
-                  position: 'relative',
-                  margin: '0 auto'
-                }}
+                className="file-card"
                 onClick={() => handleFileClick(file)}
               >
                 {/* Delete button in top-right corner */}
                 <IconButton
-                  sx={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    zIndex: 1,
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    color: 'white',
-                    '&:hover': {
-                      backgroundColor: 'rgba(0, 0, 0, 0.7)'
-                    }
-                  }}
+                  className="delete-button"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDeleteFile(file.id);
@@ -377,26 +350,11 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                     icon={<SharedIcon />}
                     label="Shared"
                     size="small"
-                    sx={{
-                      position: 'absolute',
-                      top: 8,
-                      left: 8,
-                      zIndex: 1,
-                      backgroundColor: '#4CAF50',
-                      color: 'white'
-                    }}
+                    className="shared-chip"
                   />
                 )}
 
-                <CardContent sx={{ 
-                  flexGrow: 1, 
-                  textAlign: 'center', 
-                  padding: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  height: '100%'
-                }}>
+                <CardContent className="file-card-content">
                   {/* File type icon */}
                   <Box sx={{ 
                     display: 'flex', 
@@ -415,17 +373,8 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
                   {/* File name */}
                   <Typography
-                    variant="body2"
                     component="div"
-                    sx={{
-                      fontWeight: 'bold',
-                      marginBottom: 0.5,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      fontSize: '0.9rem',
-                      color: '#000000'
-                    }}
+                    className="file-name"
                     title={file.fileName}
                   >
                     {file.fileName}
@@ -433,21 +382,16 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
                   {/* File size and date */}
                   <Box sx={{ marginBottom: 1 }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.8rem', marginBottom: 0.2, color: 'rgba(0, 0, 0, 0.7)' }}>
+                    <Typography className="file-size">
                       {formatFileSize(file.size)}
                     </Typography>
-                    <Typography variant="body2" sx={{ fontSize: '0.75rem', color: 'rgba(0, 0, 0, 0.7)' }}>
+                    <Typography className="file-date">
                       {formatDate(file.uploadTimestamp)}
                     </Typography>
                   </Box>
-                </CardContent>
+                </CardContent>  
 
-                <CardActions sx={{ 
-                  justifyContent: 'center', 
-                  padding: 1,
-                  paddingTop: 0,
-                  minHeight: 'auto'
-                }}>
+                <CardActions className="file-card-actions">
                   <Tooltip title="Udostępnij plik">
                     <Button
                       variant="outlined"
@@ -457,18 +401,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                         handleShareFile(file.id);
                       }}
                       size="small"
-                      sx={{
-                        fontSize: '0.75rem',
-                        padding: '4px 8px',
-                        minWidth: 'auto',
-                        borderColor: '#1976d2',
-                        color: '#1976d2',
-                        borderRadius: 12,
-                        '&:hover': {
-                          borderColor: '#1976d2',
-                          backgroundColor: 'rgba(117, 117, 117, 0.1)'
-                        }
-                      }}
+                      className="share-button"
                     >
                       UDOSTĘPNIJ
                     </Button>
