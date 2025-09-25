@@ -12,6 +12,10 @@ import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../ut
 import { useAuth } from '../context/AuthContext';
 import { decodeUserId } from '../lib/decodeUserId';
 import { useAxiosInterceptor } from '../hooks/useAxiosInterceptor';
+import { PaginationControlBox } from '../themes/boxes/PaginationControlBox';
+import { ToolbarBox } from '../themes/boxes/ToolbarBox';
+import { MenuItemBox } from '../themes/boxes/MenuItemBox';
+import { MenuItemContainerBox } from '../themes/boxes/MenuItemContainerBox';
 
 export interface FileListRef {
   refreshFiles: () => void;
@@ -193,14 +197,8 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     <Box sx={{ padding: 3 }}>
       {/* Toolbar - only show if user has files */}
       {files.length > 0 && (
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          marginBottom: 3,
-          padding: '0 20px'
-        }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+        <ToolbarBox>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
             Pliki ({startIndex + 1}-{Math.min(endIndex, sortedFiles.length)} z {sortedFiles.length})
             {searchQuery && ` (z ${files.length} wszystkich)`}
           </Typography>
@@ -212,27 +210,9 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
               placeholder="Szukaj plików..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
               InputProps={{
                 startAdornment: <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }} />,
-              }}
-              sx={{
-                minWidth: 200,
-                '& .MuiOutlinedInput-root': {
-                  color: 'white',
-                  '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.5)',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: 'white',
-                  },
-                },
-                '& .MuiInputBase-input::placeholder': {
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  opacity: 1,
-                },
               }}
             />
 
@@ -248,173 +228,70 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
             open={Boolean(sortMenuAnchor)}
             onClose={handleSortMenuClose}
             PaperProps={{
-              sx: {
-                minWidth: 180,
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-                border: 'none',
-                borderRadius: 2,
-                overflow: 'hidden',
-                mt: 1
-              }
+              className: 'sort-menu'
             }}
             transformOrigin={{ horizontal: 'left', vertical: 'top' }}
             anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
           >
             <MenuItem 
               onClick={() => handleSort('fileName')} 
-              sx={{ 
-                py: 1.2,
-                px: 2,
-                '&:hover': { backgroundColor: '#f5f5f5' },
-                backgroundColor: sortField === 'fileName' ? '#e8f5e8' : 'transparent'
-              }}
+              className={`sort-menu-item ${sortField === 'fileName' ? 'active' : ''}`}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, width: '100%', height: 30 }}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  width: 20,
-                  height: 20,
-                  borderRadius: '50%',
-                  backgroundColor: sortField === 'fileName' ? '#2e7d32' : 'transparent',
-                  color: 'white'
-                }}>
+              <MenuItemContainerBox>
+                <MenuItemBox sx={{ backgroundColor: sortField === 'fileName' ? '#2e7d32' : 'transparent' }}>
                   {sortField === 'fileName' && (sortOrder === 'asc' ? <ArrowUpIcon sx={{ fontSize: 14 }} /> : <ArrowDownIcon sx={{ fontSize: 14 }} />)}
-                </Box>
+                </MenuItemBox>
                 <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    fontWeight: sortField === 'fileName' ? 600 : 400,
-                    color: sortField === 'fileName' ? '#2e7d32' : '#333',
-                    fontSize: '0.9rem',
-                    lineHeight: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    height: 20,
-                    pb: 1.2
-                  }}
+                  className={`sort-menu-text ${sortField === 'fileName' ? 'active' : ''}`}
                 >
                   Nazwa
                 </Typography>
-              </Box>
+              </MenuItemContainerBox>
             </MenuItem>
             <MenuItem 
               onClick={() => handleSort('size')} 
-              sx={{ 
-                py: 1.2,
-                px: 2,
-                '&:hover': { backgroundColor: '#f5f5f5' },
-                backgroundColor: sortField === 'size' ? '#e8f5e8' : 'transparent'
-              }}
+              className={`sort-menu-item ${sortField === 'size' ? 'active' : ''}`}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, width: '100%', height: 30 }}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  width: 20,
-                  height: 20,
-                  borderRadius: '50%',
-                  backgroundColor: sortField === 'size' ? '#2e7d32' : 'transparent',
-                  color: 'white'
-                }}>
+              <MenuItemContainerBox>
+                <MenuItemBox sx={{ backgroundColor: sortField === 'size' ? '#2e7d32' : 'transparent' }}>
                   {sortField === 'size' && (sortOrder === 'asc' ? <ArrowUpIcon sx={{ fontSize: 14 }} /> : <ArrowDownIcon sx={{ fontSize: 14 }} />)}
-                </Box>
+                </MenuItemBox>
                 <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    fontWeight: sortField === 'size' ? 600 : 400,
-                    color: sortField === 'size' ? '#2e7d32' : '#333',
-                    fontSize: '0.9rem',
-                    lineHeight: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    height: 20,
-                    pb: 1.2
-                  }}
+                  className={`sort-menu-text ${sortField === 'size' ? 'active' : ''}`}
                 >
                   Rozmiar
                 </Typography>
-              </Box>
+              </MenuItemContainerBox>
             </MenuItem>
             <MenuItem 
               onClick={() => handleSort('uploadTimestamp')} 
-              sx={{ 
-                py: 1.2,
-                px: 2,
-                '&:hover': { backgroundColor: '#f5f5f5' },
-                backgroundColor: sortField === 'uploadTimestamp' ? '#e8f5e8' : 'transparent'
-              }}
+              className={`sort-menu-item ${sortField === 'uploadTimestamp' ? 'active' : ''}`}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, width: '100%', height: 30 }}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  width: 20,
-                  height: 20,
-                  borderRadius: '50%',
-                  backgroundColor: sortField === 'uploadTimestamp' ? '#2e7d32' : 'transparent',
-                  color: 'white'
-                }}>
+              <MenuItemContainerBox>
+                <MenuItemBox sx={{ backgroundColor: sortField === 'uploadTimestamp' ? '#2e7d32' : 'transparent' }}>
                   {sortField === 'uploadTimestamp' && (sortOrder === 'asc' ? <ArrowUpIcon sx={{ fontSize: 14 }} /> : <ArrowDownIcon sx={{ fontSize: 14 }} />)}
-                </Box>
+                </MenuItemBox>
                 <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    fontWeight: sortField === 'uploadTimestamp' ? 600 : 400,
-                    color: sortField === 'uploadTimestamp' ? '#2e7d32' : '#333',
-                    fontSize: '0.9rem',
-                    lineHeight: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    height: 18,
-                    pb: 1.2
-                  }}
+                  className={`sort-menu-text ${sortField === 'uploadTimestamp' ? 'active' : ''}`}
                 >
                   Data dodania
                 </Typography>
-              </Box>
+              </MenuItemContainerBox>
             </MenuItem>
             <MenuItem 
               onClick={() => handleSort('ownerName')} 
-              sx={{ 
-                py: 1.2,
-                px: 2,
-                '&:hover': { backgroundColor: '#f5f5f5' },
-                backgroundColor: sortField === 'ownerName' ? '#e8f5e8' : 'transparent'
-              }}
+              className={`sort-menu-item ${sortField === 'ownerName' ? 'active' : ''}`}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, width: '100%', height: 30}}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  width: 20,
-                  height: 20,
-                  borderRadius: '50%',
-                  backgroundColor: sortField === 'ownerName' ? '#2e7d32' : 'transparent',
-                  color: 'white'
-                }}>
+              <MenuItemContainerBox>
+                <MenuItemBox sx={{ backgroundColor: sortField === 'ownerName' ? '#2e7d32' : 'transparent' }}>
                   {sortField === 'ownerName' && (sortOrder === 'asc' ? <ArrowUpIcon sx={{ fontSize: 14 }} /> : <ArrowDownIcon sx={{ fontSize: 14 }} />)}
-                </Box>
+                </MenuItemBox>
                 <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    fontWeight: sortField === 'ownerName' ? 600 : 400,
-                    color: sortField === 'ownerName' ? '#2e7d32' : '#333',
-                    fontSize: '0.9rem',
-                    lineHeight: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    height: 20,
-                    pb: 1.2
-                  }}
+                  className={`sort-menu-text ${sortField === 'ownerName' ? 'active' : ''}`}
                 >
                   Właściciel
                 </Typography>
-              </Box>
+              </MenuItemContainerBox>
             </MenuItem>
           </Menu>
 
@@ -429,7 +306,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
               </IconButton>
             </Tooltip>
           </Box>
-        </Box>
+        </ToolbarBox>
       )}
 
       {files.length > 0 && viewMode === 'grid' ? (
@@ -586,6 +463,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                         minWidth: 'auto',
                         borderColor: '#1976d2',
                         color: '#1976d2',
+                        borderRadius: 12,
                         '&:hover': {
                           borderColor: '#1976d2',
                           backgroundColor: 'rgba(117, 117, 117, 0.1)'
@@ -753,16 +631,9 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
       {/* Pagination Controls */}
       {sortedFiles.length > 0 && (
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          marginTop: 4,
-          gap: 2,
-          padding: '20px 0'
-        }}>
+        <PaginationControlBox>
           {/* Left spacer */}
-          <Box sx={{ width: 120 }} />
+          <Box sx={{ width: 80 }} />
           
           {/* Center pagination - only show if more than 1 page */}
           {totalPages > 1 && (
@@ -771,35 +642,30 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
               <IconButton
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                sx={{
-                  color: currentPage === 1 ? 'rgba(0, 0, 0, 0.26)' : '#2e7d32',
-                  '&:hover': {
-                    backgroundColor: currentPage === 1 ? 'transparent' : 'rgba(46, 125, 50, 0.1)'
-                  }
-                }}
+                className={`pagination-nav ${currentPage === 1 ? 'disabled' : ''}`}
               >
                 <ArrowLeftIcon />
               </IconButton>
 
-              {/* Page Numbers */}
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                  // Show first page, last page, current page, and pages around current page
-                  const shouldShow = 
-                    page === 1 || 
-                    page === totalPages || 
-                    Math.abs(page - currentPage) <= 1;
-                  
-                  if (!shouldShow) {
-                    // Show ellipsis for gaps
-                    if (page === 2 && currentPage > 4) {
-                      return <Typography key={`ellipsis-${page}`} sx={{ px: 1 }}>...</Typography>;
+                {/* Page Numbers */}
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    // Show first page, last page, current page, and pages around current page
+                    const shouldShow = 
+                      page === 1 || 
+                      page === totalPages || 
+                      Math.abs(page - currentPage) <= 1;
+                    
+                    if (!shouldShow) {
+                      // Show ellipsis for gaps
+                      if (page === 2 && currentPage > 4) {
+                        return <Typography key={`ellipsis-${page}`} sx={{ px: 1 }}>...</Typography>;
+                      }
+                      if (page === totalPages - 1 && currentPage < totalPages - 3) {
+                        return <Typography key={`ellipsis-${page}`} sx={{ px: 1 }}>...</Typography>;
+                      }
+                      return null;
                     }
-                    if (page === totalPages - 1 && currentPage < totalPages - 3) {
-                      return <Typography key={`ellipsis-${page}`} sx={{ px: 1 }}>...</Typography>;
-                    }
-                    return null;
-                  }
 
                   return (
                     <Button
@@ -807,63 +673,31 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                       onClick={() => setCurrentPage(page)}
                       variant={currentPage === page ? 'contained' : 'outlined'}
                       size="small"
-                      sx={{
-                        minWidth: 40,
-                        height: 40,
-                        borderRadius: '50%',
-                        backgroundColor: currentPage === page ? '#2e7d32' : 'transparent',
-                        color: currentPage === page ? 'white' : '#2e7d32',
-                        borderColor: '#2e7d32',
-                        '&:hover': {
-                          backgroundColor: currentPage === page ? '#1b5e20' : 'rgba(46, 125, 50, 0.1)',
-                          borderColor: '#2e7d32'
-                        }
-                      }}
+                      className={currentPage === page ? 'pagination-active' : 'pagination-inactive'}
                     >
                       {page}
                     </Button>
                   );
-                })}
-              </Box>
+                  })}
+                </Box>
 
               {/* Next Page Button */}
               <IconButton
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                sx={{
-                  color: currentPage === totalPages ? 'rgba(0, 0, 0, 0.26)' : '#2e7d32',
-                  '&:hover': {
-                    backgroundColor: currentPage === totalPages ? 'transparent' : 'rgba(46, 125, 50, 0.1)'
-                  }
-                }}
+                className={`pagination-nav ${currentPage === totalPages ? 'disabled' : ''}`}
               >
                 <ArrowRightIcon />
               </IconButton>
-            </Box>
-          )}
+              </Box>
+            )}
 
           {/* Items per page selector - Always visible on the right */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <FormControl size="small" sx={{ minWidth: 80 }}>
                 <Select
                   value={itemsPerPage}
-                  onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                  sx={{
-                    color: 'white',
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'white',
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'white',
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'white',
-                    },
-                    '& .MuiSvgIcon-root': {
-                      color: 'white',
-                    }
-                  }}
-              >
+                  onChange={(e) => setItemsPerPage(Number(e.target.value))}>
                 <MenuItem value={5}>5</MenuItem>
                 <MenuItem value={10}>10</MenuItem>
                 <MenuItem value={15}>15</MenuItem>
@@ -871,7 +705,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
               </Select>
             </FormControl>
           </Box>
-        </Box>
+        </PaginationControlBox>
       )}
     </Box>
   );

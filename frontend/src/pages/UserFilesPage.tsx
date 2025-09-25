@@ -4,6 +4,7 @@ import FileList, { FileListRef } from "../components/FileList";
 import FileUpload from "../components/FileUpload";
 import { ThemeProvider } from '@emotion/react';
 import UploadFileTheme from '../themes/components/UploadFileTheme';
+import FileListTheme from '../themes/components/FileListTheme';
 
 const UserFilesPage = () => {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -24,7 +25,9 @@ const UserFilesPage = () => {
 
     return (
         <Container>
-            <FileList ref={fileListRef} />
+            <ThemeProvider theme={FileListTheme}>
+                <FileList ref={fileListRef} />
+            </ThemeProvider>
                 
             <Fab
                 color="primary"
