@@ -7,7 +7,8 @@ import { Delete as DeleteIcon, Share as ShareIcon, CloudDone as SharedIcon, View
   ViewList as ListViewIcon, Sort as SortIcon, ArrowUpward as ArrowUpIcon, ArrowDownward as ArrowDownIcon,
   KeyboardArrowLeft as ArrowLeftIcon, KeyboardArrowRight as ArrowRightIcon,
   Search as SearchIcon } from '@mui/icons-material';
-import { FileService, FileMetadata } from '../services/FileService';
+import { FileService } from '../services/FileService';
+import { FileMetadata } from '../types/FileMetadata';
 import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
 import { useAuth } from '../context/AuthContext';
 import { decodeUserId } from '../lib/decodeUserId';
@@ -60,11 +61,11 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       setError(null); // Clear any previous errors on success
     } catch (err: any) {
       if (err.response?.status === 401) {
-        setError('Authentication required. Please log in again.');
+        setError('Wymagana autoryzacja. Zaloguj się ponownie.');
       } else if (err.response?.status === 403) {
-        setError('Access denied. You do not have permission to view files.');
+        setError('Odmowa dostępu. Nie masz uprawnień do przeglądania plików.');
       } else {
-        setError('Failed to load files. Please try again.');
+        setError('Nie udało się załadować plików. Spróbuj ponownie.');
       }
       console.error('Error fetching files:', err);
     } finally {
