@@ -16,6 +16,9 @@ import { PaginationControlBox } from '../themes/boxes/PaginationControlBox';
 import { ToolbarBox } from '../themes/boxes/ToolbarBox';
 import { MenuItemBox } from '../themes/boxes/MenuItemBox';
 import { MenuItemContainerBox } from '../themes/boxes/MenuItemContainerBox';
+import { UserIconBox } from '../themes/boxes/UserIconBox';
+import { CardBox } from '../themes/boxes/CardBox';
+import { FileTypeBox } from '../themes/boxes/FileTypeBox';
 
 export interface FileListRef {
   refreshFiles: () => void;
@@ -310,17 +313,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       )}
 
       {files.length > 0 && viewMode === 'grid' ? (
-        <Box 
-          sx={{ 
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 3,
-            justifyContent: 'center',
-            maxWidth: '1000px',
-            margin: '0 auto',
-            backgroundColor: 'linear-gradient(135deg, #ffffff, #f0f7ff)',
-          }}
-        >
+        <CardBox>
         {paginatedFiles.map((file) => {
           const FileIcon = getFileIcon(file.mimeType);
           const fileColor = getFileTypeColor(file.mimeType);
@@ -356,20 +349,14 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
                 <CardContent className="file-card-content">
                   {/* File type icon */}
-                  <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    height: '80px',
-                    marginTop: 1
-                  }}>
+                  <FileTypeBox>
                     <FileIcon
                       sx={{
                         fontSize: 64,
                         color: fileColor
                       }}
                     />
-                  </Box>
+                  </FileTypeBox>
 
                   {/* File name */}
                   <Typography
@@ -411,7 +398,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
             </Box>
           );
         })}
-        </Box>
+        </CardBox>
       ) : files.length > 0 && paginatedFiles.length > 0 ? (
         /* List View */
         <TableContainer 
@@ -453,22 +440,9 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                     </TableCell>
                     <TableCell className="table-body-cell-center">
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
-                        <Box
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: '50%',
-                            backgroundColor: '#2e7d32',
-                            color: 'white',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '0.85rem',
-                            fontWeight: 'bold'
-                          }}
-                        >
+                        <UserIconBox>
                           {file.ownerName.charAt(0).toUpperCase()}
-                        </Box>
+                        </UserIconBox>
                         <Typography className="table-owner-name">
                           {file.ownerName}
                         </Typography>
