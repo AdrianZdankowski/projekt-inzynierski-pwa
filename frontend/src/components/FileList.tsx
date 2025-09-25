@@ -1,43 +1,12 @@
 
 import { useState, useEffect, forwardRef, useImperativeHandle, useCallback, useRef } from 'react';
-import {
-  Card,
-  CardContent,
-  CardActions,
-  Typography,
-  IconButton,
-  Button,
-  Box,
-  Chip,
-  CircularProgress,
-  Alert,
-  Tooltip,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Menu,
-  MenuItem,
-  Select,
-  FormControl,
-  TextField
-} from '@mui/material';
-import {
-  Delete as DeleteIcon,
-  Share as ShareIcon,
-  CloudDone as SharedIcon,
-  ViewModule as GridViewIcon,
-  ViewList as ListViewIcon,
-  Sort as SortIcon,
-  ArrowUpward as ArrowUpIcon,
-  ArrowDownward as ArrowDownIcon,
-  KeyboardArrowLeft as ArrowLeftIcon,
-  KeyboardArrowRight as ArrowRightIcon,
-  Search as SearchIcon
-} from '@mui/icons-material';
+import { Card, CardContent, CardActions, Typography, IconButton, Button, Box, Chip, CircularProgress,
+  Alert, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Menu,
+  MenuItem, Select, FormControl, TextField } from '@mui/material';
+import { Delete as DeleteIcon, Share as ShareIcon, CloudDone as SharedIcon, ViewModule as GridViewIcon,
+  ViewList as ListViewIcon, Sort as SortIcon, ArrowUpward as ArrowUpIcon, ArrowDownward as ArrowDownIcon,
+  KeyboardArrowLeft as ArrowLeftIcon, KeyboardArrowRight as ArrowRightIcon,
+  Search as SearchIcon } from '@mui/icons-material';
 import { FileService, FileMetadata } from '../services/FileService';
 import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
 import { useAuth } from '../context/AuthContext';
@@ -90,14 +59,13 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   }, []);
 
   useEffect(() => {
-    // Reset flag gdy accessToken się zmienia
     hasFetched.current = false;
   }, [accessToken]);
 
   useEffect(() => {
-    if (isRefreshing) return; // czekaj aż restoreSession zakończy
-    if (!accessToken) return; // brak tokena, nie fetchuj
-    if (hasFetched.current) return; // już fetchowaliśmy
+    if (isRefreshing) return;
+    if (!accessToken) return;
+    if (hasFetched.current) return;
   
     hasFetched.current = true;
     fetchFiles();
@@ -110,7 +78,6 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       setSortField(field);
       setSortOrder('asc');
     }
-    // Don't close the menu - keep it open
   };
 
   const handleSortMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -155,7 +122,6 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     return 0;
   });
 
-  // Pagination logic
   const totalPages = Math.ceil(sortedFiles.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -178,10 +144,8 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
   const handleDeleteFile = async (fileId: string) => {
     try {
-      // TODO: Implement delete endpoint in backend
+      // TODO: Implement endpoint in backend
       console.log('Delete file:', fileId);
-      // await FileService.deleteFile(fileId);
-      // setFiles(files.filter(file => file.id !== fileId));
     } catch (err) {
       console.error('Error deleting file:', err);
     }
@@ -189,16 +153,15 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
   const handleShareFile = async (fileId: string) => {
     try {
-      // For now, just show a placeholder - this would need user selection
+      // TODO: Implement endpoint in backend
       console.log('Share file:', fileId);
-      // await FileService.shareFile(fileId, userId);
     } catch (err) {
       console.error('Error sharing file:', err);
     }
   };
 
   const handleFileClick = (file: FileMetadata) => {
-    // Placeholder for file opening functionality
+    // TODO: Implement functionality in the future
     console.log('Open file:', file);
   };
 
@@ -228,56 +191,57 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
   return (
     <Box sx={{ padding: 3 }}>
-      {/* Toolbar */}
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: 3,
-        padding: '0 20px'
-      }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          Pliki ({startIndex + 1}-{Math.min(endIndex, sortedFiles.length)} z {sortedFiles.length})
-          {searchQuery && ` (z ${files.length} wszystkich)`}
-        </Typography>
-        
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          {/* Search Input */}
-          <TextField
-            size="small"
-            placeholder="Szukaj plików..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            InputProps={{
-              startAdornment: <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }} />,
-            }}
-            sx={{
-              minWidth: 200,
-              '& .MuiOutlinedInput-root': {
-                color: 'white',
-                '& fieldset': {
-                  borderColor: 'rgba(255, 255, 255, 0.3)',
+      {/* Toolbar - only show if user has files */}
+      {files.length > 0 && (
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          marginBottom: 3,
+          padding: '0 20px'
+        }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+            Pliki ({startIndex + 1}-{Math.min(endIndex, sortedFiles.length)} z {sortedFiles.length})
+            {searchQuery && ` (z ${files.length} wszystkich)`}
+          </Typography>
+          
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            {/* Search Input */}
+            <TextField
+              size="small"
+              placeholder="Szukaj plików..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                startAdornment: <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }} />,
+              }}
+              sx={{
+                minWidth: 200,
+                '& .MuiOutlinedInput-root': {
+                  color: 'white',
+                  '& fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: 'white',
+                  },
                 },
-                '&:hover fieldset': {
-                  borderColor: 'rgba(255, 255, 255, 0.5)',
+                '& .MuiInputBase-input::placeholder': {
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  opacity: 1,
                 },
-                '&.Mui-focused fieldset': {
-                  borderColor: 'white',
-                },
-              },
-              '& .MuiInputBase-input::placeholder': {
-                color: 'rgba(255, 255, 255, 0.7)',
-                opacity: 1,
-              },
-            }}
-          />
+              }}
+            />
 
-          {/* Sort Menu */}
-          <Tooltip title="Sortuj">
-            <IconButton onClick={handleSortMenuOpen} size="small" sx={{ color: 'white' }}>
-              <SortIcon />
-            </IconButton>
-          </Tooltip>
+            {/* Sort Menu */}
+            <Tooltip title="Sortuj">
+              <IconButton onClick={handleSortMenuOpen} size="small" sx={{ color: 'white' }}>
+                <SortIcon />
+              </IconButton>
+            </Tooltip>
           
           <Menu
             anchorEl={sortMenuAnchor}
@@ -454,20 +418,21 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
             </MenuItem>
           </Menu>
 
-          {/* View Toggle */}
-          <Tooltip title={viewMode === 'grid' ? 'Widok listy' : 'Widok kafelków'}>
-            <IconButton 
-              onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-              size="small"
-              sx={{ color: 'white' }}
-            >
-              {viewMode === 'grid' ? <ListViewIcon /> : <GridViewIcon />}
-            </IconButton>
-          </Tooltip>
+            {/* View Toggle */}
+            <Tooltip title={viewMode === 'grid' ? 'Widok listy' : 'Widok kafelków'}>
+              <IconButton 
+                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                size="small"
+                sx={{ color: 'white' }}
+              >
+                {viewMode === 'grid' ? <ListViewIcon /> : <GridViewIcon />}
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Box>
-      </Box>
+      )}
 
-      {viewMode === 'grid' ? (
+      {files.length > 0 && viewMode === 'grid' ? (
         <Box 
           sx={{ 
             display: 'flex',
@@ -636,7 +601,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
           );
         })}
         </Box>
-      ) : (
+      ) : files.length > 0 ? (
         /* List View */
         <TableContainer 
           component={Paper} 
@@ -760,16 +725,29 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
             </TableBody>
           </Table>
         </TableContainer>
-      )}
+      ) : null}
 
       {sortedFiles.length === 0 && (
-        <Box textAlign="center" sx={{ marginTop: 4 }}>
-          <Typography variant="h6" color="text.secondary">
-            {searchQuery ? 'Nie znaleziono plików' : 'Brak plików'}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {searchQuery ? 'Spróbuj zmienić kryteria wyszukiwania' : 'Prześlij pliki, aby rozpocząć'}
-          </Typography>
+        <Box sx={{ marginTop: 4 }}>
+          <Alert 
+            severity="info" 
+            sx={{ 
+              margin: 'auto',
+              maxWidth: '800px',
+              '& .MuiAlert-message': {
+                width: '100%',
+                textAlign: 'center',
+                alignItems: 'center'
+              }
+            }}
+          >
+            <Typography variant="h6" sx={{ marginBottom: 1, fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
+              {files.length === 0 ? 'Nie masz żadnych plików obecnie' : 'Nie znaleziono plików'}
+            </Typography>
+            <Typography variant="body2" sx={{ marginBottom: 1, color: 'blue', textAlign: 'center' }}>
+              {files.length === 0 ? 'Prześlij pliki, aby rozpocząć korzystanie z aplikacji' : 'Spróbuj zmienić kryteria wyszukiwania'}
+            </Typography>
+          </Alert>
         </Box>
       )}
 

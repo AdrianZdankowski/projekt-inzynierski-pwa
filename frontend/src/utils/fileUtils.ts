@@ -1,13 +1,5 @@
-import { 
-  PictureAsPdf, 
-  Description, 
-  TableChart, 
-  Slideshow, 
-  Image, 
-  VideoFile, 
-  AudioFile, 
-  InsertDriveFile 
-} from '@mui/icons-material';
+import { PictureAsPdf, Description, TableChart, Slideshow, Image, VideoFile, 
+  AudioFile, InsertDriveFile } from '@mui/icons-material';
 
 export const getFileIcon = (mimeType: string) => {
   if (mimeType.startsWith('image/')) return Image;

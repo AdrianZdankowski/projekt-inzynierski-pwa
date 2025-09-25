@@ -1,16 +1,6 @@
 import { useState, useRef } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
-import { 
-    Box, 
-    Button, 
-    Typography, 
-    Alert, 
-    CircularProgress,
-    Paper,
-    Stack,
-    Modal,
-    IconButton
-} from '@mui/material';
+import { Box, Button, Typography, Alert, CircularProgress, Paper, Stack, Modal, IconButton } from '@mui/material';
 import { DragDropBox } from '../themes/boxes/DragDropBox';
 import { UploadFileBox } from '../themes/boxes/UploadFileBox';
 import { FileUploadService } from '../services/FileUploadService';

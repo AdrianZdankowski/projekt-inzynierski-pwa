@@ -14,7 +14,6 @@ export interface FileMetadata {
 export const FileService = {
   async getUserFiles(): Promise<FileMetadata[]> {
     const response = (await axiosInstance.get('/file'));
-    console.log(response.data);
     return response.data;
   },
 
