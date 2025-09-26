@@ -53,7 +53,7 @@ function App() {
           <Route path="video" element={
             <ProtectedRoute>
               <ThemeProvider theme={VideoPlayerTheme}>
-                <VideoTestPage videoId="448cb6b1-6f01-408a-8f98-a49ef327f365"/>
+                <VideoTestPage/>
               </ThemeProvider>
             </ProtectedRoute>
             }/>

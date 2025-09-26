@@ -1,4 +1,3 @@
-
 import { useState, useEffect, forwardRef, useImperativeHandle, useCallback, useRef } from 'react';
 import { Card, CardContent, CardActions, Typography, IconButton, Button, Box, Chip, CircularProgress,
   Alert, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Menu,
@@ -20,6 +19,7 @@ import { MenuItemContainerBox } from '../themes/boxes/MenuItemContainerBox';
 import { UserIconBox } from '../themes/boxes/UserIconBox';
 import { CardBox } from '../themes/boxes/CardBox';
 import { FileTypeBox } from '../themes/boxes/FileTypeBox';
+import { useNavigate } from 'react-router-dom';
 
 const SORT_OPTIONS = [
   { field: 'fileName', label: 'Nazwa' },
@@ -49,6 +49,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const [searchQuery, setSearchQuery] = useState('');
   const { accessToken, isRefreshing } = useAuth();
   const hasFetched = useRef(false);
+  const navigate = useNavigate();
 
 
   useAxiosInterceptor();
@@ -175,9 +176,16 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     }
   };
 
-  const handleFileClick = (file: FileMetadata) => {
+  const handleFileClick = (file: FileMetadata, isShared: boolean) => {
     // TODO: Implement functionality in the future
     console.log('Open file:', file);
+
+    // Open video page
+    switch(file.mimeType) {
+      case 'video/mp4':
+        navigate('/video', {state: {file, isShared}});
+        break;
+    }
   };
 
   const isSharedFile = (file: FileMetadata) => {
@@ -289,7 +297,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
             <Box key={file.id}>
               <Card
                 className="file-card"
-                onClick={() => handleFileClick(file)}
+                onClick={() => handleFileClick(file, isShared)}
               >
                 {/* Delete button in top-right corner */}
                 <IconButton
@@ -393,7 +401,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                     key={file.id}
                     hover
                     className={isEvenRow ? 'table-body-row' : 'table-body-row-odd'}
-                    onClick={() => handleFileClick(file)}
+                    onClick={() => handleFileClick(file, isShared)}
                   >
                     <TableCell className="table-body-cell">
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>

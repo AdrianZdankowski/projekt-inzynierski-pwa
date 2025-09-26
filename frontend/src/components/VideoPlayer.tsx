@@ -15,8 +15,9 @@ interface VideoPlayerProps {
     src: string;
     fileName: string;
     ownerName: string;
-    ownerId?: string;
+    ownerId: string;
     uploadTimestamp: string;
+    isShared: boolean;
 }
 
 interface LevelInfo {
@@ -25,7 +26,7 @@ interface LevelInfo {
     bitrate: number;
 }
 
-const VideoPlayer = ({src, fileName, ownerName, ownerId, uploadTimestamp}: VideoPlayerProps) => {
+const VideoPlayer = ({src, fileName, ownerName, ownerId, uploadTimestamp, isShared}: VideoPlayerProps) => {
 
     const autoQuality = -1;
 
@@ -40,12 +41,10 @@ const VideoPlayer = ({src, fileName, ownerName, ownerId, uploadTimestamp}: Video
     let uploadDate;
     let uploadTime;
 
-    if (uploadTimestamp.length == 20) {
-        uploadDate = uploadTimestamp.slice(0,10).split("-");
-        uploadDate = `${uploadDate[2]}-${uploadDate[1]}-${uploadDate[0]}`;
-        uploadTime = uploadTimestamp.slice(11,16);
-    }
-
+    uploadDate = uploadTimestamp.slice(0,10).split("-");
+    uploadDate = `${uploadDate[2]}-${uploadDate[1]}-${uploadDate[0]}`;
+    uploadTime = uploadTimestamp.slice(11,16);
+    
     useEffect(() => {
         
         if (!videoRef.current) return;
@@ -97,7 +96,7 @@ const VideoPlayer = ({src, fileName, ownerName, ownerId, uploadTimestamp}: Video
     };
 
     return (
-        <Container maxWidth="md" sx={{mt: 3.5}}>
+        <Container maxWidth="lg" sx={{mt: 4}}>
             <video
                 ref={videoRef}
                 controls
@@ -112,9 +111,11 @@ const VideoPlayer = ({src, fileName, ownerName, ownerId, uploadTimestamp}: Video
                     <Typography variant="body2" gutterBottom>
                     Przesłane: {uploadDate} {uploadTime}
                 </Typography>
-                <Typography variant="subtitle1" gutterBottom>
-                    Udostępnione przez: {ownerName}
-                </Typography>
+                {!isShared && 
+                    <Typography variant="subtitle1" gutterBottom>
+                        Udostępnione przez: {ownerName}
+                    </Typography>
+                }
                 </Box>
                 <Box sx={{
                     display: "grid",
@@ -144,6 +145,11 @@ const VideoPlayer = ({src, fileName, ownerName, ownerId, uploadTimestamp}: Video
                         <Button variant="contained" sx={{
                             gridColumn: "1 / span 2"
                             }}>Pobierz</Button>
+                        {isShared && 
+                        <Button variant="contained" sx={{
+                            gridColumn: "1 / span 2"
+                            }}>Udostępnij</Button>
+                        }
                 </Box>
             </Box>
         </Container>
