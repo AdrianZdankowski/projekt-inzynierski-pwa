@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 using backend.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,23 +8,26 @@ using WebApplication1;
 
 namespace backend.Test
 {
-    [TestFixture]
-    public class VideoStreamingTests
+    public abstract class TestBase
     {
-        private StreamService streamService;
-        private AuthService authService;
-        private string accessToken;
-        private WebApplication1.File file;
-        private WebApplication1.File accessDeniedFile;
+        protected StreamService streamService;
+        protected AuthService authService;
+        protected string accessToken;
+        protected WebApplication1.File file;
+        protected WebApplication1.File accessDeniedFile;
+        protected Mock<IAzureBlobService> azureBlobServiceMock;
+        protected AppDbContext appDbContext;
+        protected IConfiguration configuration;
+        protected User testUser;
 
         [SetUp]
-        public void StreamingTestsSetUp()
+        public void TestSetUp()
         {
             //Mock db context
             var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .UseInMemoryDatabase("test")
             .Options;
-            var context = new AppDbContext(options);
+            appDbContext = new AppDbContext(options);
 
             //Mock config with jwt settings
             var inMemorySettings = new Dictionary<string, string> {
@@ -37,14 +36,14 @@ namespace backend.Test
                 {"AppSettings:JwtAudience", "PwaAppUsers"}
             };
 
-            IConfiguration configuration = new ConfigurationBuilder()
+            configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(inMemorySettings)
                 .Build();
 
             //add user with file
             var passwordHasher = new PasswordHasher<User>();
             var hashedPassword = passwordHasher.HashPassword(new User(), "testPassword");
-            var user = new User
+            testUser = new User
             {
                 email = "testEmail",
                 id = Guid.NewGuid(),
@@ -56,7 +55,7 @@ namespace backend.Test
             file = new WebApplication1.File
             {
                 id = Guid.NewGuid(),
-                UserId = user.id,
+                UserId = testUser.id,
                 FileName = "test",
                 BlobName = "test",
                 Checksum = "test",
@@ -79,17 +78,25 @@ namespace backend.Test
                 UploadTimestamp = DateTime.UtcNow
             };
 
-            context.Users.Add(user);
-            context.SaveChanges();
+            appDbContext.Users.Add(testUser);
+            appDbContext.SaveChanges();
 
-            context.Files.Add(file);
-            context.Files.Add(accessDeniedFile);
-            context.SaveChanges();
+            appDbContext.Files.Add(file);
+            appDbContext.Files.Add(accessDeniedFile);
+            appDbContext.SaveChanges();
 
-            var azureBlobServiceMock = new Mock<IAzureBlobService>();
-            azureBlobServiceMock.Setup(s => s.BuildUserScopedBlobName(user.id, file.id, "test"))
+            //userContext.Files.Add(file);
+            //userContext.Files.Add(accessDeniedFile);
+            //userContext.SaveChanges();
+
+            //userContext.Attach(file);
+            //userContext.Attach(accessDeniedFile);
+            //userContext.SaveChanges();
+
+            azureBlobServiceMock = new Mock<IAzureBlobService>();
+            azureBlobServiceMock.Setup(s => s.BuildUserScopedBlobName(testUser.id, file.id, "test"))
                .Returns("test");
-            azureBlobServiceMock.Setup(s => s.BuildUserScopedBlobName(user.id, file.id, "test"))
+            azureBlobServiceMock.Setup(s => s.BuildUserScopedBlobName(testUser.id, file.id, "test"))
                .Returns("test2");
             azureBlobServiceMock.Setup(s => s.GetFile("test"))
                 .ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 }));
@@ -97,29 +104,21 @@ namespace backend.Test
                .ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 }));
 
 
-            streamService = new StreamService(context,configuration, azureBlobServiceMock.Object, new FileAccessValidator(context, configuration));
-            authService = new AuthService(context, configuration);
+            streamService = new StreamService(appDbContext, configuration, azureBlobServiceMock.Object, new FileAccessValidator(appDbContext, configuration));
+            authService = new AuthService(appDbContext, configuration);
 
             var userDto = new DTO.User.UserDto
             {
                 password = "testPassword",
-                username = user.username
+                username = testUser.username
             };
             accessToken = authService.LoginAsync(userDto).Result.AccessToken;
 
         }
-
-        [Test]
-        public void ValidateUserAccess_AccessGranted_ReturnFile()
+        [TearDown]
+        public void TearDown()
         {
-            var video = streamService.GetVideo(accessToken, file.id, "test");
-            Assert.NotNull(video.Result);
-        }
-
-        [Test]
-        public void ValidateUserAccess_AccessDenied_ThrowException()
-        {
-            Assert.ThrowsAsync<UnauthorizedAccessException>(() => streamService.GetVideo(accessToken, accessDeniedFile.id, "test"));
+            appDbContext.Dispose();
         }
     }
 }

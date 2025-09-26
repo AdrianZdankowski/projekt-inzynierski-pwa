@@ -1,5 +1,4 @@
 ﻿using backend;
-using backend.Contexts;
 using backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
@@ -54,14 +53,10 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 //add dbcontext
-//builder.Services.AddDbContext<UserContext>(options =>
-//    options.UseInMemoryDatabase("MyInMemoryDb"));
-//builder.Services.AddDbContext<FileContext>(options =>
+//builder.Services.AddDbContext<AppDbContext>(options =>
 //    options.UseInMemoryDatabase("MyInMemoryDb"));
 
-builder.Services.AddDbContext<UserContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddDbContext<FileContext>(options =>
+builder.Services.AddDbContext<AppDbContext>(options => 
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 //auth
@@ -100,6 +95,7 @@ builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
 builder.Services.AddScoped<IFileConverter, FileConverter>();
 builder.Services.AddScoped<IStreamService, StreamService>();
+builder.Services.AddScoped<IFileAccessValidator, FileAccessValidator>();
 
 builder.Services.Configure<FormOptions>(options =>
 {
@@ -117,7 +113,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
@@ -126,7 +122,12 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<UserContext>();
+    var context = services.GetRequiredService<AppDbContext>();
+    
+    // Run migrations
+    await context.Database.MigrateAsync();
+    
+    // Seed data
     await DbSeeder.SeedSuperAdminAsync(context);
 }
 

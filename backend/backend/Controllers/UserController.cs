@@ -11,8 +11,8 @@ namespace backend.Controllers
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly UserContext _context;
-        public UserController(UserContext context) 
+        private readonly AppDbContext _context;
+        public UserController(AppDbContext context) 
         {
             _context = context;
         }

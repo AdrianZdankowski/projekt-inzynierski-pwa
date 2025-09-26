@@ -7,6 +7,7 @@ import {
   Typography,
   Box,
   Paper,
+  Alert
 } from '@mui/material';
 import axiosInstance from '../api/axiosInstance';
 
@@ -18,6 +19,7 @@ const RegisterPage = () => {
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [repeatPasswordError, setRepeatPasswordError] = useState('');
+  const [registerError, setRegisterError] = useState('');
 
   const navigate = useNavigate();
 
@@ -46,6 +48,11 @@ const RegisterPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    setRegisterError('');
+    setPasswordError('');
+    setUsernameError('');
+    setRepeatPasswordError('');
+    
     const passwordError = validatePassword(password);
     const nameError = validateUsername(username);
     const repeatPasswordError = validateRepeatPassword(password, repeatPassword);
@@ -64,15 +71,28 @@ const RegisterPage = () => {
           registered: true
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      
+      if (error.response?.status === 400) {
+        setRegisterError('Użytkownik o podanej nazwie już istnieje. Wybierz inną nazwę użytkownika.');
+      } else {
+        setRegisterError('Wystąpił błąd podczas rejestracji. Spróbuj ponownie.');
+      }
     }
   };
 
   return (
     <Container maxWidth="sm">
-      <Paper elevation={3} sx={{ padding: 4, mt: 8 , backgroundColor: "#596275", color: 'white'}}>
-        <Typography variant="h5" align="center" gutterBottom>
+      <Paper elevation={3}>
+        {registerError && 
+            <Alert variant="filled" 
+            severity="error" 
+            onClose={() => setRegisterError('')}>
+              {registerError}
+            </Alert>}
+
+        <Typography variant="h5" gutterBottom>
           Zarejestruj się
         </Typography>
         <Box component="form" onSubmit={handleSubmit} noValidate>
@@ -86,30 +106,6 @@ const RegisterPage = () => {
             error={!!usernameError}
             helperText={usernameError}
             required
-            sx={{
-                // tekst i etykieta
-                '& .MuiInputBase-input': {
-                color: 'white', 
-                },
-                '& .MuiInputLabel-root': { 
-                color: 'rgba(255, 255, 255, 0.7)' 
-                },
-                '& .MuiInputLabel-root.Mui-focused': { 
-                color: 'white' 
-                },
-                // obramowanie
-                '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.7)',
-                },
-                '&:hover fieldset': {
-                    borderColor: 'white',
-                },
-                '&.Mui-focused fieldset': {
-                    borderColor: 'white',
-                },
-                },
-            }}
           />
           <TextField
             fullWidth
@@ -121,30 +117,6 @@ const RegisterPage = () => {
             error={!!passwordError}
             helperText={passwordError}
             required
-            sx={{
-                // tekst i etykieta
-                '& .MuiInputBase-input': {
-                color: 'white', 
-                },
-                '& .MuiInputLabel-root': { 
-                color: 'rgba(255, 255, 255, 0.7)' 
-                },
-                '& .MuiInputLabel-root.Mui-focused': { 
-                color: 'white' 
-                },
-                // obramowanie
-                '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.7)',
-                },
-                '&:hover fieldset': {
-                    borderColor: 'white',
-                },
-                '&.Mui-focused fieldset': {
-                    borderColor: 'white',
-                },
-                },
-            }}
           />
           <TextField
             fullWidth
@@ -156,35 +128,10 @@ const RegisterPage = () => {
             error={!!repeatPasswordError}
             helperText={repeatPasswordError}
             required
-            sx={{
-                // tekst i etykieta
-                '& .MuiInputBase-input': {
-                color: 'white', 
-                },
-                '& .MuiInputLabel-root': { 
-                color: 'rgba(255, 255, 255, 0.7)' 
-                },
-                '& .MuiInputLabel-root.Mui-focused': { 
-                color: 'white' 
-                },
-                // obramowanie
-                '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.7)',
-                },
-                '&:hover fieldset': {
-                    borderColor: 'white',
-                },
-                '&.Mui-focused fieldset': {
-                    borderColor: 'white',
-                },
-                },
-            }}
           />
           <Button
             type="submit"
             variant="contained"
-            sx={{ mt: 2 , display: 'block', mx: 'auto', backgroundColor: "#06d07c9f", '&:hover': {backgroundColor: "#58B19F"}}}
           >
             Zarejestruj
           </Button>
