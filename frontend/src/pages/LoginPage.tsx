@@ -23,6 +23,7 @@ const LoginPage = () => {
 
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [loginError, setLoginError] = useState('');
 
   const location = useLocation();
   const state =  location.state as LocationState | null;
@@ -58,6 +59,10 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setLoginError('');
+    setUsernameError('');
+    setPasswordError('');
+
     const passwordError = validatePassword(password);
     const nameError = validateUsername(username);
 
@@ -74,24 +79,36 @@ const LoginPage = () => {
         replace: true
       })
     }
-    catch (error) {
+    catch (error: any) {
       console.error(error);
+      
+      if (error.response?.status === 400) {
+        setLoginError('Użytkownik o podanej nazwie oraz wprowadzonym haśle nie istnieje. Spróbuj ponownie.');
+      } else {
+        setLoginError('Wystąpił błąd podczas logowania. Spróbuj ponownie.');
+      }
     }
   };
 
   return (
-    <Container maxWidth="sm">
-      <Paper elevation={3} sx={{ padding: 4, mt: 8 , backgroundColor: "#596275", color: 'white'}}>
+    <Container>
+      <Paper elevation={3}>
 
         {showAlert && 
             <Alert variant="filled" 
             severity="success" 
-            onClose={() => setShowAlert(false)} 
-            sx={{mb: 2}}>
+            onClose={() => setShowAlert(false)}>
               {'Konto utworzone! Zaloguj się.'}
             </Alert>}
 
-        <Typography variant="h5" align="center" gutterBottom>
+        {loginError && 
+            <Alert variant="filled" 
+            severity="error" 
+            onClose={() => setLoginError('')}>
+              {loginError}
+            </Alert>}
+
+        <Typography variant="h5" gutterBottom>
           Zaloguj się
         </Typography>
         <Box component="form" onSubmit={handleSubmit}>
@@ -105,30 +122,6 @@ const LoginPage = () => {
             error={!!usernameError}
             helperText= {usernameError}
             required
-            sx={{
-                // tekst i etykieta
-                '& .MuiInputBase-input': {
-                color: 'white', 
-                },
-                '& .MuiInputLabel-root': { 
-                color: 'rgba(255, 255, 255, 0.7)' 
-                },
-                '& .MuiInputLabel-root.Mui-focused': { 
-                color: 'white' 
-                },
-                // obramowanie
-                '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.7)',
-                },
-                '&:hover fieldset': {
-                    borderColor: 'white',
-                },
-                '&.Mui-focused fieldset': {
-                    borderColor: 'white',
-                },
-                },
-            }}
           />
           <TextField
             fullWidth
@@ -140,35 +133,10 @@ const LoginPage = () => {
             error={!!passwordError}
             helperText={passwordError}
             required
-            sx={{
-                // tekst i etykieta
-                '& .MuiInputBase-input': {
-                color: 'white', 
-                },
-                '& .MuiInputLabel-root': { 
-                color: 'rgba(255, 255, 255, 0.7)' 
-                },
-                '& .MuiInputLabel-root.Mui-focused': { 
-                color: 'white' 
-                },
-                // obramowanie
-                '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.7)',
-                },
-                '&:hover fieldset': {
-                    borderColor: 'white',
-                },
-                '&.Mui-focused fieldset': {
-                    borderColor: 'white',
-                },
-                },
-            }}
           />
           <Button
             type="submit"
             variant="contained"
-            sx={{ mt: 2 , display: 'block', mx: 'auto', backgroundColor: "#06d07c9f", '&:hover': {backgroundColor: "#58B19F"}}}
           >
             Zaloguj
           </Button>
