@@ -15,7 +15,6 @@ interface VideoPlayerProps {
     src: string;
     fileName: string;
     ownerName: string;
-    ownerId: string;
     uploadTimestamp: string;
     isShared: boolean;
 }
@@ -26,7 +25,7 @@ interface LevelInfo {
     bitrate: number;
 }
 
-const VideoPlayer = ({src, fileName, ownerName, ownerId, uploadTimestamp, isShared}: VideoPlayerProps) => {
+const VideoPlayer = ({src, fileName, ownerName, uploadTimestamp, isShared}: VideoPlayerProps) => {
 
     const autoQuality = -1;
 
@@ -107,11 +106,10 @@ const VideoPlayer = ({src, fileName, ownerName, ownerId, uploadTimestamp, isShar
                     <Typography variant="h6" gutterBottom mt={1}>
                         {fileName}
                     </Typography>
-                
                     <Typography variant="body2" gutterBottom>
                     Przesłane: {uploadDate} {uploadTime}
                 </Typography>
-                {!isShared && 
+                {isShared && 
                     <Typography variant="subtitle1" gutterBottom>
                         Udostępnione przez: {ownerName}
                     </Typography>
@@ -144,12 +142,8 @@ const VideoPlayer = ({src, fileName, ownerName, ownerId, uploadTimestamp, isShar
                         </FormControl>
                         <Button variant="contained" sx={{
                             gridColumn: "1 / span 2"
-                            }}>Pobierz</Button>
-                        {isShared && 
-                        <Button variant="contained" sx={{
-                            gridColumn: "1 / span 2"
-                            }}>Udostępnij</Button>
-                        }
+                            }}>Pobierz
+                        </Button>
                 </Box>
             </Box>
         </Container>
