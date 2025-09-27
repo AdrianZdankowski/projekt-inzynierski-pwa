@@ -3,11 +3,18 @@ import { createTheme } from "@mui/material/styles";
 
 const VideoPlayerTheme = createTheme({
   components: {
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          color: "whitesmoke"
+        },
+      },
+    },
     MuiFormControl: {
       styleOverrides: {
         root: {
-          marginTop: '1rem',
-          width: '9rem',
+          marginTop: '0.5rem',
+          width: '6rem',
         },
       },
     },
@@ -24,6 +31,10 @@ const VideoPlayerTheme = createTheme({
     },
     MuiSelect: {
       styleOverrides: {
+        root: {
+          backgroundColor: '#a4b0be',
+          color: "whitesmoke"
+        },
         filled: {
           color: 'white',
           backgroundColor: '#747d8c',

@@ -51,9 +51,11 @@ function App() {
           <Route path="unauthorized" element={<Unauthorized/>}/>
           <Route path="*" element={isAuthenticated ? <Navigate to="/user-files" replace/> : <Navigate to="/login" replace/>}/>
           <Route path="video" element={
-            <ThemeProvider theme={VideoPlayerTheme}>
-              <VideoTestPage/>
-            </ThemeProvider>
+            <ProtectedRoute>
+              <ThemeProvider theme={VideoPlayerTheme}>
+                <VideoTestPage/>
+              </ThemeProvider>
+            </ProtectedRoute>
             }/>
         </Route>
       </Routes>

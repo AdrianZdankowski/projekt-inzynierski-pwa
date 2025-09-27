@@ -4,7 +4,7 @@ using WebApplication1;
 
 public static class DbSeeder
 {
-    public static async Task SeedSuperAdminAsync(UserContext context)
+    public static async Task SeedSuperAdminAsync(AppDbContext context)
     {
         if (!context.Users.Any())
         {

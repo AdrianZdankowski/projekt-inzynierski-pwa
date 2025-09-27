@@ -5,9 +5,9 @@ using WebApplication1;
 
 namespace backend
 {
-    public class UserContext : DbContext
+    public class AppDbContext : DbContext
     {
-        public UserContext(DbContextOptions<UserContext> options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,6 +23,8 @@ namespace backend
         }
         
         public DbSet<User> Users { get; set; }
+        public DbSet<WebApplication1.FileAccess> FileAccesses { get; set; }
+        public DbSet<WebApplication1.File> Files { get; set; }
         //public DbSet<WebApplication1.File> Files { get; set; }
         //public DbSet<Folder> Folders { get; set; }
     }

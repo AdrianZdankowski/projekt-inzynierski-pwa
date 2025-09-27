@@ -1,13 +1,25 @@
+import { Navigate, useLocation } from "react-router-dom";
 import VideoPlayer from "../components/VideoPlayer";
+import { FileMetadata } from "../types/FileMetadata";
+import { API_BASE_URL } from "../api/axiosConfig";
+
+interface VideoPageProps {
+    file: FileMetadata;
+    isShared: boolean;
+}
 
 const VideoTestPage = () => {
-    // Aby odtworzyć wideo lokalne skopiuj plik do katalogu public, ścieżka to /[nazwa_pliku].[rozszerznie]
-    //(https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8?token=test)
+
+    const {state} = useLocation() as {state?: VideoPageProps}
+
+    if (!state?.file) return <Navigate to="/user-files" replace/>
+
     return <>
-    <h1 style={{marginLeft: '50%'}}>Wideo</h1>
-    <VideoPlayer src="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"/>
-     {/* <h1 style={{marginLeft: '50%'}}>Audio</h1>
-    <VideoPlayer src="https://pl.streamingvideoprovider.com/mp3-playlist/playlist.m3u8"/> */}
+    <VideoPlayer src={`${API_BASE_URL}/Stream/${state.file.id}/master.m3u8`} 
+    fileName={state.file.fileName} 
+    ownerName={state.file.ownerName}
+    uploadTimestamp={state.file.uploadTimestamp}
+    isShared={state.isShared}/>
     </>
 };
 
