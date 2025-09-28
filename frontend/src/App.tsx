@@ -15,7 +15,7 @@ import UserFilesPageTheme from './themes/pages/UserFilesPageTheme.ts'
 import VideoTestPage from './pages/VideoTestPage.tsx'
 import VideoPlayerTheme from './themes/components/VideoPlayerTheme.ts'
 import AuthTheme from './themes/auth/AuthTheme.ts'
-import AxiosInterceptorWrapper from './lib/AxiosInterceptorWrapper.ts'
+import AxiosInterceptorWrapper from './components/AxiosInterceptorWrapper.ts'
 
 function App() {
   const {isAuthenticated} = useAuth();
