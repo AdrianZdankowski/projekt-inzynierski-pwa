@@ -56,7 +56,7 @@ builder.Services.AddSwaggerGen(c =>
 //builder.Services.AddDbContext<AppDbContext>(options =>
 //    options.UseInMemoryDatabase("MyInMemoryDb"));
 
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContext<AppDbContext>(options => 
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 //auth
