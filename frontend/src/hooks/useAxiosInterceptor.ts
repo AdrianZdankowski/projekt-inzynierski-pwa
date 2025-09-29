@@ -54,7 +54,7 @@ export const useAxiosInterceptor = () => {
             return axiosInstance(originalRequest);
           }
           catch (refreshError) {
-            if ((refreshError as AxiosError).response?.status === 401) {
+            if (!(refreshError as AxiosError).response || (refreshError as AxiosError).response?.status === 401) {
               logout();
               navigate('/login', {replace: true});
             }

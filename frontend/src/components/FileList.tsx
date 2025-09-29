@@ -37,7 +37,6 @@ type SortOrder = 'asc' | 'desc';
 
 const FileList = forwardRef<FileListRef>((_, ref) => {
   const [files, setFiles] = useState<FileMetadata[]>([]);
-  // const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortField, setSortField] = useState<SortField>('fileName');
@@ -46,7 +45,6 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
-  // const { accessToken, isRefreshing } = useAuth();
   const { accessToken } = useAuth();
   const navigate = useNavigate();
 
@@ -66,20 +64,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       console.error('Error fetching files:', err);
     }
   }, []);
-
-  // useEffect(() => {
-  //   hasFetched.current = false;
-  // }, [accessToken]);
-
-  // useEffect(() => {
-  //   if (isRefreshing) return;
-  //   if (!accessToken) return;
-  //   if (hasFetched.current) return;
   
-  //   hasFetched.current = true;
-  //   fetchFiles();
-  // }, [accessToken, isRefreshing, fetchFiles]);
-
   useEffect(() => {
     fetchFiles();
   }, []);
@@ -192,14 +177,6 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     // File is shared if the owner is different from current user
     return file.userId !== currentUserId;
   };
-
-  // if (loading) {
-  //   return (
-  //     <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-  //       <CircularProgress />
-  //     </Box>
-  //   );
-  // }
 
   if (error) {
     return (
