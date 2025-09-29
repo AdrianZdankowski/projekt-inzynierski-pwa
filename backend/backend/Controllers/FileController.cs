@@ -256,6 +256,7 @@ namespace backend.Controllers
                 MimeType = f.MimeType,
                 Size = f.Size,
                 UploadTimestamp = f.UploadTimestamp,
+                Status = (int)f.Status,
                 UserId = f.UserId,
                 OwnerName = userMap.TryGetValue((Guid)f.UserId, out var name) ? name : "Unknown"
             });

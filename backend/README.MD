@@ -260,30 +260,66 @@ Po zalogowaniu użytkownik może pobrać listę wszystkich swoich plików zapisa
 GET /api/files
 
 ```
+### Parametry zapytania:
+
+```
+| Parametr        | Typ    | Domyślnie         | Opis                                                                                      |
+| --------------- | ------ | ----------------- | ----------------------------------------------------------------------------------------- |
+| `page`          | number | `1`               | Numer strony (min. 1)                                                                     |
+| `pageSize`      | number | `20`              | Rozmiar strony (1–100)                                                                    |
+| `sortBy`        | string | `uploadTimestamp` | Pole sortowania (patrz niżej)                                                             |
+| `sortDirection` | string | `desc`            | Kierunek: `asc` lub `desc`                                                                |
+| `q`             | string | null              | Fraza wyszukiwania (szuka w `fileName`, `mimeType`, `ownerName` – o ile jest w projekcji) |
+
+
+
+Dozwolone wartości sortBy:
+
+- uploadTimestamp
+
+- fileName
+
+- mimeType
+
+- size
+
+
+Nieznana wartość sortBy → fallback do uploadTimestamp.
+
+```
+
+### Przykład: paginacja i sortowanie po nazwie rosnąco
+
+```
+GET /api/file?page=1&pageSize=10&sortBy=fileName&sortDirection=asc
+```
 
 ### Odpowiedź:
 ```json
 [
   {
-    "id": "8f3d1e5a-0b1c-4a6f-9f89-2d12a8ffb64f",
-    "fileName": "video.mp4",
-    "mimeType": "video/mp4",
-    "size": 4294967296,
-    "uploadTimestamp": "2025-07-29T18:00:00Z",
-    "blobUri": "https://twojstorage.blob.core.windows.net/container/video.mp4",
-    "userId": "id",
-    "ownerName": "username"
-  },
-  {
-    "id": "1c2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
-    "fileName": "photo.jpg",
-    "mimeType": "image/jpeg",
-    "size": 204800,
-    "uploadTimestamp": "2025-07-30T10:15:00Z",
-    "blobUri": "https://twojstorage.blob.core.windows.net/container/photo.jpg",
-    "userId": "id",
-    "ownerName": "username"
-  }
+  "items": [
+    {
+      "id": "94a3b2f0-...-...",
+      "fileName": "video.mp4",
+      "mimeType": "video/mp4",
+      "size": 4294967,
+      "uploadTimestamp": "2025-09-28T12:34:56Z",
+      "userId": "4c71cf03-30f3-4afb-6d24-08ddd0d773a0",
+      "ownerName": "demoUser"
+    }
+  ],
+  "page": 1,
+  "pageSize": 10,
+  "totalItems": 1,
+  "totalPages": 1,
+  "hasNext": false,
+  "hasPrev": false,
+  "sortBy": "fileName",
+  "sortDir": "asc",
+  "q": ""
+}
+
 ]
 ```
 ---
