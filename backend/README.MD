@@ -269,7 +269,7 @@ GET /api/files
 | `pageSize`      | number | `20`              | Rozmiar strony (1–100)                                                                    |
 | `sortBy`        | string | `uploadTimestamp` | Pole sortowania (patrz niżej)                                                             |
 | `sortDirection` | string | `desc`            | Kierunek: `asc` lub `desc`                                                                |
-| `q`             | string | null              | Fraza wyszukiwania (szuka w `fileName`, `mimeType`, `ownerName` – o ile jest w projekcji) |
+| `q`             | string | null              | Fraza wyszukiwania (szuka w `fileName`, `mimeType`) 
 
 
 
