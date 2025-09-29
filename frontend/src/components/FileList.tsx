@@ -1,5 +1,5 @@
-import { useState, useEffect, forwardRef, useImperativeHandle, useCallback, useRef } from 'react';
-import { Card, CardContent, CardActions, Typography, IconButton, Button, Box, Chip, CircularProgress,
+import { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
+import { Card, CardContent, CardActions, Typography, IconButton, Button, Box, Chip, 
   Alert, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Menu,
   MenuItem, Select, FormControl, TextField } from '@mui/material';
 import { Delete as DeleteIcon, Share as ShareIcon, CloudDone as SharedIcon, ViewModule as GridViewIcon,
@@ -11,7 +11,6 @@ import { FileMetadata } from '../types/FileMetadata';
 import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
 import { useAuth } from '../context/AuthContext';
 import { decodeUserId } from '../lib/decodeUserId';
-import { useAxiosInterceptor } from '../hooks/useAxiosInterceptor';
 import { PaginationControlBox } from '../themes/boxes/PaginationControlBox';
 import { ToolbarBox } from '../themes/boxes/ToolbarBox';
 import { MenuItemBox } from '../themes/boxes/MenuItemBox';
@@ -38,7 +37,6 @@ type SortOrder = 'asc' | 'desc';
 
 const FileList = forwardRef<FileListRef>((_, ref) => {
   const [files, setFiles] = useState<FileMetadata[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortField, setSortField] = useState<SortField>('fileName');
@@ -47,16 +45,11 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
-  const { accessToken, isRefreshing } = useAuth();
-  const hasFetched = useRef(false);
+  const { accessToken } = useAuth();
   const navigate = useNavigate();
 
-
-  useAxiosInterceptor();
-  
   const fetchFiles = useCallback(async () => {
     try {
-      setLoading(true);
       const userFiles = await FileService.getUserFiles();
       setFiles(userFiles);
       setError(null); // Clear any previous errors on success
@@ -69,23 +62,12 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
         setError('Nie udało się załadować plików. Spróbuj ponownie.');
       }
       console.error('Error fetching files:', err);
-    } finally {
-      setLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    hasFetched.current = false;
-  }, [accessToken]);
-
-  useEffect(() => {
-    if (isRefreshing) return;
-    if (!accessToken) return;
-    if (hasFetched.current) return;
   
-    hasFetched.current = true;
+  useEffect(() => {
     fetchFiles();
-  }, [accessToken, isRefreshing, fetchFiles]);
+  }, []);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -195,14 +177,6 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     // File is shared if the owner is different from current user
     return file.userId !== currentUserId;
   };
-
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-        <CircularProgress />
-      </Box>
-    );
-  }
 
   if (error) {
     return (
