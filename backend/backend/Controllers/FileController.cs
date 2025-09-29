@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using WebApplication1;
@@ -192,10 +193,20 @@ namespace backend.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetUserFiles()
+        public async Task<IActionResult> GetUserFiles(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? sortBy = "uploadTimestamp",
+            [FromQuery] string? sortDirection = "desc",
+            [FromQuery] string? q = null)
         {
             Guid userId;
             try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
+
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+            var key = (sortBy ?? "uploadTimestamp").ToLowerInvariant();
+            var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
 
             var files = appDbContext.Files.Where(f => f.UserId == userId).Select(f => new { f.id, f.FileName, f.MimeType, f.Size, f.UploadTimestamp, f.Status, f.UserId }).ToList();
             
@@ -207,7 +218,30 @@ namespace backend.Controllers
                 .ToListAsync();
             files.AddRange(SharedWithUserFiles);
 
-            var userIds = files.Select(f => f.UserId).Distinct().ToList();
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var term = q.Trim();
+
+                files = files.Where(f =>
+                    (!string.IsNullOrEmpty(f.FileName) && f.FileName.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(f.MimeType) && f.MimeType.Contains(term, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+            }
+
+            IEnumerable <dynamic> ordered = key switch
+            {
+                "filename" => desc ? files.OrderByDescending(f => f.FileName) : files.OrderBy(f => f.FileName),
+                "mimetype" => desc ? files.OrderByDescending(f => f.MimeType) : files.OrderBy(f => f.MimeType),
+                "size" => desc ? files.OrderByDescending(f => f.Size) : files.OrderBy(f => f.Size),
+                "uploadtimestamp" => desc ? files.OrderByDescending(f => f.UploadTimestamp) : files.OrderBy(f => f.UploadTimestamp),
+                _ => desc ? files.OrderByDescending(f => f.UploadTimestamp) : files.OrderBy(f => f.UploadTimestamp),
+            };
+
+            var totalItems = ordered.LongCount();
+            var totalPages = (int)Math.Ceiling(totalItems/(double)pageSize);
+            var pageItems = ordered.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            var userIds = pageItems.Select(f => f.UserId).Distinct().ToList();
             var users = await appDbContext.Users
                 .Where(u => userIds.Contains(u.id))
                 .Select(u => new { u.id, u.username })
@@ -215,19 +249,31 @@ namespace backend.Controllers
 
             var userMap = users.ToDictionary(u => u.id, u => u.username);
 
-            var result = files.Select(f => new
+            var result = pageItems.Select(f => new FileListItem
             {
-                f.id,
-                f.FileName,
-                f.MimeType,
-                f.Size,
-                f.UploadTimestamp,
-                f.Status,
-                f.UserId,
-                OwnerName = userMap.TryGetValue(f.UserId, out var name) ? name : "Unknown"
+                Id = f.id,
+                FileName = f.FileName,
+                MimeType = f.MimeType,
+                Size = f.Size,
+                UploadTimestamp = f.UploadTimestamp,
+                Status = (int)f.Status,
+                UserId = f.UserId,
+                OwnerName = userMap.TryGetValue((Guid)f.UserId, out var name) ? name : "Unknown"
             });
 
-            return Ok(result);
+            return Ok(new
+            {
+                items = result,
+                page,
+                pageSize,
+                totalItems,
+                totalPages,
+                hasNext = page < totalPages,
+                hasPrev = page > 1,
+                sortBy = key,
+                sortDir = desc ? "desc" : "asc",
+                q
+            });
         }
 
         [Authorize]
