@@ -1,26 +1,5 @@
 import axiosInstance from '../api/axiosInstance';
-import { FileMetadata } from '../types/FileMetadata';
-
-export interface FileListResponse {
-  items: FileMetadata[];
-  page: number;
-  pageSize: number;
-  totalItems: number;
-  totalPages: number;
-  hasNext: boolean;
-  hasPrev: boolean;
-  sortBy: string;
-  sortDir: string;
-  q: string | null;
-}
-
-export interface FileListParams {
-  page?: number;
-  pageSize?: number;
-  sortBy?: string;
-  sortDirection?: string;
-  q?: string;
-}
+import { FileListResponse, FileListParams } from '../types/FileListTypes';
 
 export const FileService = {
   async getUserFiles(params?: FileListParams): Promise<FileListResponse> {

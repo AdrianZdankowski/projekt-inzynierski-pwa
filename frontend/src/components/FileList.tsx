@@ -6,7 +6,8 @@ import { Delete as DeleteIcon, Share as ShareIcon, CloudDone as SharedIcon, View
   ViewList as ListViewIcon, Sort as SortIcon, ArrowUpward as ArrowUpIcon, ArrowDownward as ArrowDownIcon,
   KeyboardArrowLeft as ArrowLeftIcon, KeyboardArrowRight as ArrowRightIcon,
   Search as SearchIcon } from '@mui/icons-material';
-import { FileService, FileListResponse, FileListParams } from '../services/FileService';
+import { FileService } from '../services/FileService';
+import { FileListResponse, FileListParams } from '../types/FileListTypes';
 import { FileMetadata } from '../types/FileMetadata';
 import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
 import { useAuth } from '../context/AuthContext';
