@@ -162,8 +162,8 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
   return (
     <Box sx={{ padding: 3 }}>
-      {/* Toolbar - only show if user has files */}
-      {totalItems > 0 && (
+      {/* Toolbar - show if user has files OR if user is searching */}
+      {(totalItems > 0 || searchQuery.length > 0) && (
         <ToolbarBox>
           <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
             Pliki ({startIndex}-{endIndex} z {totalItems})
