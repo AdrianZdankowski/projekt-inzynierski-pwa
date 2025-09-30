@@ -7,6 +7,7 @@ import { Delete as DeleteIcon, Share as ShareIcon, CloudDone as SharedIcon, View
   KeyboardArrowLeft as ArrowLeftIcon, KeyboardArrowRight as ArrowRightIcon,
   Search as SearchIcon } from '@mui/icons-material';
 import { FileService } from '../services/FileService';
+import { FileListResponse, FileListParams } from '../types/FileListTypes';
 import { FileMetadata } from '../types/FileMetadata';
 import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
 import { useAuth } from '../context/AuthContext';
@@ -24,7 +25,7 @@ const SORT_OPTIONS = [
   { field: 'fileName', label: 'Nazwa' },
   { field: 'size', label: 'Rozmiar' },
   { field: 'uploadTimestamp', label: 'Data dodania' },
-  { field: 'ownerName', label: 'Właściciel' }
+  { field: 'mimeType', label: 'Typ pliku' }
 ] as const;
 
 export interface FileListRef {
@@ -32,15 +33,15 @@ export interface FileListRef {
 }
 
 type ViewMode = 'grid' | 'list';
-type SortField = 'fileName' | 'size' | 'uploadTimestamp' | 'ownerName';
+type SortField = 'fileName' | 'size' | 'uploadTimestamp' | 'mimeType';
 type SortOrder = 'asc' | 'desc';
 
 const FileList = forwardRef<FileListRef>((_, ref) => {
-  const [files, setFiles] = useState<FileMetadata[]>([]);
+  const [fileListResponse, setFileListResponse] = useState<FileListResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [sortField, setSortField] = useState<SortField>('fileName');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [sortField, setSortField] = useState<SortField>('uploadTimestamp');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [sortMenuAnchor, setSortMenuAnchor] = useState<null | HTMLElement>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -50,8 +51,16 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
   const fetchFiles = useCallback(async () => {
     try {
-      const userFiles = await FileService.getUserFiles();
-      setFiles(userFiles);
+      const params: FileListParams = {
+        page: currentPage,
+        pageSize: itemsPerPage,
+        sortBy: sortField,
+        sortDirection: sortOrder,
+        q: searchQuery || undefined
+      };
+      
+      const response = await FileService.getUserFiles(params);
+      setFileListResponse(response);
       setError(null); // Clear any previous errors on success
     } catch (err: any) {
       if (err.response?.status === 401) {
@@ -63,11 +72,11 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       }
       console.error('Error fetching files:', err);
     }
-  }, []);
+  }, [currentPage, itemsPerPage, sortField, sortOrder, searchQuery]);
   
   useEffect(() => {
     fetchFiles();
-  }, []);
+  }, [fetchFiles]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -76,6 +85,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       setSortField(field);
       setSortOrder('asc');
     }
+    setCurrentPage(1); 
   };
 
   const handleSortMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -86,56 +96,20 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     setSortMenuAnchor(null);
   };
 
-  // Filter files by search query
-  const filteredFiles = files.filter(file => 
-    file.fileName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const files = fileListResponse?.items || [];
+  const totalPages = fileListResponse?.totalPages || 0;
+  const totalItems = fileListResponse?.totalItems || 0;
+  const startIndex = fileListResponse ? (fileListResponse.page - 1) * fileListResponse.pageSize + 1 : 0;
+  const endIndex = fileListResponse ? Math.min(fileListResponse.page * fileListResponse.pageSize, fileListResponse.totalItems) : 0;
 
-  const sortedFiles = [...filteredFiles].sort((a, b) => {
-    let aValue: any, bValue: any;
-    
-    switch (sortField) {
-      case 'fileName':
-        aValue = a.fileName.toLowerCase();
-        bValue = b.fileName.toLowerCase();
-        break;
-      case 'size':
-        aValue = a.size;
-        bValue = b.size;
-        break;
-      case 'uploadTimestamp':
-        aValue = new Date(a.uploadTimestamp);
-        bValue = new Date(b.uploadTimestamp);
-        break;
-      case 'ownerName':
-        aValue = a.ownerName.toLowerCase();
-        bValue = b.ownerName.toLowerCase();
-        break;
-      default:
-        return 0;
-    }
-
-    if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
-    return 0;
-  });
-
-  const totalPages = Math.ceil(sortedFiles.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedFiles = sortedFiles.slice(startIndex, endIndex);
-
-  // Reset to first page when items per page changes
   useEffect(() => {
     setCurrentPage(1);
   }, [itemsPerPage]);
 
-  // Reset to first page when files change or search query changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [files.length, searchQuery]);
+  }, [searchQuery]);
 
-  // Expose refresh function to parent via ref
   useImperativeHandle(ref, () => ({
     refreshFiles: fetchFiles
   }));
@@ -188,12 +162,12 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
   return (
     <Box sx={{ padding: 3 }}>
-      {/* Toolbar - only show if user has files */}
-      {files.length > 0 && (
+      {/* Toolbar - show if user has files OR if user is searching */}
+      {(totalItems > 0 || searchQuery.length > 0) && (
         <ToolbarBox>
           <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
-            Pliki ({startIndex + 1}-{Math.min(endIndex, sortedFiles.length)} z {sortedFiles.length})
-            {searchQuery && ` (z ${files.length} wszystkich)`}
+            Pliki ({startIndex}-{endIndex} z {totalItems})
+            {searchQuery && ` (wyszukiwanie: "${searchQuery}")`}
           </Typography>
           
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -260,9 +234,9 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
         </ToolbarBox>
       )}
 
-      {files.length > 0 && viewMode === 'grid' ? (
+      {totalItems > 0 && viewMode === 'grid' ? (
         <CardBox>
-        {paginatedFiles.map((file) => {
+        {files.map((file) => {
           const FileIcon = getFileIcon(file.mimeType);
           const fileColor = getFileTypeColor(file.mimeType);
           const isShared = isSharedFile(file);
@@ -347,7 +321,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
           );
         })}
         </CardBox>
-      ) : files.length > 0 && paginatedFiles.length > 0 ? (
+      ) : totalItems > 0 && files.length > 0 ? (
         /* List View */
         <TableContainer 
           component={Paper} 
@@ -364,7 +338,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedFiles.map((file, index) => {
+              {files.map((file, index) => {
                 const FileIcon = getFileIcon(file.mimeType);
                 const fileColor = getFileTypeColor(file.mimeType);
                 const isShared = isSharedFile(file);
@@ -442,24 +416,24 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
         </TableContainer>
       ) : null}
 
-      {sortedFiles.length === 0 && (
+      {totalItems === 0 && (
         <Box sx={{ marginTop: 4 }}>
           <Alert 
             severity="info" 
             className="empty-files-alert"
           >
             <Typography className="alert-title">
-              {files.length === 0 ? 'Nie masz żadnych plików obecnie' : 'Nie znaleziono plików'}
+              {searchQuery ? 'Nie znaleziono plików' : 'Nie masz żadnych plików obecnie'}
             </Typography>
             <Typography className="alert-subtitle">
-              {files.length === 0 ? 'Prześlij pliki, aby rozpocząć korzystanie z aplikacji' : 'Spróbuj zmienić kryteria wyszukiwania'}
+              {searchQuery ? 'Spróbuj zmienić kryteria wyszukiwania' : 'Prześlij pliki, aby rozpocząć korzystanie z aplikacji'}
             </Typography>
           </Alert>
         </Box>
       )}
 
       {/* Pagination Controls */}
-      {sortedFiles.length > 0 && (
+      {totalItems > 0 && (
         <PaginationControlBox>
           {/* Left spacer */}
           <Box sx={{ width: 80 }} />
@@ -470,8 +444,8 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
               {/* Previous Page Button */}
               <IconButton
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className={`pagination-nav ${currentPage === 1 ? 'disabled' : ''}`}
+                disabled={!fileListResponse?.hasPrev}
+                className={`pagination-nav ${!fileListResponse?.hasPrev ? 'disabled' : ''}`}
               >
                 <ArrowLeftIcon />
               </IconButton>
@@ -513,8 +487,8 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
               {/* Next Page Button */}
               <IconButton
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className={`pagination-nav ${currentPage === totalPages ? 'disabled' : ''}`}
+                disabled={!fileListResponse?.hasNext}
+                className={`pagination-nav ${!fileListResponse?.hasNext ? 'disabled' : ''}`}
               >
                 <ArrowRightIcon />
               </IconButton>
