@@ -31,6 +31,11 @@ export const FileUploadService = {
       mimeType: file.type,
       expectedSize: file.size,
     });
+
+    if (uploadLinkResponse.status !== 200) {
+      throw new Error(`Upload link generation failed: ${uploadLinkResponse.status} ${uploadLinkResponse.statusText}`);
+    }
+
     return { 
         fileId: uploadLinkResponse .data.fileId, 
         uploadUrl: uploadLinkResponse .data.uploadUrl 
@@ -48,7 +53,7 @@ export const FileUploadService = {
       body: file,
     });
 
-    if (!uploadResponse .ok) {
+    if (!uploadResponse.ok) {
         throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
     } 
   },
@@ -63,7 +68,7 @@ export const FileUploadService = {
         body: chunk,
       });
 
-      if (!uploadChunkResponse .ok){
+      if (!uploadChunkResponse.ok){
         throw new Error(`Chunk upload failed: ${uploadChunkResponse .status} ${uploadChunkResponse .statusText}`);
       } 
   },
@@ -102,12 +107,16 @@ export const FileUploadService = {
   async commitFile(fileId: string, file: File) {
     const checksum = await calculateMD5Checksum(file);
     
-    await axiosInstance.post("/file/commit", {
+    const commitFileResponse = await axiosInstance.post("/file/commit", {
       fileId: fileId,
       mimeType: file.type,
       size: file.size,
       checksum: checksum,
     });
+
+    if (commitFileResponse.status !== 200) {
+      throw new Error(`File commit failed: ${commitFileResponse.status} ${commitFileResponse.statusText}`);
+    }
   },
 
   async uploadFile(file: File) {
