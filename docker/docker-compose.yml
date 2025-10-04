@@ -42,6 +42,20 @@ services:
     networks:
       - pwa-network
 
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: pwa-frontend
+    environment:
+      - API_BASE_URL=http://backend:8080/api
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - pwa-network
+
 volumes:
   sqlserver_data:
 
