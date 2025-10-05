@@ -205,7 +205,7 @@ namespace backend.Controllers
 
             page = Math.Max(1, page);
             pageSize = Math.Clamp(pageSize, 1, 100);
-            var key = (sortBy ?? "uploadTimestamp").ToLowerInvariant();
+            var keyRaw = (sortBy ?? "uploadTimestamp").ToLowerInvariant();
             var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
 
             var files = appDbContext.Files.Where(f => f.UserId == userId).Select(f => new { f.id, f.FileName, f.MimeType, f.Size, f.UploadTimestamp, f.Status, f.UserId }).ToList();
@@ -228,7 +228,16 @@ namespace backend.Controllers
                 ).ToList();
             }
 
-            IEnumerable <dynamic> ordered = key switch
+            var appliedKey = keyRaw switch
+            {
+                "filename" => "filename",
+                "mimetype" => "mimetype",
+                "size" => "size",
+                "uploadtimestamp" => "uploadtimestamp",
+                _ => "uploadtimestamp"   //default
+            };
+
+            IEnumerable <dynamic> ordered = appliedKey switch
             {
                 "filename" => desc ? files.OrderByDescending(f => f.FileName) : files.OrderBy(f => f.FileName),
                 "mimetype" => desc ? files.OrderByDescending(f => f.MimeType) : files.OrderBy(f => f.MimeType),
@@ -270,7 +279,7 @@ namespace backend.Controllers
                 totalPages,
                 hasNext = page < totalPages,
                 hasPrev = page > 1,
-                sortBy = key,
+                sortBy = appliedKey,
                 sortDir = desc ? "desc" : "asc",
                 q
             });
