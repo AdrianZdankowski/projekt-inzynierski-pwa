@@ -53,11 +53,18 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 //add dbcontext
-//builder.Services.AddDbContext<AppDbContext>(options =>
-//    options.UseInMemoryDatabase("MyInMemoryDb"));
-
-builder.Services.AddDbContext<AppDbContext>(options => 
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+if (builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseInMemoryDatabase($"TestDb_{Guid.NewGuid()}"));
+}
+else
+{
+    builder.Services.AddDbContext<AppDbContext>(options => 
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    //builder.Services.AddDbContext<AppDbContext>(options =>
+    //    options.UseInMemoryDatabase("MyInMemoryDb"));
+}
 
 //auth
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -114,7 +121,7 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
@@ -124,11 +131,21 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<AppDbContext>();
     
-    // Run migrations
-    await context.Database.MigrateAsync();
-    
+    //run migrations only for non-testing environments
+    if (!app.Environment.IsEnvironment("Testing"))
+    {
+        await context.Database.MigrateAsync();
+    }
+    else
+    {
+        await context.Database.EnsureCreatedAsync();
+    }
+
     // Seed data
     await DbSeeder.SeedSuperAdminAsync(context);
 }
 
 app.Run();
+
+//make Program class accessible for testing
+public partial class Program { }
