@@ -26,5 +26,5 @@ jobs:
       working-directory: ./backend
 
     - name: Test
-      run: dotnet test backend.sln --no-build --verbosity normal
+      run: dotnet test backend.sln --verbosity normal
       working-directory: ./backend
