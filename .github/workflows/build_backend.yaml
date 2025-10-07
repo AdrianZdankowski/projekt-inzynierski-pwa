@@ -31,8 +31,8 @@ jobs:
 
     - name: create docker image
       run: |
-        cd backend/backend
-        docker build -t pwa_backend:latest .
+        cd backend
+        docker build -t pwa_backend:latest ./backend
   
     - name: Tag and push Docker image for pwa_backend to GHCR
       run: |
