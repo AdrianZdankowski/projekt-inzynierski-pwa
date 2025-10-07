@@ -10,4 +10,5 @@ public interface IAzureBlobService
     Task<Stream> GetFile(string blobName);
     Task DonwloadFileToDirectory(string blobName, string targetDirectory, string fileName);
     Task UploadFileAsync(string blobName, string filePath, string targetDirectory);
+    Task DeleteFile(string blobName);
 }

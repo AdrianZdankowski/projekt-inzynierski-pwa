@@ -84,5 +84,22 @@ namespace backend.Services
 
             return fileId;
         }
+        public async Task<bool> DeleteFile(Guid fileId)
+        {
+            var file = _context.Files.FirstOrDefault(f => f.id ==  fileId);
+
+            try
+            {
+                _context.Files.Remove(file);
+                _context.SaveChangesAsync();
+                await _blobSvc.DeleteFile(file.BlobName);
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }
