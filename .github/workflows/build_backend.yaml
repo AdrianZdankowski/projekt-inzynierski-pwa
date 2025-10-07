@@ -28,3 +28,14 @@ jobs:
     - name: Test
       run: dotnet test backend.sln --verbosity normal
       working-directory: ./backend
+
+    - name: create docker image
+      run: |
+        cd backend/backend
+        docker build -t pwa_backend:latest .
+  
+    - name: Tag and push Docker image for auth to GHCR
+      run: |
+        OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]') #github requires lowercase repository name
+        docker tag auth:latest ghcr.io/$OWNER/pwa_backend:latest
+        docker push ghcr.io/$OWNER/pwa_backend:latest
