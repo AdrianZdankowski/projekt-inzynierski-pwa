@@ -15,7 +15,7 @@ WORKDIR /src
 COPY ["backend.csproj", "backend/"]
 RUN dotnet restore "./backend/backend.csproj"
 COPY . .
-WORKDIR "/src"
+WORKDIR "/src/backend"
 RUN dotnet build "./backend.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Ten etap służy do publikowania projektu usługi do skopiowania do etapu końcowego
