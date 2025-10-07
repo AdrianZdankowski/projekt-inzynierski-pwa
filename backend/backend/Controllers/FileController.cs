@@ -358,6 +358,26 @@ namespace backend.Controllers
             return Ok(dto);
         }
 
+        [Authorize]
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteFile(Guid id)
+        {
+            Guid userId;
+            try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
+
+            if (!fileAccessValidator.ValidateDeletePermission(userId, appDbContext.Files.FirstOrDefault(f => f.id == id)).Result)
+            {
+                return Unauthorized("User does not have permission to delete this file");
+            }
+
+            var wasDeletingSuccesfull = uploadService.DeleteFile(id).Result;
+            if (!wasDeletingSuccesfull)
+            {
+                throw new Exception("An error occured while deleting file"); 
+            }
+            return Ok();
+        }
+
         private IActionResult Forbidden(string detail) =>
     Problem(statusCode: StatusCodes.Status403Forbidden, title: "Forbidden", detail: detail);
     }

@@ -95,4 +95,21 @@ public class AzureBlobService(IConfiguration config) : IAzureBlobService
 
         await blobClient.UploadAsync(filePath);
     }
+
+    public async Task DeleteFile(string blobName)
+    {
+        var container = new BlobContainerClient(_cs, _cn);
+
+        //deleting filename from blobName to get folder name
+        int index = blobName.LastIndexOf('/');
+        if (index >= 0)
+            blobName = blobName.Substring(0, index);
+
+        //deleting all files in folder (multiple files in one folder are in case of video files)
+        await foreach (var blob in container.GetBlobsAsync(prefix: blobName))
+        {
+            var blobClient = container.GetBlobClient(blob.Name);
+            await blobClient.DeleteIfExistsAsync();
+        }
+    }
 }
