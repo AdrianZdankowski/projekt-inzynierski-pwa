@@ -1,4 +1,4 @@
-name: Build and Test .NET
+name: Test backend
 
 on:
   pull_request:
