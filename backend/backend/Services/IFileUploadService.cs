@@ -7,5 +7,6 @@ namespace backend.Services
     public interface IFileUploadService
     {
         Task<Guid> UploadSmallFileAsync(IFormFile file, Guid userId);
+        Task<bool> DeleteFile(Guid fileId);
     }
 }

@@ -28,5 +28,16 @@ namespace backend.Services
 
             return false;
         }
+
+        public async Task<bool> ValidateDeletePermission(Guid userId, WebApplication1.File file)
+        {
+            //currently only owner can delete file
+            if (file.UserId.Equals(userId))
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }
