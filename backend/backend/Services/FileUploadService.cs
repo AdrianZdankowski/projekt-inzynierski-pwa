@@ -91,7 +91,7 @@ namespace backend.Services
             try
             {
                 _context.Files.Remove(file);
-                _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
                 await _blobSvc.DeleteFile(file.BlobName);
             }
             catch (Exception ex)
