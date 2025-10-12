@@ -1,0 +1,41 @@
+name: Build and Test .NET
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: ./backend
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+      working-directory: ./backend
+
+    - name: Test
+      run: dotnet test backend.sln --verbosity normal
+      working-directory: ./backend
+
+    - name: create docker image
+      run: |
+        cd backend
+        docker build -t pwa_backend:latest ./backend
+  
+    - name: Tag and push Docker image for pwa_backend to GHCR
+      run: |
+        OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+        docker tag pwa_backend:latest ghcr.io/$OWNER/pwa_backend:latest
+        docker push ghcr.io/$OWNER/pwa_backend:latest
