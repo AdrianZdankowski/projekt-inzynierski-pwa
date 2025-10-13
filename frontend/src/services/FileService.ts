@@ -1,5 +1,6 @@
 import axiosInstance from '../api/axiosInstance';
 import { FileListResponse, FileListParams } from '../types/FileListTypes';
+import { SingleFileMetadata } from '../types/SingleFileMetadata';
 
 export const FileService = {
   async getUserFiles(params?: FileListParams): Promise<FileListResponse> {
@@ -21,5 +22,10 @@ export const FileService = {
 
   async shareFile(fileId: string, userId: string): Promise<void> {
     await axiosInstance.post(`/file/${fileId}/share`, { userId });
+  },
+
+  async getUserFile(fileId: string): Promise<SingleFileMetadata> {
+    const response = await axiosInstance.get(`/file/${fileId}`);
+    return response.data;
   }
 };
