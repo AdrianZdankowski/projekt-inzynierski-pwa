@@ -99,7 +99,7 @@ const VideoPlayer = ({src, fileName, ownerName, uploadTimestamp, isShared}: Vide
             <video
                 ref={videoRef}
                 controls
-                style={{width: "100%", maxHeight:"70%"}}
+                style={{width: "100%", aspectRatio: "16 / 9"}}
             />
             <Box sx={{display: "flex", justifyContent: "space-between", flexDirection: {xs: "column", sm: "row"}}}>
                 <Box sx={{display: "flex", flexDirection: "column"}}>

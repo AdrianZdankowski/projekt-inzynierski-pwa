@@ -20,6 +20,7 @@ import { UserIconBox } from '../themes/boxes/UserIconBox';
 import { CardBox } from '../themes/boxes/CardBox';
 import { FileTypeBox } from '../themes/boxes/FileTypeBox';
 import { useNavigate } from 'react-router-dom';
+import VideoDialog from './VideoDialog';
 
 const SORT_OPTIONS = [
   { field: 'fileName', label: 'Nazwa' },
@@ -46,6 +47,10 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFile, setSelectedFile] = useState<FileMetadata | null>(null);
+  const [isSelectedFileShared, setIsSelectedFileShared] = useState<boolean>(false);
+  const [openVideoDialog, setOpenVideoDialog] = useState<boolean>(false);
+
   const { accessToken } = useAuth();
   const navigate = useNavigate();
 
@@ -139,7 +144,10 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     // Open video page
     switch(file.mimeType) {
       case 'video/mp4':
-        navigate('/video', {state: {file, isShared}});
+        //navigate('/video', {state: {file, isShared}});
+        setSelectedFile(file);
+        setIsSelectedFileShared(isShared);
+        setOpenVideoDialog(true);
         break;
     }
   };
@@ -162,6 +170,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
   return (
     <Box sx={{ padding: 3 }}>
+      <VideoDialog open={openVideoDialog} onClose={() => setOpenVideoDialog(false)} file={selectedFile} isShared={isSelectedFileShared}/>
       {/* Toolbar - show if user has files OR if user is searching */}
       {(totalItems > 0 || searchQuery.length > 0) && (
         <ToolbarBox>
