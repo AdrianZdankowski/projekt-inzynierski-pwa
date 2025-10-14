@@ -22,6 +22,7 @@ import { FileTypeBox } from '../themes/boxes/FileTypeBox';
 import VideoDialog from './VideoDialog';
 import DocumentDialog from './DocumentDialog';
 import ImageDialog from './ImageDialog';
+import DeleteFileDialog from './DeleteFileDialog';
 
 const SORT_OPTIONS = [
   { field: 'fileName', label: 'Nazwa' },
@@ -53,6 +54,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const [openVideoDialog, setOpenVideoDialog] = useState<boolean>(false);
   const [openDocumentDialog, setOpenDocumentDialog] = useState<boolean>(false);
   const [openImageDialog, setOpenImageDialog] = useState<boolean>(false);
+  const [openDeleteFileDialog, setOpenDeleteFileDialog] = useState<boolean>(false);
 
   const { accessToken } = useAuth();
 
@@ -123,10 +125,16 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
   const handleDeleteFile = async (fileId: string) => {
     try {
-      // TODO: Implement endpoint in backend
-      console.log('Delete file:', fileId);
+      setError(null);
+      await FileService.deleteFile(fileId);
+      setFileListResponse(prev => (
+        {
+          ...prev!,
+          items: prev!.items.filter(f => f.id !== fileId)
+        }
+      ));
     } catch (err) {
-      console.error('Error deleting file:', err);
+      setError("Wystąpił nieoczekiwany błąd przy usuwaniu pliku. Spróbuj ponownie.");
     }
   };
 
@@ -151,6 +159,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
         setOpenVideoDialog(true);
         break;
       case 'application/pdf':
+      case 'text/plain':
         setSelectedFile(file);
         setIsSelectedFileShared(isShared);
         setOpenDocumentDialog(true);
@@ -189,6 +198,11 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       (<DocumentDialog open={openDocumentDialog} onClose={() => {setOpenDocumentDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
       {selectedFile && openImageDialog &&
       (<ImageDialog open={openImageDialog} onClose={() => {setOpenImageDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
+      {selectedFile && openDeleteFileDialog && 
+      (<DeleteFileDialog open={openDeleteFileDialog} onClose={() => {setOpenDeleteFileDialog(false); setSelectedFile(null)}}
+      onConfirm={handleDeleteFile}
+      file={selectedFile}
+      />)}
       {/* Toolbar - show if user has files OR if user is searching */}
       {(totalItems > 0 || searchQuery.length > 0) && (
         <ToolbarBox>
@@ -279,7 +293,9 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                   className="delete-button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDeleteFile(file.id);
+                    setSelectedFile(file);
+                    setOpenDeleteFileDialog(true);
+                    //handleDeleteFile(file.id);
                   }}
                   size="small"
                 >
@@ -334,7 +350,9 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                       startIcon={<ShareIcon />}
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleShareFile(file.id);
+                        setSelectedFile(file);
+                        setOpenDeleteFileDialog(true);
+                        // handleShareFile(file.id);
                       }}
                       size="small"
                       className="share-button"
