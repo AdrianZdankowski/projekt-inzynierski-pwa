@@ -1,5 +1,5 @@
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
-import { Dialog, DialogTitle, DialogContent, Box, CircularProgress, Typography, Button } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, Box, CircularProgress, Typography, Button, Alert } from '@mui/material';
 import { FileMetadata } from "../types/FileMetadata";
 import { useEffect, useState } from "react";
 import { FileService } from "../services/FileService";
@@ -16,6 +16,7 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
 
     const [sasLink, setSasLink] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
+    const [fetchError, setFetchError] = useState<string>('');
 
     let uploadDate;
     let uploadTime;
@@ -33,6 +34,7 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
             }
             catch (error: any) {
                 console.error(error);
+                setFetchError('Błąd przy pobieraniu danych pliku. Spróbuj ponownie.')
             }
             finally {
                 setLoading(false);
@@ -48,6 +50,7 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
         <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
             <DialogTitle>{file.fileName} {isShared && `Udostępnione przez ${file.userId}`}</DialogTitle>
             <DialogContent dividers style={{ height: '80vh' }}>
+                {fetchError && (<Alert severity="error" onClose={() => setFetchError('')}>{fetchError}</Alert>)}
                 <Box sx={{display: 'flex', gap: 2}}>
                     <Typography>Przesłane: {uploadDate} {uploadTime}</Typography>
                     <Button variant="contained" sx={{borderRadius: "6px"}}>Pobierz</Button>

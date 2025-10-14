@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FileMetadata } from "../types/FileMetadata";
 import { FileService } from "../services/FileService";
-import { Box, Button, CircularProgress, Dialog, DialogContent, DialogTitle, Typography } from "@mui/material";
+import { Alert, Box, Button, CircularProgress, Dialog, DialogContent, DialogTitle, Typography } from "@mui/material";
 
 interface ImageDialogProps {
     open: boolean;
@@ -15,6 +15,7 @@ const ImageDialog = ({open, onClose, file, isShared} : ImageDialogProps) => {
 
     const [sasLink, setSasLink] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
+    const [fetchError, setFetchError] = useState<string>('');
 
     let uploadDate;
     let uploadTime;
@@ -32,6 +33,7 @@ const ImageDialog = ({open, onClose, file, isShared} : ImageDialogProps) => {
                 }
                 catch (error: any) {
                     console.error(error);
+                    setFetchError('Błąd przy pobieraniu danych pliku. Spróbuj ponownie.')
                 }
                 finally {
                     setLoading(false);
@@ -58,6 +60,7 @@ const ImageDialog = ({open, onClose, file, isShared} : ImageDialogProps) => {
         }}>
             <DialogTitle>{file.fileName} {isShared && `Udostępnione przez ${file.userId}`}</DialogTitle>
             <DialogContent dividers style={{ height: '80vh', overflow: 'hidden' }}>
+                {fetchError && (<Alert severity="error" onClose={() => setFetchError('')}>{fetchError}</Alert>)}
                 <Box sx={{display: 'flex', gap: 2}}>
                     <Typography>Przesłane: {uploadDate} {uploadTime}</Typography>
                     <Button variant="contained" sx={{borderRadius: "6px"}}>Pobierz</Button>

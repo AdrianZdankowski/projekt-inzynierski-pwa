@@ -19,7 +19,6 @@ import { MenuItemContainerBox } from '../themes/boxes/MenuItemContainerBox';
 import { UserIconBox } from '../themes/boxes/UserIconBox';
 import { CardBox } from '../themes/boxes/CardBox';
 import { FileTypeBox } from '../themes/boxes/FileTypeBox';
-import { useNavigate } from 'react-router-dom';
 import VideoDialog from './VideoDialog';
 import DocumentDialog from './DocumentDialog';
 import ImageDialog from './ImageDialog';
@@ -56,7 +55,6 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const [openImageDialog, setOpenImageDialog] = useState<boolean>(false);
 
   const { accessToken } = useAuth();
-  const navigate = useNavigate();
 
   const fetchFiles = useCallback(async () => {
     try {
@@ -148,7 +146,6 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     // Open video page
     switch(file.mimeType) {
       case 'video/mp4':
-        //navigate('/video', {state: {file, isShared}});
         setSelectedFile(file);
         setIsSelectedFileShared(isShared);
         setOpenVideoDialog(true);
