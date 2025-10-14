@@ -22,6 +22,7 @@ import { FileTypeBox } from '../themes/boxes/FileTypeBox';
 import { useNavigate } from 'react-router-dom';
 import VideoDialog from './VideoDialog';
 import DocumentDialog from './DocumentDialog';
+import ImageDialog from './ImageDialog';
 
 const SORT_OPTIONS = [
   { field: 'fileName', label: 'Nazwa' },
@@ -52,6 +53,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const [isSelectedFileShared, setIsSelectedFileShared] = useState<boolean>(false);
   const [openVideoDialog, setOpenVideoDialog] = useState<boolean>(false);
   const [openDocumentDialog, setOpenDocumentDialog] = useState<boolean>(false);
+  const [openImageDialog, setOpenImageDialog] = useState<boolean>(false);
 
   const { accessToken } = useAuth();
   const navigate = useNavigate();
@@ -156,6 +158,13 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
         setIsSelectedFileShared(isShared);
         setOpenDocumentDialog(true);
         break;
+      case 'image/png':
+      case 'image/jpeg':
+      case 'image/gif':
+        setSelectedFile(file);
+        setIsSelectedFileShared(isShared);
+        setOpenImageDialog(true);
+        break;
     }
   };
 
@@ -181,6 +190,8 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       (<VideoDialog open={openVideoDialog} onClose={() => {setOpenVideoDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
       {selectedFile && openDocumentDialog && 
       (<DocumentDialog open={openDocumentDialog} onClose={() => {setOpenDocumentDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
+      {selectedFile && openImageDialog &&
+      (<ImageDialog open={openImageDialog} onClose={() => {setOpenImageDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
       {/* Toolbar - show if user has files OR if user is searching */}
       {(totalItems > 0 || searchQuery.length > 0) && (
         <ToolbarBox>
