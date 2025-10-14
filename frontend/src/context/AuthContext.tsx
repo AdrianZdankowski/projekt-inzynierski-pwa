@@ -5,10 +5,11 @@ import axiosInstance from "../api/axiosInstance";
 interface AuthContextType {
     accessToken: string | null;
     login: (accessToken: string) => void;
-    logout: () => void;
+    logout: (reason?: string) => void;
     isAuthenticated: boolean;
     isRefreshing: boolean;
     userRole?: string;
+    logoutReason?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,6 +18,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     const [accessToken, setAccessToken] = useState<string | null>(null);
     const [isRefreshing, setIsRefreshing] = useState<boolean>(true);
     const [userRole, setUserRole] = useState<string | undefined>();
+    const [logoutReason, setLogoutReason] = useState<string | undefined>();
 
     const login = (accessToken: string) => {
         setAccessToken(accessToken);
@@ -24,10 +26,11 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
         localStorage.setItem("isLoggedIn", "true");
     };
 
-    const logout = () => {
+    const logout = (reason?: string) => {
         setAccessToken(null);
         setUserRole(undefined);
         localStorage.removeItem("isLoggedIn");
+        setLogoutReason(reason);
     };
 
     const restoreSession = async () => {
@@ -60,7 +63,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{accessToken, login, logout, isAuthenticated: !!accessToken, isRefreshing, userRole}}>
+        <AuthContext.Provider value={{accessToken, login, logout, isAuthenticated: !!accessToken, isRefreshing, userRole, logoutReason}}>
             {children}
         </AuthContext.Provider>
     );

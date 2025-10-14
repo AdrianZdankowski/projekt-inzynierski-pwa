@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { AxiosError } from 'axios';
 import axiosInstance from '../api/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 
@@ -29,6 +28,12 @@ export const useAxiosInterceptor = () => {
       async (error) => {
         const originalRequest = error.config;
 
+        if (!error.response) {
+          logout("network");
+          navigate('/login', { replace: true });
+          return Promise.reject(error);
+        }
+
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
@@ -54,10 +59,8 @@ export const useAxiosInterceptor = () => {
             return axiosInstance(originalRequest);
           }
           catch (refreshError) {
-            if (!(refreshError as AxiosError).response || (refreshError as AxiosError).response?.status === 401) {
-              logout();
-              navigate('/login', {replace: true});
-            }
+            logout("network");
+            navigate('/login', { replace: true });
             return Promise.reject(refreshError);
           }
         }
