@@ -374,12 +374,12 @@ namespace backend.Controllers
             Guid userId;
             try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
 
-            if (!fileAccessValidator.ValidateDeletePermission(userId, appDbContext.Files.FirstOrDefault(f => f.id == id)).Result)
+            if (!await fileAccessValidator.ValidateDeletePermission(userId, appDbContext.Files.FirstOrDefault(f => f.id == id)))
             {
                 return Unauthorized("User does not have permission to delete this file");
             }
 
-            var wasDeletingSuccesfull = uploadService.DeleteFile(id).Result;
+            var wasDeletingSuccesfull = await uploadService.DeleteFile(id);
             if (!wasDeletingSuccesfull)
             {
                 throw new Exception("An error occured while deleting file"); 
