@@ -49,7 +49,7 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
             <DialogTitle>{file.fileName} {isShared && `Udostępnione przez ${file.userId}`}</DialogTitle>
-            <DialogContent dividers style={{ height: '80vh' }}>
+            <DialogContent dividers style={{ height: '80vh', overflow: 'hidden' }}>
                 {fetchError && (<Alert severity="error" onClose={() => setFetchError('')}>{fetchError}</Alert>)}
                 <Box sx={{display: 'flex', gap: 2}}>
                     <Typography>Przesłane: {uploadDate} {uploadTime}</Typography>
@@ -68,11 +68,24 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
                 </Box>
                 ) : (
                 documents.length > 0 && (
+                    <Box
+                    sx={{
+                    '& #proxy-renderer, & #msdoc-renderer': {
+                        height: '100% !important',
+                        width: '100% !important',
+                    },
+                    flex: 1,
+                    height: '100%',
+                    width: '100%',
+                    overflow: "auto",
+                    WebkitOverflowScrolling: "touch"
+                    }}>
                     <DocViewer
                     documents={documents}
                     pluginRenderers={DocViewerRenderers}
                     style={{ height: "100%"}}
                     />
+                    </Box>
                 )
                 )}
             </DialogContent>

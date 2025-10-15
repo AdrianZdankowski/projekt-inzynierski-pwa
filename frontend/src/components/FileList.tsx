@@ -23,6 +23,7 @@ import VideoDialog from './VideoDialog';
 import DocumentDialog from './DocumentDialog';
 import ImageDialog from './ImageDialog';
 import DeleteFileDialog from './DeleteFileDialog';
+import { downloadFile } from '../utils/downloadFile';
 
 const SORT_OPTIONS = [
   { field: 'fileName', label: 'Nazwa' },
@@ -142,6 +143,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     try {
       // TODO: Implement endpoint in backend
       console.log('Share file:', fileId);
+      downloadFile(fileId);
     } catch (err) {
       console.error('Error sharing file:', err);
     }
@@ -159,6 +161,8 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
         setOpenVideoDialog(true);
         break;
       case 'application/pdf':
+      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+      case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
       case 'text/plain':
         setSelectedFile(file);
         setIsSelectedFileShared(isShared);
@@ -443,7 +447,8 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                             className="table-delete-button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDeleteFile(file.id);
+                              setSelectedFile(file);
+                              setOpenDeleteFileDialog(true);
                             }}
                           >
                             <DeleteIcon fontSize="small" />
