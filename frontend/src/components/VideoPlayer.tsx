@@ -6,7 +6,8 @@ import {
     Select, 
     Typography,
     Box,
-    Button
+    Button,
+    Alert
 } from "@mui/material";
 import Hls, { LoaderCallbacks, LoaderConfiguration, LoaderContext } from "hls.js";
 import { useAuth } from "../context/AuthContext";
@@ -36,6 +37,7 @@ const VideoPlayer = ({src, fileName, ownerName, uploadTimestamp, isShared}: Vide
 
     const [levels, setLevels] = useState<LevelInfo[]>([]);
     const [currentQuality, setCurrentQuality] = useState<number>(autoQuality);
+    const [error, setError] = useState<string>('');
 
     let uploadDate;
     let uploadTime;
@@ -78,6 +80,26 @@ const VideoPlayer = ({src, fileName, ownerName, uploadTimestamp, isShared}: Vide
             hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
                 setCurrentQuality(data.level);
             });
+
+            hls.on(Hls.Events.ERROR, (_, data) => {
+                console.error("HLS error:", data);
+                if (data.fatal) {
+                    switch (data.type) {
+                    case Hls.ErrorTypes.NETWORK_ERROR:
+                        setError('Błąd sieci. Nie udało się załadować wideo.');
+                        hls.startLoad(); 
+                        break;
+                    case Hls.ErrorTypes.MEDIA_ERROR:
+                        setError('Błąd odtwarzania pliku multimedialnego.');
+                        hls.recoverMediaError();
+                        break;
+                    default:
+                        setError('Nieoczekiwany błąd odtwarzania.');
+                        hls.destroy();
+                        break;
+                    }
+                }
+            });
         } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
             videoRef.current.src=src;
         }
@@ -96,10 +118,17 @@ const VideoPlayer = ({src, fileName, ownerName, uploadTimestamp, isShared}: Vide
 
     return (
         <Container maxWidth="lg" sx={{mt: 4}}>
+            {error && (
+            <Box sx={{ mb: 2 }}>
+                <Alert severity="error" onClose={() => setError('')}>
+                    {error}
+                </Alert>
+            </Box>
+        )}
             <video
                 ref={videoRef}
                 controls
-                style={{width: "100%", maxHeight:"70%"}}
+                style={{width: "100%", aspectRatio: "16 / 9"}}
             />
             <Box sx={{display: "flex", justifyContent: "space-between", flexDirection: {xs: "column", sm: "row"}}}>
                 <Box sx={{display: "flex", flexDirection: "column"}}>

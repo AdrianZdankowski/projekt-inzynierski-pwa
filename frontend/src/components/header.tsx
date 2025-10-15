@@ -31,7 +31,7 @@ const Header = () => {
     
             {/* Prawa strona */}
             <Stack direction="row" spacing={2}>
-              <Button 
+              {/* <Button 
                 component={Link} 
                 to="/pdf-file" 
               >
@@ -48,7 +48,7 @@ const Header = () => {
                 to="/video" 
               >
                  Wideo
-              </Button>
+              </Button> */}
               {isAuthenticated ? (
                 <>
                   <Button
