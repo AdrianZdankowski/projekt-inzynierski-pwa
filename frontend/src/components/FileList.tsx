@@ -295,7 +295,6 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                     e.stopPropagation();
                     setSelectedFile(file);
                     setOpenDeleteFileDialog(true);
-                    //handleDeleteFile(file.id);
                   }}
                   size="small"
                 >
@@ -351,8 +350,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedFile(file);
-                        setOpenDeleteFileDialog(true);
-                        // handleShareFile(file.id);
+                        handleShareFile(file.id);
                       }}
                       size="small"
                       className="share-button"
