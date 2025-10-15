@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: pwa-sqlserver
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: ${SA_PASSWORD}
+      MSSQL_PID: Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - pwa-network
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'cat < /dev/null > /dev/tcp/localhost/1433' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  backend:
+    image: ghcr.io/adrianzdankowski/pwa_backend:latest
+    container_name: pwa-backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=PwaApp;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=true;
+      - AppSettings__JwtSecret=${JWT_SECRET}
+      - AppSettings__JwtIssuer=${JWT_ISSUER}
+      - AppSettings__JwtAudience=${JWT_AUDIENCE}
+      - AzureStorage__ConnectionString=${AZURE_STORAGE_CONNECTION_STRING}
+      - AzureStorage__ContainerName=${AZURE_STORAGE_CONTAINER_NAME}
+    ports:
+      - "5105:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy 
+    networks:
+      - pwa-network
+
+  frontend:
+    image: ghcr.io/adrianzdankowski/pwa_frontend:latest
+    container_name: pwa-frontend
+    environment:
+      - API_BASE_URL=http://backend:8080/api
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - pwa-network
+
+volumes:
+  sqlserver_data:
+
+networks:
+  pwa-network:
+    driver: bridge
