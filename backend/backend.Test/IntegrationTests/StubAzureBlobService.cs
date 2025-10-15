@@ -34,5 +34,20 @@
             else
                 await File.WriteAllTextAsync(destPath, $"stub uploaded: {blobName}");
         }
+
+        public async Task DeleteFile(string blobName)
+        {
+            var root = Path.Combine(Path.GetTempPath(), "stub-blob-storage");
+
+            int index = blobName.LastIndexOf('/');
+            string folderPrefix = index >= 0 ? blobName.Substring(0, index) : blobName;
+
+            var folderPath = Path.Combine(root, folderPrefix);
+
+            if (Directory.Exists(folderPath))
+            {
+                Directory.Delete(folderPath, recursive: true);
+            }
+        }
     }
 }
