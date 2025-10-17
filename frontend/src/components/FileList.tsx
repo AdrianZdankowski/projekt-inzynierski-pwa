@@ -19,7 +19,11 @@ import { MenuItemContainerBox } from '../themes/boxes/MenuItemContainerBox';
 import { UserIconBox } from '../themes/boxes/UserIconBox';
 import { CardBox } from '../themes/boxes/CardBox';
 import { FileTypeBox } from '../themes/boxes/FileTypeBox';
-import { useNavigate } from 'react-router-dom';
+import VideoDialog from './VideoDialog';
+import DocumentDialog from './DocumentDialog';
+import ImageDialog from './ImageDialog';
+import DeleteFileDialog from './DeleteFileDialog';
+import { downloadFile } from '../utils/downloadFile';
 
 const SORT_OPTIONS = [
   { field: 'fileName', label: 'Nazwa' },
@@ -46,8 +50,14 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFile, setSelectedFile] = useState<FileMetadata | null>(null);
+  const [isSelectedFileShared, setIsSelectedFileShared] = useState<boolean>(false);
+  const [openVideoDialog, setOpenVideoDialog] = useState<boolean>(false);
+  const [openDocumentDialog, setOpenDocumentDialog] = useState<boolean>(false);
+  const [openImageDialog, setOpenImageDialog] = useState<boolean>(false);
+  const [openDeleteFileDialog, setOpenDeleteFileDialog] = useState<boolean>(false);
+
   const { accessToken } = useAuth();
-  const navigate = useNavigate();
 
   const fetchFiles = useCallback(async () => {
     try {
@@ -116,10 +126,16 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
   const handleDeleteFile = async (fileId: string) => {
     try {
-      // TODO: Implement endpoint in backend
-      console.log('Delete file:', fileId);
+      setError(null);
+      await FileService.deleteFile(fileId);
+      setFileListResponse(prev => (
+        {
+          ...prev!,
+          items: prev!.items.filter(f => f.id !== fileId)
+        }
+      ));
     } catch (err) {
-      console.error('Error deleting file:', err);
+      setError("Wystąpił nieoczekiwany błąd przy usuwaniu pliku. Spróbuj ponownie.");
     }
   };
 
@@ -127,6 +143,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     try {
       // TODO: Implement endpoint in backend
       console.log('Share file:', fileId);
+      downloadFile(fileId);
     } catch (err) {
       console.error('Error sharing file:', err);
     }
@@ -139,7 +156,24 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     // Open video page
     switch(file.mimeType) {
       case 'video/mp4':
-        navigate('/video', {state: {file, isShared}});
+        setSelectedFile(file);
+        setIsSelectedFileShared(isShared);
+        setOpenVideoDialog(true);
+        break;
+      case 'application/pdf':
+      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+      case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+      case 'text/plain':
+        setSelectedFile(file);
+        setIsSelectedFileShared(isShared);
+        setOpenDocumentDialog(true);
+        break;
+      case 'image/png':
+      case 'image/jpeg':
+      case 'image/gif':
+        setSelectedFile(file);
+        setIsSelectedFileShared(isShared);
+        setOpenImageDialog(true);
         break;
     }
   };
@@ -162,6 +196,17 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
   return (
     <Box sx={{ padding: 3 }}>
+      {selectedFile && openVideoDialog && 
+      (<VideoDialog open={openVideoDialog} onClose={() => {setOpenVideoDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
+      {selectedFile && openDocumentDialog && 
+      (<DocumentDialog open={openDocumentDialog} onClose={() => {setOpenDocumentDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
+      {selectedFile && openImageDialog &&
+      (<ImageDialog open={openImageDialog} onClose={() => {setOpenImageDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
+      {selectedFile && openDeleteFileDialog && 
+      (<DeleteFileDialog open={openDeleteFileDialog} onClose={() => {setOpenDeleteFileDialog(false); setSelectedFile(null)}}
+      onConfirm={handleDeleteFile}
+      file={selectedFile}
+      />)}
       {/* Toolbar - show if user has files OR if user is searching */}
       {(totalItems > 0 || searchQuery.length > 0) && (
         <ToolbarBox>
@@ -252,7 +297,8 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                   className="delete-button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDeleteFile(file.id);
+                    setSelectedFile(file);
+                    setOpenDeleteFileDialog(true);
                   }}
                   size="small"
                 >
@@ -307,6 +353,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                       startIcon={<ShareIcon />}
                       onClick={(e) => {
                         e.stopPropagation();
+                        setSelectedFile(file);
                         handleShareFile(file.id);
                       }}
                       size="small"
@@ -400,7 +447,8 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                             className="table-delete-button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDeleteFile(file.id);
+                              setSelectedFile(file);
+                              setOpenDeleteFileDialog(true);
                             }}
                           >
                             <DeleteIcon fontSize="small" />

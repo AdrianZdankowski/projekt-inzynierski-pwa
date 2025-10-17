@@ -14,6 +14,7 @@ import { useAuth } from '../context/AuthContext';
 
 interface LocationState {
   registered?: boolean;
+  loggedOutDueToNetworkError?: boolean;
 }
 
 
@@ -30,9 +31,14 @@ const LoginPage = () => {
   const [showAlert, setShowAlert] = useState<boolean>(
     () => !!state?.registered
   );
+ 
   const navigate = useNavigate();
 
-  const {login} = useAuth();
+  const {login, logoutReason} = useAuth();
+
+  const [showNetworkAlert, setShowNetworkAlert] = useState<boolean>(
+    () => logoutReason === "network"
+  );
 
   useEffect(() => {
         if (state?.registered) {
@@ -98,7 +104,15 @@ const LoginPage = () => {
             <Alert variant="filled" 
             severity="success" 
             onClose={() => setShowAlert(false)}>
-              {'Konto utworzone! Zaloguj się.'}
+              'Konto utworzone! Zaloguj się.'
+            </Alert>}
+
+        {showNetworkAlert && 
+            <Alert variant="filled" 
+            severity="error" 
+            onClose={() => setShowNetworkAlert(false)}>
+              Utracono połączenie z serwerem.
+              Zaloguj się ponownie, gdy połączenie zostanie przywrócone.
             </Alert>}
 
         {loginError && 
