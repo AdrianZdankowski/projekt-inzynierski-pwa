@@ -52,6 +52,8 @@ public class AzureBlobService(IConfiguration config) : IAzureBlobService
             Protocol = SasProtocol.Https
         };
         b.SetPermissions(BlobSasPermissions.Read);
+
+        b.ContentDisposition = $"attachment; filename={blobName.Substring(74)}";
         return blob.GenerateSasUri(b).ToString();
     }
 
