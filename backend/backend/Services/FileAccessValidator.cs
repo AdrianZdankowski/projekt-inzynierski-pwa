@@ -51,5 +51,16 @@ namespace backend.Services
 
             return false;
         }
+
+        public async Task<bool> ValidateFolderAddPermission(Guid userId, WebApplication1.Folder folder)
+        {
+            //todo: add logic after sharing folders
+            if (folder.OwnerId.Equals(userId))
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }

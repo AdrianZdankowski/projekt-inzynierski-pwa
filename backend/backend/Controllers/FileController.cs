@@ -91,6 +91,16 @@ namespace backend.Controllers
                 return Unauthorized("Invalid or missing user ID"); 
             }
 
+            //checking if user is allowed to add files to the folder
+            Folder folder = null;
+            if (req.FolderId is not null){
+                folder = appDbContext.Folders.FirstOrDefault(f => f.id == req.FolderId);
+                if (await fileAccessValidator.ValidateFolderAddPermission(userId, folder) == false)
+                {
+                    return Unauthorized("User is not allowed to add files in this folder");
+                }
+            }
+
             var fileId = Guid.NewGuid();
             var blobName = azureBlobService.BuildUserScopedBlobName(userId, fileId, req.FileName);
 
@@ -104,7 +114,8 @@ namespace backend.Controllers
                 BlobName = blobName,
                 UploadTimestamp = DateTime.UtcNow,
                 Status = WebApplication1.FileStatus.Pending,
-                Checksum = null
+                Checksum = null,
+                ParentFolder = folder
             };
 
             appDbContext.Files.Add(entity);

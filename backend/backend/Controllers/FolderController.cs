@@ -10,7 +10,7 @@ namespace backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class FolderController(AppDbContext appDbContext, FileAccessValidator fileAccessValidator, IFolderService folderService): ControllerBase
+    public class FolderController(AppDbContext appDbContext, IFileAccessValidator fileAccessValidator, IFolderService folderService): ControllerBase
     {
         [Authorize]
         [HttpPost]
@@ -19,7 +19,7 @@ namespace backend.Controllers
             var claims = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(claims, out var userId))
             {
-                throw new UnauthorizedAccessException("Invalid or missing user ID");
+                return Unauthorized("Invalid or missing user ID");
             }
 
             var folder = await folderService.AddFolderAsync(request, userId);
@@ -34,13 +34,13 @@ namespace backend.Controllers
             var claims = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(claims, out var userId))
             {
-                throw new UnauthorizedAccessException("Invalid or missing user ID");
+                return Unauthorized("Invalid or missing user ID");
             }
 
             var folder = appDbContext.Folders.FirstOrDefault(f => f.id == folderId);
             if (await fileAccessValidator.ValidateFolderDeletePermission(userId, folder) == false)
             {
-                throw new UnauthorizedAccessException("User does not have permission to delete this folder");
+                return Unauthorized("User does not have permission to delete this folder");
             }
 
             await folderService.DeleteFolderAsync(folderId);
