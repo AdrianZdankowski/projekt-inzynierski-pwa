@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Threading.Tasks;
 using backend.DTO.Folder;
 using backend.Migrations;
 using backend.Services;
@@ -27,10 +28,23 @@ namespace backend.Controllers
         }
 
         [Authorize]
-        [HttpDelete]
-        public void DeleteFolder() 
-        { 
-        
+        [HttpDelete("{folderId:guid}")]
+        public async Task<ActionResult> DeleteFolder(Guid folderId) 
+        {
+            var claims = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(claims, out var userId))
+            {
+                throw new UnauthorizedAccessException("Invalid or missing user ID");
+            }
+
+            var folder = appDbContext.Folders.FirstOrDefault(f => f.id == folderId);
+            if (await fileAccessValidator.ValidateFolderDeletePermission(userId, folder) == false)
+            {
+                throw new UnauthorizedAccessException("User does not have permission to delete this folder");
+            }
+
+            await folderService.DeleteFolderAsync(folderId);
+            return Ok();
         }
 
     }

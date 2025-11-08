@@ -39,5 +39,17 @@ namespace backend.Services
 
             return false;
         }
+
+        //todo: refactor this to have one method - ValidateDeletePermission for folders and files
+        public async Task<bool> ValidateFolderDeletePermission(Guid userId, WebApplication1.Folder folder)
+        {
+            //todo: add logic after sharing folders
+            if (folder.OwnerId.Equals(userId))
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }
