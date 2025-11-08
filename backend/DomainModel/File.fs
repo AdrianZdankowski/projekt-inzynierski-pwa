@@ -34,4 +34,6 @@ type File =
         Status: FileStatus
 
         Checksum: string
+
+        ParentFolder: Folder
     }

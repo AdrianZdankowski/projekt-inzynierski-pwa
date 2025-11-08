@@ -26,6 +26,6 @@ namespace backend
         public DbSet<WebApplication1.FileAccess> FileAccesses { get; set; }
         public DbSet<WebApplication1.File> Files { get; set; }
         //public DbSet<WebApplication1.File> Files { get; set; }
-        //public DbSet<Folder> Folders { get; set; }
+        public DbSet<WebApplication1.Folder> Folders { get; set; }
     }
 }
