@@ -13,6 +13,7 @@
     <Compile Include="User.fs" />
     <Compile Include="Video.fs" />
 	<Compile Include="FileAccess.fs" />
+	<Compile Include="FolderAccess.fs" />
   </ItemGroup>
 
 </Project>

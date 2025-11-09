@@ -54,8 +54,35 @@ namespace backend.Services
 
         public async Task<bool> ValidateFolderAddPermission(Guid userId, WebApplication1.Folder folder)
         {
-            //todo: add logic after sharing folders
+            //checking if user is owner
             if (folder.OwnerId.Equals(userId))
+            {
+                return true;
+            }
+
+            //checking if user has permissions for creating files in folder
+            var permissions = context.FolderAccesses.FirstOrDefault(f => f.user.id == userId).permissions;
+            if (WebApplication1.Permissions.hasPermission(WebApplication1.PermissionFlags.Create, permissions))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        //function for validating permissions for given user in specified folder
+        //to set multiple permissions use '|' eg. PermissionFlags.Create | PermissionFlags.Delete
+        public async Task<bool> ValidateFolderPermissions(Guid userId, WebApplication1.Folder folder, WebApplication1.PermissionFlags requiredPermissions)
+        {
+            //owner can do everything
+            if (folder.OwnerId.Equals(userId))
+            {
+                return true;
+            }
+
+            //checking if user has required permissions
+            var permissions = context.FolderAccesses.FirstOrDefault(f => f.user.id == userId).permissions;
+            if (WebApplication1.Permissions.hasPermission(requiredPermissions, permissions))
             {
                 return true;
             }

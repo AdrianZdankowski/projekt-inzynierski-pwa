@@ -215,7 +215,27 @@ namespace backend.Controllers
             Guid userId;
             try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
 
-            page = Math.Max(1, page);
+            var sharedFolders = new List<WebApplication1.Folder>();
+
+            if (folderId is not null)
+            {
+                var folder = appDbContext.Folders.FirstOrDefault(f => f.id == folderId);
+                if (await fileAccessValidator.ValidateFolderPermissions(userId, folder, PermissionFlags.Read) == false)
+                {
+                    return Unauthorized("User does not have access to this folder");
+                }
+            }
+            else
+            {
+                //return shared folders
+                var sharedFoldersIds = appDbContext.FolderAccesses.Where(f => f.user.id ==  userId).Select(f => new {f.id }).ToList();
+                foreach (var sharedFolderId in sharedFoldersIds)
+                {
+                    sharedFolders.Add(appDbContext.Folders.FirstOrDefault(f => f.id.Equals(sharedFolderId)));
+                }
+            }
+
+                page = Math.Max(1, page);
             pageSize = Math.Clamp(pageSize, 1, 100);
             var keyRaw = (sortBy ?? "uploadTimestamp").ToLowerInvariant();
             var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
@@ -223,7 +243,7 @@ namespace backend.Controllers
             var files = appDbContext.Files.Where(f => f.UserId == userId && f.ParentFolder.id == folderId).Select(f => new { f.id, f.FileName, f.MimeType, f.Size, f.UploadTimestamp, f.Status, f.UserId }).ToList();
             
             //todo: add sorting and pagination for folders
-            var folders = appDbContext.Folders.Where(f => f.ParentFolder.id == folderId).ToList();
+            var folders = appDbContext.Folders.Where(f => f.ParentFolder.id == folderId && f.OwnerId == userId).ToList();
 
             //add shared files to the final list
             var SharedWithUserFileIds = appDbContext.FileAccesses.Where(f => f.user.id == userId).Select(f => f.file.id).ToList();
@@ -289,6 +309,7 @@ namespace backend.Controllers
             {
                 items = result,
                 folders = folders,
+                sharedFolders = sharedFolders,
                 page,
                 pageSize,
                 totalItems,
