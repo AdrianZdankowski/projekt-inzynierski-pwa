@@ -7,5 +7,6 @@ namespace backend.Services
     {
         Task<Folder?> AddFolderAsync(CreateFolderDto folderDto, Guid userId);
         Task DeleteFolderAsync(Guid folderId);
+        Task<FolderAccess> AddFolderPermissions(User user, Folder folder, PermissionFlags permissions);
     }
 }

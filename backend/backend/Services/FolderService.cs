@@ -31,5 +31,15 @@ namespace backend.Services
             appDbContext.Folders.Remove(folder);
             await appDbContext.SaveChangesAsync();
         }
+        public async Task<FolderAccess> AddFolderPermissions(User user, Folder folder, PermissionFlags permissions)
+        {
+            var folderPermissions = new FolderAccess(Guid.NewGuid(), folder, user, permissions);
+
+            appDbContext.FolderAccesses.Add(folderPermissions);
+            await appDbContext.SaveChangesAsync();
+
+            return folderPermissions;
+        }
+
     }
 }

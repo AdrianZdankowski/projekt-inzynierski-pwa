@@ -5,6 +5,7 @@ using backend.Migrations;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebApplication1;
 
 namespace backend.Controllers
 {
@@ -45,6 +46,33 @@ namespace backend.Controllers
 
             await folderService.DeleteFolderAsync(folderId);
             return Ok();
+        }
+
+        [Authorize]
+        [HttpPost("permissions")]
+        public async Task<ActionResult> AddFolderPermissions(FolderPermissionsDto request)
+        {
+            var claims = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(claims, out var userId))
+            {
+                return Unauthorized("Invalid or missing user ID");
+            }
+
+            var folder = appDbContext.Folders.FirstOrDefault(f => f.id == request.FolderId);
+            //todo: change in case other users should be able to grant access
+            if (folder is null || folder.OwnerId !=userId)
+            {
+                return Unauthorized("Only folder owner can grant access");
+            }
+
+            var user = appDbContext.Users.FirstOrDefault(x => x.id == request.UserId);
+            if (user is null)
+            {
+                return BadRequest("User does not exists");
+            }
+            var folderPermissions = await folderService.AddFolderPermissions(user, folder, (PermissionFlags)request.Permissions);
+
+            return Ok(folderPermissions);
         }
 
     }
