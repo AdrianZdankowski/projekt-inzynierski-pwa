@@ -26,7 +26,13 @@ namespace backend.Services
             {
                 await fileUploadService.DeleteFile(file.id);
             }
-            
+
+            var folders = appDbContext.Folders.Where(f => f.ParentFolder.id == folderId).ToList();
+            foreach (var deleteFolder in folders)
+            {
+                await DeleteFolderAsync(deleteFolder.id);
+            }
+
             var folder = appDbContext.Folders.FirstOrDefault(f => f.id == folderId);
             appDbContext.Folders.Remove(folder);
             await appDbContext.SaveChangesAsync();
