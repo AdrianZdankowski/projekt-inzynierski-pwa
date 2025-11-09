@@ -209,7 +209,8 @@ namespace backend.Controllers
             [FromQuery] int pageSize = 20,
             [FromQuery] string? sortBy = "uploadTimestamp",
             [FromQuery] string? sortDirection = "desc",
-            [FromQuery] string? q = null)
+            [FromQuery] string? q = null,
+            [FromQuery] Guid? folderId = null)
         {
             Guid userId;
             try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
@@ -219,8 +220,11 @@ namespace backend.Controllers
             var keyRaw = (sortBy ?? "uploadTimestamp").ToLowerInvariant();
             var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
 
-            var files = appDbContext.Files.Where(f => f.UserId == userId).Select(f => new { f.id, f.FileName, f.MimeType, f.Size, f.UploadTimestamp, f.Status, f.UserId }).ToList();
+            var files = appDbContext.Files.Where(f => f.UserId == userId && f.ParentFolder.id == folderId).Select(f => new { f.id, f.FileName, f.MimeType, f.Size, f.UploadTimestamp, f.Status, f.UserId }).ToList();
             
+            //todo: add sorting and pagination for folders
+            var folders = appDbContext.Folders.Where(f => f.ParentFolder.id == folderId).ToList();
+
             //add shared files to the final list
             var SharedWithUserFileIds = appDbContext.FileAccesses.Where(f => f.user.id == userId).Select(f => f.file.id).ToList();
             var SharedWithUserFiles = await appDbContext.Files
@@ -284,6 +288,7 @@ namespace backend.Controllers
             return Ok(new
             {
                 items = result,
+                folders = folders,
                 page,
                 pageSize,
                 totalItems,

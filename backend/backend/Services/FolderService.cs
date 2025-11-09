@@ -4,7 +4,7 @@ using WebApplication1;
 
 namespace backend.Services
 {
-    public class FolderService(AppDbContext appDbContext, FileUploadService fileUploadService) : IFolderService
+    public class FolderService(AppDbContext appDbContext, IFileUploadService fileUploadService) : IFolderService
     {
         public async Task<Folder?> AddFolderAsync(CreateFolderDto folderDto, Guid userId)
         {
