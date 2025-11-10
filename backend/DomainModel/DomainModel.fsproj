@@ -6,13 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+	<Compile Include="Folder.fs" />
 	<Compile Include="File.fs" />
-    <Compile Include="Audio.fs" />
-    <Compile Include="Image.fs" />
-    <Compile Include="Folder.fs" />
+	<Compile Include="Audio.fs" />
+	<Compile Include="Image.fs" />
     <Compile Include="User.fs" />
     <Compile Include="Video.fs" />
 	<Compile Include="FileAccess.fs" />
+	<Compile Include="FolderAccess.fs" />
   </ItemGroup>
 
 </Project>
