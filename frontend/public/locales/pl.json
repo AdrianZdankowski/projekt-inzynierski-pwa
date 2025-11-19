@@ -1,0 +1,29 @@
+{
+  "login": {
+    "title": "Zaloguj się",
+    "username": "Nazwa użytkownika",
+    "password": "Hasło",
+    "submit": "Zaloguj",
+    "noAccount": "Nie masz konta? Zarejestruj się!",
+    "usernameError": "Nazwa użytkownika może mieć maksymalnie 32 znaki alfanumeryczne!",
+    "passwordError": "Hasło musi zawierać min. 8 znaków, wielką i małą literę, liczbę oraz znak specjalny!",
+    "loginError": "Użytkownik o podanej nazwie oraz wprowadzonym haśle nie istnieje. Spróbuj ponownie.",
+    "generalError": "Wystąpił błąd podczas logowania. Spróbuj ponownie.",
+    "accountCreated": "Konto utworzone! Zaloguj się.",
+    "connectionLost": "Utracono połączenie z serwerem. Zaloguj się ponownie, gdy połączenie zostanie przywrócone."
+  },
+  "register": {
+    "title": "Zarejestruj się",
+    "username": "Nazwa użytkownika",
+    "password": "Hasło",
+    "repeatPassword": "Powtórz hasło",
+    "submit": "Zarejestruj",
+    "hasAccount": "Masz konto? Zaloguj się!",
+    "usernameError": "Nazwa użytkownika może mieć maksymalnie 32 znaki alfanumeryczne!",
+    "passwordError": "Hasło musi zawierać min. 8 znaków, wielką i małą literę, liczbę oraz znak specjalny!",
+    "repeatPasswordError": "Hasła nie są identyczne!",
+    "userExistsError": "Użytkownik o podanej nazwie już istnieje. Wybierz inną nazwę użytkownika.",
+    "generalError": "Wystąpił błąd podczas rejestracji. Spróbuj ponownie."
+  }
+}
+

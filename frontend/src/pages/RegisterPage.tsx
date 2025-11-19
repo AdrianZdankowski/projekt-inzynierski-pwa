@@ -9,9 +9,12 @@ import {
   Paper,
   Alert
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import axiosInstance from '../api/axiosInstance';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const RegisterPage = () => {
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
@@ -27,7 +30,7 @@ const RegisterPage = () => {
   const validateUsername = (name: string) => {
     // maks. 32 znaki alfanumeryczne (bez spacji, znaków specjalnych)
     const nameRegex = /^[a-zA-Z0-9_.-]{3,32}$/;
-    const errorMessage = "Nazwa użytkownika może mieć maksymalnie 32 znaki alfanumeryczne!"
+    const errorMessage = t('register.usernameError');
     return nameRegex.test(name) ? "" : errorMessage;
   }
 
@@ -35,12 +38,12 @@ const RegisterPage = () => {
   const validatePassword = (pass: string) => {
     // min. 8 znaków, wielka i mała litera, liczba i znak specjalny
     const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
-    const errorMessage = "Hasło musi zawierać min. 8 znaków, wielką i małą literę, liczbę oraz znak specjalny!";
+    const errorMessage = t('register.passwordError');
     return passRegex.test(pass) ? "" : errorMessage;
   }
 
   const validateRepeatPassword = (pass: string, rpass: string) => {
-    const errorMessage = "Hasła nie są identyczne!";
+    const errorMessage = t('register.repeatPasswordError');
     return (pass==rpass) ? "" : errorMessage;
   }
 
@@ -75,9 +78,9 @@ const RegisterPage = () => {
       console.error(error);
       
       if (error.response?.status === 400) {
-        setRegisterError('Użytkownik o podanej nazwie już istnieje. Wybierz inną nazwę użytkownika.');
+        setRegisterError(t('register.userExistsError'));
       } else {
-        setRegisterError('Wystąpił błąd podczas rejestracji. Spróbuj ponownie.');
+        setRegisterError(t('register.generalError'));
       }
     }
   };
@@ -93,8 +96,10 @@ const RegisterPage = () => {
           xs: '24px',
           sm: '32px',
         },
+        position: 'relative',
       }}
     >
+      <LanguageSwitcher />
       <Container 
         maxWidth="sm"
         sx={{
@@ -114,12 +119,12 @@ const RegisterPage = () => {
             </Alert>}
 
         <Typography variant="h5" gutterBottom>
-          Zarejestruj się
+          {t('register.title')}
         </Typography>
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <TextField
             fullWidth
-            label="Nazwa użytkownika"
+            label={t('register.username')}
             type="text"
             margin="normal"
             value={username}
@@ -130,7 +135,7 @@ const RegisterPage = () => {
           />
           <TextField
             fullWidth
-            label="Hasło"
+            label={t('register.password')}
             type="password"
             margin="normal"
             value={password}
@@ -141,7 +146,7 @@ const RegisterPage = () => {
           />
           <TextField
             fullWidth
-            label="Powtórz hasło"
+            label={t('register.repeatPassword')}
             type="password"
             margin="normal"
             value={repeatPassword}
@@ -154,13 +159,13 @@ const RegisterPage = () => {
             type="submit"
             variant="contained"
           >
-            Zarejestruj
+            {t('register.submit')}
           </Button>
 
           <Box
           sx={{textAlign: 'center', mt: 2}}
           >
-            <Link className='clean-link' to="/login">Masz konto? Zaloguj się!</Link>
+            <Link className='clean-link' to="/login">{t('register.hasAccount')}</Link>
           </Box>
         </Box>
       </Paper>

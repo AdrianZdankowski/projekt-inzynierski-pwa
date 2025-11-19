@@ -1,0 +1,29 @@
+{
+  "login": {
+    "title": "Log in",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Log in",
+    "noAccount": "Don't have an account? Register!",
+    "usernameError": "Username can have a maximum of 32 alphanumeric characters!",
+    "passwordError": "Password must contain at least 8 characters, uppercase and lowercase letters, a number and a special character!",
+    "loginError": "User with the given name and password does not exist. Please try again.",
+    "generalError": "An error occurred during login. Please try again.",
+    "accountCreated": "Account created! Please log in.",
+    "connectionLost": "Connection to server lost. Please log in again when the connection is restored."
+  },
+  "register": {
+    "title": "Register",
+    "username": "Username",
+    "password": "Password",
+    "repeatPassword": "Repeat password",
+    "submit": "Register",
+    "hasAccount": "Have an account? Log in!",
+    "usernameError": "Username can have a maximum of 32 alphanumeric characters!",
+    "passwordError": "Password must contain at least 8 characters, uppercase and lowercase letters, a number and a special character!",
+    "repeatPasswordError": "Passwords do not match!",
+    "userExistsError": "User with the given name already exists. Choose a different username.",
+    "generalError": "An error occurred during registration. Please try again."
+  }
+}
+

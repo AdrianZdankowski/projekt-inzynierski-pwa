@@ -9,8 +9,10 @@ import {
   Paper,
   Alert
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import axiosInstance from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 interface LocationState {
   registered?: boolean;
@@ -19,6 +21,7 @@ interface LocationState {
 
 
 const LoginPage = () => {
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -50,7 +53,7 @@ const LoginPage = () => {
   const validateUsername = (name: string) => {
     // maks. 32 znaki alfanumeryczne (bez spacji, znaków specjalnych)
     const nameRegex = /^[a-zA-Z0-9_.-]{3,32}$/;
-    const errorMessage = "Nazwa użytkownika może mieć maksymalnie 32 znaki alfanumeryczne!"
+    const errorMessage = t('login.usernameError');
     return nameRegex.test(name) ? "" : errorMessage;
   }
 
@@ -58,7 +61,7 @@ const LoginPage = () => {
   const validatePassword = (pass: string) => {
     // min. 8 znaków, wielka i mała litera, liczba i znak specjalny
     const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
-    const errorMessage = "Hasło musi zawierać min. 8 znaków, wielką i małą literę, liczbę oraz znak specjalny!";
+    const errorMessage = t('login.passwordError');
     return passRegex.test(pass) ? "" : errorMessage;
   }
 
@@ -89,9 +92,9 @@ const LoginPage = () => {
       console.error(error);
       
       if (error.response?.status === 400) {
-        setLoginError('Użytkownik o podanej nazwie oraz wprowadzonym haśle nie istnieje. Spróbuj ponownie.');
+        setLoginError(t('login.loginError'));
       } else {
-        setLoginError('Wystąpił błąd podczas logowania. Spróbuj ponownie.');
+        setLoginError(t('login.generalError'));
       }
     }
   };
@@ -107,8 +110,10 @@ const LoginPage = () => {
           xs: '24px',
           sm: '32px',
         },
+        position: 'relative',
       }}
     >
+      <LanguageSwitcher />
       <Container
         sx={{
           width: '100%',
@@ -124,15 +129,14 @@ const LoginPage = () => {
             <Alert variant="filled" 
             severity="success" 
             onClose={() => setShowAlert(false)}>
-              'Konto utworzone! Zaloguj się.'
+              {t('login.accountCreated')}
             </Alert>}
 
         {showNetworkAlert && 
             <Alert variant="filled" 
             severity="error" 
             onClose={() => setShowNetworkAlert(false)}>
-              Utracono połączenie z serwerem.
-              Zaloguj się ponownie, gdy połączenie zostanie przywrócone.
+              {t('login.connectionLost')}
             </Alert>}
 
         {loginError && 
@@ -143,12 +147,12 @@ const LoginPage = () => {
             </Alert>}
 
         <Typography variant="h5" gutterBottom>
-          Zaloguj się
+          {t('login.title')}
         </Typography>
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             fullWidth
-            label="Nazwa użytkownika"
+            label={t('login.username')}
             type="text"
             margin="normal"
             value={username}
@@ -159,7 +163,7 @@ const LoginPage = () => {
           />
           <TextField
             fullWidth
-            label="Hasło"
+            label={t('login.password')}
             type="password"
             margin="normal"
             value={password}
@@ -172,13 +176,13 @@ const LoginPage = () => {
             type="submit"
             variant="contained"
           >
-            Zaloguj
+            {t('login.submit')}
           </Button>
 
           <Box
           sx={{textAlign: 'center', mt: 2}}
           >
-            <Link className='clean-link' to="/register">Nie masz konta? Zarejestruj się!</Link>
+            <Link className='clean-link' to="/register">{t('login.noAccount')}</Link>
           </Box>
         </Box>
       </Paper>
