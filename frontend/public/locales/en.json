@@ -1,7 +1,7 @@
 {
   "login": {
     "title": "Log in",
-    "subtitle": "Manage your multimedia.",
+    "subtitle": "Return to the app and take charge of your media again.",
     "username": "Username",
     "usernamePlaceholder": "Enter login",
     "password": "Password",
@@ -21,6 +21,7 @@
     "username": "Username",
     "password": "Password",
     "repeatPassword": "Repeat password",
+    "subtitle": "Create an account to store and share your files securely.",
     "submit": "Register",
     "hasAccount": "Have an account? Log in!",
     "usernameError": "Username can have a maximum of 32 alphanumeric characters!",

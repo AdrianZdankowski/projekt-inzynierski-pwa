@@ -114,9 +114,24 @@ const RegisterForm = () => {
         >
           {t('register.title')}
         </Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            textAlign: 'left',
+          }}
+        >
+          {t('register.subtitle')}
+        </Typography>
       </Box>
 
-      <Box component="form" onSubmit={handleSubmit}>
+      <Box 
+        component="form" 
+        onSubmit={handleSubmit}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
         <Box sx={{ mb: '16px' }}>
           <Typography variant="body2" sx={{ mb: '8px' }}>
             {t('register.username')}
@@ -189,10 +204,11 @@ const RegisterForm = () => {
         <Button
           type="submit"
           variant="contained"
-          fullWidth
           sx={{
             mt: '16px',
             py: '12px',
+            px: '80px',
+            alignSelf: 'center',
           }}
         >
           {t('register.submit')}

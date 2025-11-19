@@ -147,7 +147,14 @@ const LoginForm = ({
         </Typography>
       </Box>
       
-      <Box component="form" onSubmit={handleSubmit}>
+      <Box 
+        component="form" 
+        onSubmit={handleSubmit}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
         <Box sx={{ mb: '16px' }}>
           <Typography variant="body2" sx={{ mb: '8px' }}>
             {t('login.username')}
@@ -197,10 +204,11 @@ const LoginForm = ({
         <Button
           type="submit"
           variant="contained"
-          fullWidth
           sx={{
             mt: '16px',
-            py: '12px'
+            py: '12px',
+            px: '80px',
+            alignSelf: 'center'
           }}
         >
           {t('login.submit')}

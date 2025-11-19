@@ -1,7 +1,7 @@
 {
   "login": {
     "title": "Zaloguj się",
-    "subtitle": "Zarządzaj swoimi multimediami.",
+    "subtitle": "Wróć do aplikacji i przejmij kontrolę nad swoimi multimediami.",
     "username": "Nazwa użytkownika",
     "usernamePlaceholder": "Wpisz login",
     "password": "Hasło",
@@ -21,6 +21,7 @@
     "username": "Nazwa użytkownika",
     "password": "Hasło",
     "repeatPassword": "Powtórz hasło",
+    "subtitle": "Stwórz konto i bezpiecznie zarządzaj swoimi plikami.",
     "submit": "Zarejestruj",
     "hasAccount": "Masz konto? Zaloguj się!",
     "usernameError": "Nazwa użytkownika może mieć maksymalnie 32 znaki alfanumeryczne!",
