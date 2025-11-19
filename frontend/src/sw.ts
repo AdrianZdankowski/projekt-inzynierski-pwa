@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching'
 import { NavigationRoute, registerRoute } from 'workbox-routing'
-import { CacheFirst, NetworkFirst } from 'workbox-strategies'
+import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies'
 import { ExpirationPlugin } from 'workbox-expiration'
 import { CacheableResponsePlugin } from 'workbox-cacheable-response'
 
@@ -26,32 +26,16 @@ const navigationRoute = new NavigationRoute(handler, {
 
 registerRoute(navigationRoute)
 
-// cache dla statycznych plików html/js/css
-registerRoute(
-  ({ request }) => ['script', 'style', 'document'].includes(request.destination),
-  new CacheFirst({
-    cacheName: 'static-assets',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 60 * 60 * 24 * 7, // 7 dni
-      }),
-    ],
-  })
-)
-
 // cache listy plików
 registerRoute(
-  ({ url }) =>
-    url.pathname === '/api/file' ||
-    (url.pathname === '/api/file' && url.search.length > 0),
+  ({ url }) => url.pathname === '/api/file',
   new NetworkFirst({
     cacheName: 'file-list-cache',
-    networkTimeoutSeconds: 3,
+    networkTimeoutSeconds: 5,
     plugins: [
       new ExpirationPlugin({
-        maxEntries: 20,
-        maxAgeSeconds: 10 * 60, // 10 minut
+        maxEntries: 20, 
+        maxAgeSeconds: 5 * 60, // 5 minut
       }),
       new CacheableResponsePlugin({
         statuses: [0, 200],
@@ -62,15 +46,15 @@ registerRoute(
 )
 
 
-// cache pojedynczego pliku
+// cache pojedynczego pliku - metadata z SAS URL 
 registerRoute(
-  ({ url }) => /^\/api\/file\/[^/]+$/.test(url.pathname),
-  new CacheFirst({
+  ({ url }) => /^\/api\/file\/[^\/]+$/.test(url.pathname),
+  new StaleWhileRevalidate({
     cacheName: 'file-metadata-cache',
     plugins: [
       new ExpirationPlugin({
         maxEntries: 50,
-        maxAgeSeconds: 60 * 60 * 24, // 1 dzień
+        maxAgeSeconds: 60 * 30, // czas życia SAS URL
       }),
       new CacheableResponsePlugin({
         statuses: [0, 200],
@@ -80,30 +64,20 @@ registerRoute(
   'GET'
 )
 
-// cache SAS URL z Azure Blob Storage
+// cache plików z Azure Blob Storage (obrazy, dokumenty)
 registerRoute(
-  ({ url, request }) => url.origin.includes('blob.core.windows.net') 
-  && request.destination === 'image',
+  ({ url }) => url.origin.includes('blob.core.windows.net'),
   new CacheFirst({
-    cacheName: 'azure-blob-cache',
+    cacheName: 'azure-blob-files',
     plugins: [
       new ExpirationPlugin({
-        maxEntries: 20,
-        maxAgeSeconds: 60 * 25, // 25 minut
+        maxEntries: 50,
+        maxAgeSeconds: 60 * 30, // 30 minut - dopasowane do SAS URL metadata
+      }),
+      new CacheableResponsePlugin({
+        statuses: [0, 200],
       }),
     ],
   }),
   'GET'
 )
-
-// /** @type {RegExp[] | undefined} */
-// let allowlist : undefined | RegExp[]
-// // in dev mode, we disable precaching to avoid caching issues
-// if (import.meta.env.DEV)
-//   allowlist = [/^\/$/]
-
-// // to allow work offline
-// registerRoute(new NavigationRoute(
-//   createHandlerBoundToURL('index.html'),
-//   { allowlist },
-// ))
