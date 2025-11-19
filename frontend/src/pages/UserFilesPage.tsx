@@ -25,9 +25,7 @@ const UserFilesPage = () => {
 
     return (
         <Container>
-            <ThemeProvider theme={FileListTheme}>
                 <FileList ref={fileListRef} />
-            </ThemeProvider>
                 
             <Fab
                 color="primary"
@@ -38,13 +36,11 @@ const UserFilesPage = () => {
                 +
             </Fab>
 
-            <ThemeProvider theme={UploadFileTheme}>
                 <FileUpload 
                     isOpen={isUploadModalOpen} 
                     onClose={handleCloseUploadModal}
                     onFileUploaded={handleFileUploaded}
                 />
-            </ThemeProvider>
         </Container>
     );
 }

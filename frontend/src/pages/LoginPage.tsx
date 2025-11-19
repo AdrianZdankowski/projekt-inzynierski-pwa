@@ -81,7 +81,7 @@ const LoginPage = () => {
       const result = await axiosInstance.post('/auth/login', {username, password});
       const accessToken = result.data.accessToken;
       login(accessToken);
-      navigate('/', {
+      navigate('/user-files', {
         replace: true
       })
     }
@@ -97,8 +97,28 @@ const LoginPage = () => {
   };
 
   return (
-    <Container>
-      <Paper elevation={3}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: {
+          xs: '24px',
+          sm: '32px',
+        },
+      }}
+    >
+      <Container
+        sx={{
+          width: '100%',
+          padding: {
+            xs: '16px',
+            sm: 0,
+          },
+        }}
+      >
+        <Paper elevation={3}>
 
         {showAlert && 
             <Alert variant="filled" 
@@ -156,13 +176,14 @@ const LoginPage = () => {
           </Button>
 
           <Box
-          sx={{textAlign: 'center', mt: 2, color: 'white'}}
+          sx={{textAlign: 'center', mt: 2}}
           >
             <Link className='clean-link' to="/register">Nie masz konta? Zarejestruj się!</Link>
           </Box>
         </Box>
       </Paper>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

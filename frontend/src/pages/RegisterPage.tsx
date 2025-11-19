@@ -83,8 +83,29 @@ const RegisterPage = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Paper elevation={3}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: {
+          xs: '24px',
+          sm: '32px',
+        },
+      }}
+    >
+      <Container 
+        maxWidth="sm"
+        sx={{
+          width: '100%',
+          padding: {
+            xs: '16px',
+            sm: 0,
+          },
+        }}
+      >
+        <Paper elevation={3}>
         {registerError && 
             <Alert variant="filled" 
             severity="error" 
@@ -137,13 +158,14 @@ const RegisterPage = () => {
           </Button>
 
           <Box
-          sx={{textAlign: 'center', mt: 2, color: 'white'}}
+          sx={{textAlign: 'center', mt: 2}}
           >
             <Link className='clean-link' to="/login">Masz konto? Zaloguj się!</Link>
           </Box>
         </Box>
       </Paper>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 
