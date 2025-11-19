@@ -1,10 +1,14 @@
 {
   "login": {
     "title": "Zaloguj się",
+    "subtitle": "Zarządzaj swoimi multimediami.",
     "username": "Nazwa użytkownika",
+    "usernamePlaceholder": "Wpisz login",
     "password": "Hasło",
-    "submit": "Zaloguj",
-    "noAccount": "Nie masz konta? Zarejestruj się!",
+    "passwordPlaceholder": "Wpisz hasło",
+    "submit": "Zaloguj się",
+    "noAccount": "Nie masz konta?",
+    "registerLink": "Zarejestruj się",
     "usernameError": "Nazwa użytkownika może mieć maksymalnie 32 znaki alfanumeryczne!",
     "passwordError": "Hasło musi zawierać min. 8 znaków, wielką i małą literę, liczbę oraz znak specjalny!",
     "loginError": "Użytkownik o podanej nazwie oraz wprowadzonym haśle nie istnieje. Spróbuj ponownie.",
@@ -24,6 +28,12 @@
     "repeatPasswordError": "Hasła nie są identyczne!",
     "userExistsError": "Użytkownik o podanej nazwie już istnieje. Wybierz inną nazwę użytkownika.",
     "generalError": "Wystąpił błąd podczas rejestracji. Spróbuj ponownie."
+  },
+  "languageSwitcher": {
+    "languages": {
+      "pl": "Polski",
+      "en": "Angielski"
+    }
   }
 }
 

@@ -1,10 +1,14 @@
 {
   "login": {
     "title": "Log in",
+    "subtitle": "Manage your multimedia.",
     "username": "Username",
+    "usernamePlaceholder": "Enter login",
     "password": "Password",
+    "passwordPlaceholder": "Enter password",
     "submit": "Log in",
-    "noAccount": "Don't have an account? Register!",
+    "noAccount": "Don't have an account yet?",
+    "registerLink": "Register",
     "usernameError": "Username can have a maximum of 32 alphanumeric characters!",
     "passwordError": "Password must contain at least 8 characters, uppercase and lowercase letters, a number and a special character!",
     "loginError": "User with the given name and password does not exist. Please try again.",
@@ -24,6 +28,12 @@
     "repeatPasswordError": "Passwords do not match!",
     "userExistsError": "User with the given name already exists. Choose a different username.",
     "generalError": "An error occurred during registration. Please try again."
+  },
+  "languageSwitcher": {
+    "languages": {
+      "pl": "Polish",
+      "en": "English"
+    }
   }
 }
 
