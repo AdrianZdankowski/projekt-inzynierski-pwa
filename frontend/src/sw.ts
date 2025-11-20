@@ -64,7 +64,7 @@ registerRoute(
   'GET'
 )
 
-// cache plików z Azure Blob Storage (obrazy, dokumenty)
+// cache plików z Azure Blob Storage (obrazy, dokumenty, PDF)
 // Używa pathname jako klucza cache (bez SAS query params) żeby unikać duplikatów
 registerRoute(
   ({ url }) => url.origin.includes('blob.core.windows.net'),
@@ -73,19 +73,15 @@ registerRoute(
     plugins: [
       new ExpirationPlugin({
         maxEntries: 50,
-        maxAgeSeconds: 60 * 30, // 30 minut - dopasowane do SAS URL metadata
+        maxAgeSeconds: 60 * 60 * 24, // 24h
       }),
       new CacheableResponsePlugin({
-        statuses: [0, 200],
+        statuses: [0, 200], // 0 = opaque (bez CORS)
       }),
-      // usuwanie query params z tokenu SAS aby zapobiec duplikatom
       {
         cacheKeyWillBeUsed: async ({ request }) => {
           const url = new URL(request.url);
-          return new Request(url.origin + url.pathname, {
-            method: request.method,
-            headers: request.headers,
-          });
+          return new Request(url.origin + url.pathname, request);
         },
       },
     ],

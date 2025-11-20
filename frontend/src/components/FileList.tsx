@@ -24,6 +24,7 @@ import DocumentDialog from './DocumentDialog';
 import ImageDialog from './ImageDialog';
 import DeleteFileDialog from './DeleteFileDialog';
 import { downloadFile } from '../utils/downloadFile';
+import { downloadFileOffline } from '../utils/downloadFileOffline';
 
 const SORT_OPTIONS = [
   { field: 'fileName', label: 'Nazwa' },
@@ -141,11 +142,17 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
   const handleShareFile = async (fileId: string) => {
     try {
-      // TODO: Implement endpoint in backend
-      console.log('Share file:', fileId);
-      downloadFile(fileId);
-    } catch (err) {
-      console.error('Error sharing file:', err);
+      // TODO: Implement proper sharing endpoint in backend
+      // For now, download the file
+      
+      try {
+        await downloadFile(fileId);
+      } catch (onlineError) {
+        await downloadFileOffline(fileId);
+      }
+    } catch (err: any) {
+      console.error('Error downloading file:', err);
+      setError(err.message || 'Nie udało się pobrać pliku.');
     }
   };
 
