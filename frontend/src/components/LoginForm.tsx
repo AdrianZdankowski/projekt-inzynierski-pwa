@@ -5,26 +5,20 @@ import {
   Button,
   Typography,
   Box,
-  Alert,
   InputAdornment,
 } from '@mui/material';
 import { Person, Lock } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import axiosInstance from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 interface LoginFormProps {
-  showRegistrationAlert: boolean;
-  showNetworkAlert: boolean;
-  onCloseRegistrationAlert: () => void;
-  onCloseNetworkAlert: () => void;
+  onLoginError?: (message: string) => void;
 }
 
 const LoginForm = ({
-  showRegistrationAlert,
-  showNetworkAlert,
-  onCloseRegistrationAlert,
-  onCloseNetworkAlert,
+  onLoginError,
 }: LoginFormProps) => {
   const { t } = useTranslation();
   const [username, setUsername] = useState('');
@@ -32,10 +26,10 @@ const LoginForm = ({
 
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [loginError, setLoginError] = useState('');
 
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { showNotification } = useNotification();
 
   // walidacja nazwy użytkownika
   const validateUsername = (name: string) => {
@@ -56,7 +50,6 @@ const LoginForm = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    setLoginError('');
     setUsernameError('');
     setPasswordError('');
 
@@ -72,6 +65,7 @@ const LoginForm = ({
       const result = await axiosInstance.post('/auth/login', {username, password});
       const accessToken = result.data.accessToken;
       login(accessToken);
+      showNotification(t('login.loginSuccess'), 'success');
       navigate('/user-files', {
         replace: true
       })
@@ -79,46 +73,18 @@ const LoginForm = ({
     catch (error: any) {
       console.error(error);
       
-      if (error.response?.status === 400) {
-        setLoginError(t('login.loginError'));
-      } else {
-        setLoginError(t('login.generalError'));
+      if (onLoginError) {
+        if (error.response?.status === 400) {
+          onLoginError(t('login.loginError'));
+        } else {
+          onLoginError(t('login.generalError'));
+        }
       }
     }
   };
 
   return (
     <>
-      {showRegistrationAlert && 
-        <Alert 
-          variant="filled" 
-          severity="success" 
-          onClose={onCloseRegistrationAlert}
-        >
-          {t('login.accountCreated')}
-        </Alert>
-      }
-
-      {showNetworkAlert && 
-        <Alert 
-          variant="filled" 
-          severity="error" 
-          onClose={onCloseNetworkAlert}
-        >
-          {t('login.connectionLost')}
-        </Alert>
-      }
-
-      {loginError && 
-        <Alert 
-          variant="filled" 
-          severity="error" 
-          onClose={() => setLoginError('')}
-        >
-          {loginError}
-        </Alert>
-      }
-
       <Box
         sx={{
           display: 'flex',

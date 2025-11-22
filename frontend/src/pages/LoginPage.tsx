@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Container,
@@ -7,6 +7,8 @@ import {
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import LoginForm from '../components/LoginForm';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
+import { useTranslation } from 'react-i18next';
 
 interface LocationState {
   registered?: boolean;
@@ -16,22 +18,27 @@ interface LocationState {
 const LoginPage = () => {
   const location = useLocation();
   const state = location.state as LocationState | null;
-  const [showAlert, setShowAlert] = useState<boolean>(
-    () => !!state?.registered
-  );
-
   const navigate = useNavigate();
   const { logoutReason } = useAuth();
-
-  const [showNetworkAlert, setShowNetworkAlert] = useState<boolean>(
-    () => logoutReason === "network"
-  );
+  const { showNotification } = useNotification();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (state?.registered) {
+      showNotification(t('login.accountCreated'), 'success');
       navigate('.', { replace: true, state: {} });
     }
-  }, [navigate, state?.registered]);
+  }, [navigate, state?.registered, showNotification, t]);
+
+  useEffect(() => {
+    if (logoutReason === "network") {
+      showNotification(t('login.connectionLost'), 'error');
+    }
+  }, [logoutReason, showNotification, t]);
+
+  const handleLoginError = (message: string) => {
+    showNotification(message, 'error');
+  };
 
   return (
     <Box
@@ -61,12 +68,7 @@ const LoginPage = () => {
           },
         }}
       >
-        <LoginForm
-          showRegistrationAlert={showAlert}
-          showNetworkAlert={showNetworkAlert}
-          onCloseRegistrationAlert={() => setShowAlert(false)}
-          onCloseNetworkAlert={() => setShowNetworkAlert(false)}
-        />
+        <LoginForm onLoginError={handleLoginError} />
       </Container>
     </Box>
   );

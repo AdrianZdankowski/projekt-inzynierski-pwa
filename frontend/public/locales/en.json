@@ -14,7 +14,8 @@
     "loginError": "User with the given name and password does not exist. Please try again.",
     "generalError": "An error occurred during login. Please try again.",
     "accountCreated": "Account created! Please log in.",
-    "connectionLost": "Connection to server lost. Please log in again when the connection is restored."
+    "connectionLost": "Connection to server lost. Please log in again when the connection is restored.",
+    "loginSuccess": "Successfully logged in!"
   },
   "register": {
     "title": "Register",

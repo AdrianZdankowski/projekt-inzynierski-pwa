@@ -14,7 +14,8 @@
     "loginError": "Użytkownik o podanej nazwie oraz wprowadzonym haśle nie istnieje. Spróbuj ponownie.",
     "generalError": "Wystąpił błąd podczas logowania. Spróbuj ponownie.",
     "accountCreated": "Konto utworzone! Zaloguj się.",
-    "connectionLost": "Utracono połączenie z serwerem. Zaloguj się ponownie, gdy połączenie zostanie przywrócone."
+    "connectionLost": "Utracono połączenie z serwerem. Zaloguj się ponownie, gdy połączenie zostanie przywrócone.",
+    "loginSuccess": "Zalogowano pomyślnie!"
   },
   "register": {
     "title": "Zarejestruj się",

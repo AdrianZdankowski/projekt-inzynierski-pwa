@@ -5,14 +5,17 @@ import {
   Button,
   Typography,
   Box,
-  Alert,
   InputAdornment,
 } from '@mui/material';
 import { Person, Lock } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import axiosInstance from '../api/axiosInstance';
 
-const RegisterForm = () => {
+interface RegisterFormProps {
+  onRegisterError?: (message: string) => void;
+}
+
+const RegisterForm = ({ onRegisterError }: RegisterFormProps) => {
   const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -21,7 +24,6 @@ const RegisterForm = () => {
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [repeatPasswordError, setRepeatPasswordError] = useState('');
-  const [registerError, setRegisterError] = useState('');
 
   const navigate = useNavigate();
 
@@ -49,7 +51,6 @@ const RegisterForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    setRegisterError('');
     setPasswordError('');
     setUsernameError('');
     setRepeatPasswordError('');
@@ -75,27 +76,18 @@ const RegisterForm = () => {
     } catch (error: any) {
       console.error(error);
 
-      if (error.response?.status === 400) {
-        setRegisterError(t('register.userExistsError'));
-      } else {
-        setRegisterError(t('register.generalError'));
+      if (onRegisterError) {
+        if (error.response?.status === 400) {
+          onRegisterError(t('register.userExistsError'));
+        } else {
+          onRegisterError(t('register.generalError'));
+        }
       }
     }
   };
 
   return (
     <>
-      {registerError && (
-        <Alert
-          variant="filled"
-          severity="error"
-          onClose={() => setRegisterError('')}
-          sx={{ mb: '16px' }}
-        >
-          {registerError}
-        </Alert>
-      )}
-
       <Box
         sx={{
           display: 'flex',

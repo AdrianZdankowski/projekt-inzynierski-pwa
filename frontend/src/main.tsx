@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { AuthProvider } from './context/AuthContext.tsx';
 import { ThemeModeProvider } from './context/ThemeModeContext.tsx';
+import { NotificationProvider } from './context/NotificationContext.tsx';
 import i18n from './i18n/config';
 import './index.css'
 import App from './App.tsx'
@@ -11,7 +12,9 @@ const renderApp = () => {
     <StrictMode>
       <AuthProvider>
           <ThemeModeProvider>
-              <App />
+              <NotificationProvider>
+                  <App />
+              </NotificationProvider>
           </ThemeModeProvider>
       </AuthProvider>
     </StrictMode>

@@ -1,8 +1,15 @@
 import { Container, Box } from '@mui/material';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import RegisterForm from '../components/RegisterForm';
+import { useNotification } from '../context/NotificationContext';
 
 const RegisterPage = () => {
+  const { showNotification } = useNotification();
+
+  const handleRegisterError = (message: string) => {
+    showNotification(message, 'error');
+  };
+
   return (
     <Box
       sx={{
@@ -31,7 +38,7 @@ const RegisterPage = () => {
           },
         }}
       >
-        <RegisterForm />
+        <RegisterForm onRegisterError={handleRegisterError} />
       </Container>
     </Box>
   );
