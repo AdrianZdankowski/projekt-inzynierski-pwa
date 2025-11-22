@@ -135,6 +135,26 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
           items: prev!.items.filter(f => f.id !== fileId)
         }
       ));
+
+      try {
+        const metadataCache = await caches.open('file-metadata-cache');
+        const metadataKeys = await metadataCache.keys();
+        const metadataKey = metadataKeys.find(req => req.url.includes(`/api/file/${fileId}`));
+        if (metadataKey) {
+          await metadataCache.delete(metadataKey);
+          console.log('Usunięto metadata z cache:', fileId);
+        }
+        
+        const blobCache = await caches.open('azure-blob-files');
+        const blobKeys = await blobCache.keys();
+        const blobKey = blobKeys.find(req => req.url.includes(fileId));
+        if (blobKey) {
+          await blobCache.delete(blobKey);
+          console.log('Usunięto blob z cache:', fileId);
+        }
+      } catch (cacheError) {
+        console.warn('Nie udało się usunąć z cache:', cacheError);
+      }
     } catch (err) {
       setError("Wystąpił nieoczekiwany błąd przy usuwaniu pliku. Spróbuj ponownie.");
     }
