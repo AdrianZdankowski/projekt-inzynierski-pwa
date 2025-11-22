@@ -24,7 +24,7 @@ import DocumentDialog from './DocumentDialog';
 import ImageDialog from './ImageDialog';
 import DeleteFileDialog from './DeleteFileDialog';
 import { downloadFile } from '../utils/downloadFile';
-import { downloadFileOffline } from '../utils/downloadFileOffline';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
 const SORT_OPTIONS = [
   { field: 'fileName', label: 'Nazwa' },
@@ -59,6 +59,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const [openDeleteFileDialog, setOpenDeleteFileDialog] = useState<boolean>(false);
 
   const { accessToken } = useAuth();
+  const isOnline = useOnlineStatus();
 
   const fetchFiles = useCallback(async () => {
     try {
@@ -126,6 +127,12 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   }));
 
   const handleDeleteFile = async (fileId: string) => {
+
+    if (!isOnline) {
+        setError('Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.');
+        return;
+      }
+
     try {
       setError(null);
       await FileService.deleteFile(fileId);
@@ -144,7 +151,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
           await metadataCache.delete(metadataKey);
           console.log('Usunięto metadata z cache:', fileId);
         }
-        
+
         const blobCache = await caches.open('azure-blob-files');
         const blobKeys = await blobCache.keys();
         const blobKey = blobKeys.find(req => req.url.includes(fileId));
@@ -165,11 +172,13 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       // TODO: Implement proper sharing endpoint in backend
       // For now, download the file
       
-      try {
-        await downloadFile(fileId);
-      } catch (onlineError) {
-        await downloadFileOffline(fileId);
+      if (!isOnline) {
+        setError('Brak połączenia z internetem. Pobieranie dostępne jest tylko online.');
+        return;
       }
+      
+      console.log('Share file:', fileId);
+      await downloadFile(fileId);
     } catch (err: any) {
       console.error('Error downloading file:', err);
       setError(err.message || 'Nie udało się pobrać pliku.');
@@ -213,16 +222,21 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     return file.userId !== currentUserId;
   };
 
-  if (error) {
-    return (
-      <Alert severity="error" sx={{ margin: 2 }}>
-        {error}
-      </Alert>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <Alert severity="error" sx={{ margin: 2 }}>
+  //       {error}
+  //     </Alert>
+  //   );
+  // }
 
   return (
     <Box sx={{ padding: 3 }}>
+      {error && (
+        <Alert severity="error" sx={{ marginBottom: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
       {selectedFile && openVideoDialog && 
       (<VideoDialog open={openVideoDialog} onClose={() => {setOpenVideoDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
       {selectedFile && openDocumentDialog && 
@@ -324,6 +338,10 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                   className="delete-button"
                   onClick={(e) => {
                     e.stopPropagation();
+                    if (!isOnline) {
+                      setError('Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.');
+                      return;
+                    }
                     setSelectedFile(file);
                     setOpenDeleteFileDialog(true);
                   }}
@@ -474,6 +492,10 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                             className="table-delete-button"
                             onClick={(e) => {
                               e.stopPropagation();
+                              if (!isOnline) {
+                                setError('Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.');
+                                return;
+                              }
                               setSelectedFile(file);
                               setOpenDeleteFileDialog(true);
                             }}
