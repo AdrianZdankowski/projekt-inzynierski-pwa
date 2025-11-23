@@ -25,7 +25,10 @@ const UserFilesPage = () => {
         <Container
             sx={{
                 position: "relative",
-                minHeight: "100vh",
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                paddingBottom: '24px'
             }}
         >
                 <FileList ref={fileListRef} />
