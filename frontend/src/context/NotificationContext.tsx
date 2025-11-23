@@ -1,12 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from "react";
-
-export type NotificationType = 'success' | 'error';
-
-export interface Notification {
-  id: string;
-  message: string;
-  type: NotificationType;
-}
+import { NotificationType, Notification } from "../types/Notification";
 
 interface NotificationContextType {
   showNotification: (message: string, type: NotificationType) => void;

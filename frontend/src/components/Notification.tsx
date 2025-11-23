@@ -7,7 +7,7 @@ function SlideTransition(props: SlideProps) {
   return <Slide {...props} direction="left" />;
 }
 
-const NotificationContainer = () => {
+const Notification = () => {
   const { currentNotification, removeNotification } = useNotification();
 
   const handleClose = (_event?: React.SyntheticEvent | Event, reason?: string) => {
@@ -53,5 +53,5 @@ const NotificationContainer = () => {
   );
 };
 
-export default NotificationContainer;
+export default Notification;
 
