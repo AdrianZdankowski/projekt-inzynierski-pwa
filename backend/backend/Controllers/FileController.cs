@@ -184,10 +184,17 @@ namespace backend.Controllers
                     file.UploadTimestamp = DateTime.UtcNow;
 
                     await appDbContext.SaveChangesAsync();
-                    if (file.MimeType == "video/mp4")
+                    
+                    // Convert file if a strategy is available for this MIME type
+                    try
                     {
                         string tempDirectory = Path.Combine(@"C:\temp", dto.FileId.ToString().Replace(".", ""), DateTime.Now.ToString("yyyyMMdd_HHmmss"));
-                        await fileConverter.CreateHlsPlaylistAsync(tempDirectory, file, userId);
+                        await fileConverter.ConvertFileAsync(tempDirectory, file, userId);
+                    }
+                    catch (NotSupportedException)
+                    {
+                        // No conversion strategy available for this file type
+                        // File will be stored as-is
                     }
                     return Ok(new { Message = "Upload committed", FileId = file.id });
                 }
