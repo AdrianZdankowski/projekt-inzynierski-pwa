@@ -4,6 +4,7 @@ import MainLayout from './components/MainLayout.tsx'
 import LoginPage from './pages/LoginPage.tsx'
 import RegisterPage from './pages/RegisterPage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
+import PublicRoute from './components/PublicRoute.tsx'
 import Unauthorized from './components/Unauthorized.tsx'
 import UserFilesPage from './pages/UserFilesPage.tsx'
 import { useAuth } from './context/AuthContext.tsx'
@@ -20,11 +21,15 @@ function App() {
       <Notification/>
       <Routes>
         <Route path="/login" element={
-            <LoginPage/>
-        } />
+            <PublicRoute>
+              <LoginPage/>
+            </PublicRoute>
+          } />
         <Route path="/register" element={
-            <RegisterPage/>
-        } />
+            <PublicRoute>
+              <RegisterPage/>
+            </PublicRoute>
+          } />
         
         <Route path="/" element={
           isAuthenticated ? <Navigate to="/user-files" replace/> : <Navigate to="/login" replace/>

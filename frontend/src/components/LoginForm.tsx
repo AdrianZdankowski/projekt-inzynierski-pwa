@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   TextField,
   Button,
@@ -13,13 +13,7 @@ import axiosInstance from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 
-interface LoginFormProps {
-  onLoginError?: (message: string) => void;
-}
-
-const LoginForm = ({
-  onLoginError,
-}: LoginFormProps) => {
+const LoginForm = () => {
   const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -27,7 +21,6 @@ const LoginForm = ({
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  const navigate = useNavigate();
   const { login } = useAuth();
   const { showNotification } = useNotification();
 
@@ -66,19 +59,16 @@ const LoginForm = ({
       const accessToken = result.data.accessToken;
       login(accessToken);
       showNotification(t('login.loginSuccess'), 'success');
-      navigate('/user-files', {
-        replace: true
-      })
+      
+      window.location.replace('/user-files');
     }
     catch (error: any) {
       console.error(error);
       
-      if (onLoginError) {
-        if (error.response?.status === 400) {
-          onLoginError(t('login.loginError'));
-        } else {
-          onLoginError(t('login.generalError'));
-        }
+      if (error.response?.status === 400) {
+        showNotification(t('login.loginError'), 'error');
+      } else {
+        showNotification(t('login.generalError'), 'error');
       }
     }
   };
@@ -128,18 +118,21 @@ const LoginForm = ({
           <TextField
             fullWidth
             placeholder={t('login.usernamePlaceholder')}
+            autoComplete='off'
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             error={!!usernameError}
             helperText={usernameError}
             required
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Person />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Person />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
         </Box>
@@ -151,18 +144,21 @@ const LoginForm = ({
           <TextField
             fullWidth
             placeholder={t('login.passwordPlaceholder')}
+            autoComplete='off'
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             error={!!passwordError}
             helperText={passwordError}
             required
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Lock />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
         </Box>

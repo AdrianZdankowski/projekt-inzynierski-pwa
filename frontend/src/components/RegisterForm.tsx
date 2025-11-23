@@ -10,12 +10,9 @@ import {
 import { Person, Lock } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import axiosInstance from '../api/axiosInstance';
+import { useNotification } from '../context/NotificationContext';
 
-interface RegisterFormProps {
-  onRegisterError?: (message: string) => void;
-}
-
-const RegisterForm = ({ onRegisterError }: RegisterFormProps) => {
+const RegisterForm = () => {
   const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -26,6 +23,7 @@ const RegisterForm = ({ onRegisterError }: RegisterFormProps) => {
   const [repeatPasswordError, setRepeatPasswordError] = useState('');
 
   const navigate = useNavigate();
+  const { showNotification } = useNotification();
 
   // walidacja nazwy użytkownika
   const validateUsername = (name: string) => {
@@ -67,21 +65,15 @@ const RegisterForm = ({ onRegisterError }: RegisterFormProps) => {
 
     try {
       await axiosInstance.post('/auth/register', { username, password });
-      navigate('/login', {
-        replace: true,
-        state: {
-          registered: true,
-        },
-      });
+      showNotification(t('login.accountCreated'), 'success');
+      navigate('/login', { replace: true });
     } catch (error: any) {
       console.error(error);
 
-      if (onRegisterError) {
-        if (error.response?.status === 400) {
-          onRegisterError(t('register.userExistsError'));
-        } else {
-          onRegisterError(t('register.generalError'));
-        }
+      if (error.response?.status === 400) {
+        showNotification(t('register.userExistsError'), 'error');
+      } else {
+        showNotification(t('register.generalError'), 'error');
       }
     }
   };
@@ -131,18 +123,21 @@ const RegisterForm = ({ onRegisterError }: RegisterFormProps) => {
           <TextField
             fullWidth
             placeholder={t('register.username')}
+            autoComplete='off'
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             error={!!usernameError}
             helperText={usernameError}
             required
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Person />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Person />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
         </Box>
@@ -154,18 +149,21 @@ const RegisterForm = ({ onRegisterError }: RegisterFormProps) => {
           <TextField
             fullWidth
             placeholder={t('register.password')}
+            autoComplete='off'
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             error={!!passwordError}
             helperText={passwordError}
             required
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Lock />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
         </Box>
@@ -177,18 +175,21 @@ const RegisterForm = ({ onRegisterError }: RegisterFormProps) => {
           <TextField
             fullWidth
             placeholder={t('register.repeatPassword')}
+            autoComplete='off'
             type="password"
             value={repeatPassword}
             onChange={(e) => setRepeatPassword(e.target.value)}
             error={!!repeatPasswordError}
             helperText={repeatPasswordError}
             required
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Lock />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
         </Box>
