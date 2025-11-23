@@ -9,7 +9,7 @@ import UserFilesPage from './pages/UserFilesPage.tsx'
 import { useAuth } from './context/AuthContext.tsx'
 import VideoTestPage from './pages/VideoTestPage.tsx'
 import AxiosInterceptorWrapper from './components/AxiosInterceptorWrapper.ts'
-import Notification from './components/NotificationContainer.tsx'
+import Notification from './components/Notification.tsx'
 
 function App() {
   const {isAuthenticated} = useAuth();
