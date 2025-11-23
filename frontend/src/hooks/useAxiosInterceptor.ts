@@ -29,8 +29,12 @@ export const useAxiosInterceptor = () => {
         const originalRequest = error.config;
 
         if (!error.response) {
-          logout("network");
-          navigate('/login', { replace: true });
+          if (!navigator.onLine) {
+            console.log('Offline: żądanie może być obsłużone z cache przez SW');
+            return Promise.reject(error); // SW może mieć odpowiedź w cache
+          }
+          
+          console.error('Network error while online:', error.message);
           return Promise.reject(error);
         }
 
