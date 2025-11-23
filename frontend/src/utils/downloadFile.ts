@@ -12,7 +12,6 @@ export const downloadFile = async (fileId: string, url?: string, fileName?: stri
         const link = document.createElement('a');
         link.href=url;
         link.download = fileName || 'plik';
-        //link.target = '_blank';
 
         document.body.appendChild(link);
         link.click();

@@ -6,7 +6,6 @@ import {
     Select, 
     Typography,
     Box,
-    Button,
     Alert
 } from "@mui/material";
 import Hls, { LoaderCallbacks, LoaderConfiguration, LoaderContext } from "hls.js";
@@ -169,10 +168,6 @@ const VideoPlayer = ({src, fileName, ownerName, uploadTimestamp, isShared}: Vide
                                 ))}
                             </Select>
                         </FormControl>
-                        <Button variant="contained" sx={{
-                            gridColumn: "1 / span 2"
-                            }}>Pobierz
-                        </Button>
                 </Box>
             </Box>
         </Container>

@@ -2,17 +2,19 @@
 open System
 open System.ComponentModel.DataAnnotations
 
-[<AllowNullLiteral>]
-type Folder(owner: Guid, name: string) =
+[<CLIMutable>]
+type Folder =
+    {
+        [<Key>]
+        id: Guid
 
-    [<Key>]
-    let id = Guid.NewGuid()
-    let mutable files: File list = []
-    member this.owner = owner
-    member this.name = name
+        [<Required>]
+        OwnerId: Guid
 
-    member this.AddFile(file: File) =
-        files <- file :: files
+        [<Required>]
+        FolderName: string
 
-    member this.DeleteFile(fileId: Guid) =
-        files <- files |> List.filter (fun f -> f.id <> fileId)
+        CreatedDate: DateTime
+
+        ParentFolder: Folder
+    }

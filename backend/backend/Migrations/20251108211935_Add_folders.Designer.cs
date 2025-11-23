@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend;
 
@@ -11,9 +12,11 @@ using backend;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251108211935_Add_folders")]
+    partial class Add_folders
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -112,30 +115,6 @@ namespace backend.Migrations
                     b.ToTable("Folders");
                 });
 
-            modelBuilder.Entity("WebApplication1.FolderAccess", b =>
-                {
-                    b.Property<Guid>("id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("folderid")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("permissions")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("userid")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("id");
-
-                    b.HasIndex("folderid");
-
-                    b.HasIndex("userid");
-
-                    b.ToTable("FolderAccesses");
-                });
-
             modelBuilder.Entity("WebApplication1.User", b =>
                 {
                     b.Property<Guid>("id")
@@ -202,25 +181,6 @@ namespace backend.Migrations
                         .HasForeignKey("ParentFolderid");
 
                     b.Navigation("ParentFolder");
-                });
-
-            modelBuilder.Entity("WebApplication1.FolderAccess", b =>
-                {
-                    b.HasOne("WebApplication1.Folder", "folder")
-                        .WithMany()
-                        .HasForeignKey("folderid")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WebApplication1.User", "user")
-                        .WithMany()
-                        .HasForeignKey("userid")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("folder");
-
-                    b.Navigation("user");
                 });
 #pragma warning restore 612, 618
         }

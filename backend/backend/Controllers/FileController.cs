@@ -91,6 +91,16 @@ namespace backend.Controllers
                 return Unauthorized("Invalid or missing user ID"); 
             }
 
+            //checking if user is allowed to add files to the folder
+            Folder folder = null;
+            if (req.FolderId is not null){
+                folder = appDbContext.Folders.FirstOrDefault(f => f.id == req.FolderId);
+                if (await fileAccessValidator.ValidateFolderAddPermission(userId, folder) == false)
+                {
+                    return Unauthorized("User is not allowed to add files in this folder");
+                }
+            }
+
             var fileId = Guid.NewGuid();
             var blobName = azureBlobService.BuildUserScopedBlobName(userId, fileId, req.FileName);
 
@@ -104,7 +114,8 @@ namespace backend.Controllers
                 BlobName = blobName,
                 UploadTimestamp = DateTime.UtcNow,
                 Status = WebApplication1.FileStatus.Pending,
-                Checksum = null
+                Checksum = null,
+                ParentFolder = folder
             };
 
             appDbContext.Files.Add(entity);
@@ -198,18 +209,42 @@ namespace backend.Controllers
             [FromQuery] int pageSize = 20,
             [FromQuery] string? sortBy = "uploadTimestamp",
             [FromQuery] string? sortDirection = "desc",
-            [FromQuery] string? q = null)
+            [FromQuery] string? q = null,
+            [FromQuery] Guid? folderId = null)
         {
             Guid userId;
             try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
 
-            page = Math.Max(1, page);
+            var sharedFolders = new List<WebApplication1.Folder>();
+
+            if (folderId is not null)
+            {
+                var folder = appDbContext.Folders.FirstOrDefault(f => f.id == folderId);
+                if (await fileAccessValidator.ValidateFolderPermissions(userId, folder, PermissionFlags.Read) == false)
+                {
+                    return Unauthorized("User does not have access to this folder");
+                }
+            }
+            else
+            {
+                //return shared folders
+                var sharedFoldersIds = appDbContext.FolderAccesses.Where(f => f.user.id ==  userId).Select(f => new {f.id }).ToList();
+                foreach (var sharedFolderId in sharedFoldersIds)
+                {
+                    sharedFolders.Add(appDbContext.Folders.FirstOrDefault(f => f.id.Equals(sharedFolderId)));
+                }
+            }
+
+                page = Math.Max(1, page);
             pageSize = Math.Clamp(pageSize, 1, 100);
             var keyRaw = (sortBy ?? "uploadTimestamp").ToLowerInvariant();
             var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
 
-            var files = appDbContext.Files.Where(f => f.UserId == userId).Select(f => new { f.id, f.FileName, f.MimeType, f.Size, f.UploadTimestamp, f.Status, f.UserId }).ToList();
+            var files = appDbContext.Files.Where(f => f.UserId == userId && f.ParentFolder.id == folderId).Select(f => new { f.id, f.FileName, f.MimeType, f.Size, f.UploadTimestamp, f.Status, f.UserId }).ToList();
             
+            //todo: add sorting and pagination for folders
+            var folders = appDbContext.Folders.Where(f => f.ParentFolder.id == folderId && f.OwnerId == userId).ToList();
+
             //add shared files to the final list
             var SharedWithUserFileIds = appDbContext.FileAccesses.Where(f => f.user.id == userId).Select(f => f.file.id).ToList();
             var SharedWithUserFiles = await appDbContext.Files
@@ -273,6 +308,8 @@ namespace backend.Controllers
             return Ok(new
             {
                 items = result,
+                folders = folders,
+                sharedFolders = sharedFolders,
                 page,
                 pageSize,
                 totalItems,
