@@ -8,12 +8,12 @@ import { Close as CloseIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
 
-interface LanguageDialogProps {
+interface SelectLanguageDialogProps {
   open: boolean;
   onClose: () => void;
 }
 
-const LanguageDialog: React.FC<LanguageDialogProps> = ({ open, onClose }) => {
+const SelectLanguageDialog: React.FC<SelectLanguageDialogProps> = ({ open, onClose }) => {
   const { t } = useTranslation();
   
   return (
@@ -61,5 +61,5 @@ const LanguageDialog: React.FC<LanguageDialogProps> = ({ open, onClose }) => {
   );
 };
 
-export default LanguageDialog;
+export default SelectLanguageDialog;
 

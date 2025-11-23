@@ -19,7 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../api/axiosInstance';
 import { decodeUsername } from '../lib/decodeUsername';
-import LanguageDialog from './LanguageDialog';
+import SelectLanguageDialog from './SelectLanguageDialog';
 import ModeSwitcher from './ModeSwitcher';
 
 const Header = () => {
@@ -179,7 +179,7 @@ const Header = () => {
             </Toolbar>
           </AppBar>
 
-          <LanguageDialog 
+          <SelectLanguageDialog 
             open={languageDialogOpen} 
             onClose={handleLanguageDialogClose}
           />
