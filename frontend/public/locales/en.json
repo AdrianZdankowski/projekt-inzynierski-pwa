@@ -45,6 +45,17 @@
     "changeLanguage": "Change language",
     "selectLanguage": "Select language",
     "logout": "Log out"
+  },
+  "fileUpload": {
+    "title": "Upload file",
+    "dragDropOrClick": "Drag and drop file here or click to select",
+    "dropHere": "Drop file here!",
+    "selectFile": "Select file",
+    "removeFile": "Remove selected file",
+    "uploading": "Uploading...",
+    "uploadFile": "Upload file",
+    "success": "File uploaded successfully!",
+    "error": "An error occurred during file upload"
   }
 }
 

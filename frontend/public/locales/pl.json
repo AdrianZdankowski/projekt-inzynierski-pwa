@@ -45,6 +45,17 @@
     "changeLanguage": "Zmiana języka",
     "selectLanguage": "Wybierz język",
     "logout": "Wyloguj"
+  },
+  "fileUpload": {
+    "title": "Prześlij plik",
+    "dragDropOrClick": "Przeciągnij i upuść plik tutaj lub kliknij aby wybrać",
+    "dropHere": "Upuść plik tutaj!",
+    "selectFile": "Wybierz plik",
+    "removeFile": "Usuń wybrany plik",
+    "uploading": "Wysyłanie...",
+    "uploadFile": "Wyślij plik",
+    "success": "Plik został pomyślnie przesłany!",
+    "error": "Wystąpił błąd podczas przesyłania pliku"
   }
 }
 

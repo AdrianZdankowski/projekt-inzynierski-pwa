@@ -231,7 +231,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   // }
 
   return (
-    <Box sx={{ padding: 3 }}>
+    <Box sx={{ paddingTop: 3, paddingLeft: 3, paddingRight: 3, paddingBottom: 0 }}>
       {error && (
         <Alert severity="error" sx={{ marginBottom: 2 }} onClose={() => setError(null)}>
           {error}

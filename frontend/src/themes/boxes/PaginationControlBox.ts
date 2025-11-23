@@ -7,6 +7,7 @@ export const PaginationControlBox = styled(Box)(() => ({
     alignItems: 'center',
     marginTop: 4,
     gap: 4,
-    padding: '40px 0',
+    paddingTop: '40px',
+    paddingBottom: 0,
     position: 'relative'
 }));
