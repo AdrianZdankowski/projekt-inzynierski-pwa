@@ -36,6 +36,15 @@
       "pl": "Polski",
       "en": "Angielski"
     }
+  },
+  "modeSwitcher": {
+    "switchToDark": "Przełącz na tryb ciemny",
+    "switchToLight": "Przełącz na tryb jasny"
+  },
+  "header": {
+    "changeLanguage": "Zmiana języka",
+    "selectLanguage": "Wybierz język",
+    "logout": "Wyloguj"
   }
 }
 

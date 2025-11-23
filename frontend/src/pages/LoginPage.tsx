@@ -54,7 +54,16 @@ const LoginPage = () => {
         position: 'relative'
       }}
     >
-      <LanguageSwitcher />
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '16px',
+          right: '16px',
+          zIndex: '1000'
+        }}
+      >
+        <LanguageSwitcher isCompactModeAvailable />
+      </Box>
       <Container
         sx={{
           width: '100%',

@@ -36,6 +36,15 @@
       "pl": "Polish",
       "en": "English"
     }
+  },
+  "modeSwitcher": {
+    "switchToDark": "Switch to dark mode",
+    "switchToLight": "Switch to light mode"
+  },
+  "header": {
+    "changeLanguage": "Change language",
+    "selectLanguage": "Select language",
+    "logout": "Log out"
   }
 }
 
