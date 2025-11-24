@@ -1,17 +1,14 @@
 import { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
 import { Card, CardContent, CardActions, Typography, IconButton, Button, Box, Chip, 
-  Alert, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  MenuItem, Select, FormControl } from '@mui/material';
-import { Delete as DeleteIcon, Share as ShareIcon, CloudDone as SharedIcon,
-  KeyboardArrowLeft as ArrowLeftIcon, KeyboardArrowRight as ArrowRightIcon } from '@mui/icons-material';
+  Alert, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Delete as DeleteIcon, Share as ShareIcon, CloudDone as SharedIcon } from '@mui/icons-material';
 import { FileService } from '../services/FileService';
-import { FileListResponse, FileListParams, FileListFilters } from '../types/FileListTypes';
+import { FileListResponse, FileListParams, FileListFilters, FileListPaginationState } from '../types/FileListTypes';
 import { FileMetadata } from '../types/FileMetadata';
 import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
 import { useAuth } from '../context/AuthContext';
 import { decodeUserId } from '../lib/decodeUserId';
 import { useNotification } from '../context/NotificationContext';
-import { PaginationControlBox } from '../themes/boxes/PaginationControlBox';
 import { UserIconBox } from '../themes/boxes/UserIconBox';
 import { CardBox } from '../themes/boxes/CardBox';
 import { FileTypeBox } from '../themes/boxes/FileTypeBox';
@@ -20,6 +17,7 @@ import DocumentDialog from './DocumentDialog';
 import ImageDialog from './ImageDialog';
 import DeleteFileDialog from './DeleteFileDialog';
 import FileListToolbar from './FileListToolbar';
+import FileListPagination from './FileListPagination';
 import { downloadFile } from '../utils/downloadFile';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
@@ -35,8 +33,10 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     sortOrder: 'desc',
     viewMode: 'grid'
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [pagination, setPagination] = useState<FileListPaginationState>({
+    page: 1,
+    pageSize: 10
+  });
   const [selectedFile, setSelectedFile] = useState<FileMetadata | null>(null);
   const [isSelectedFileShared, setIsSelectedFileShared] = useState<boolean>(false);
   const [openVideoDialog, setOpenVideoDialog] = useState<boolean>(false);
@@ -51,8 +51,8 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const fetchFiles = useCallback(async () => {
     try {
       const params: FileListParams = {
-        page: currentPage,
-        pageSize: itemsPerPage,
+        page: pagination.page,
+        pageSize: pagination.pageSize,
         sortBy: filters.sortField,
         sortDirection: filters.sortOrder,
         q: filters.searchQuery || undefined
@@ -70,7 +70,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       }
       console.error('Error fetching files:', err);
     }
-  }, [currentPage, itemsPerPage, filters, showNotification]);
+  }, [pagination, filters, showNotification]);
   
   useEffect(() => {
     fetchFiles();
@@ -80,17 +80,12 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     setFilters(newFilters);
   }, []);
 
-  const handlePageReset = useCallback(() => {
-    setCurrentPage(1);
+  const handlePaginationChange = useCallback((page: number, itemsPerPage: number) => {
+    setPagination({ page, pageSize: itemsPerPage });
   }, []);
 
   const files = fileListResponse?.items || [];
-  const totalPages = fileListResponse?.totalPages || 0;
   const totalItems = fileListResponse?.totalItems || 0;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [itemsPerPage]);
 
   useImperativeHandle(ref, () => ({
     refreshFiles: fetchFiles
@@ -205,11 +200,9 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       onConfirm={handleDeleteFile}
       file={selectedFile}
       />)}
-      {/* Toolbar - show if user has files OR if user is searching */}
       {(totalItems > 0 || filters.searchQuery.length > 0) && (
         <FileListToolbar
           onFiltersChange={handleFiltersChange}
-          onPageReset={handlePageReset}
         />
       )}
 
@@ -422,84 +415,10 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
         </Box>
       )}
 
-      {/* Pagination Controls */}
-      {totalItems > 0 && (
-        <PaginationControlBox>
-          {/* Left spacer */}
-          <Box sx={{ width: 80 }} />
-          
-          {/* Center pagination - only show if more than 1 page */}
-          {totalPages > 1 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              {/* Previous Page Button */}
-              <IconButton
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={!fileListResponse?.hasPrev}
-                className={`pagination-nav ${!fileListResponse?.hasPrev ? 'disabled' : ''}`}
-              >
-                <ArrowLeftIcon />
-              </IconButton>
-
-                {/* Page Numbers */}
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                    // Show first page, last page, current page, and pages around current page
-                    const shouldShow = 
-                      page === 1 || 
-                      page === totalPages || 
-                      Math.abs(page - currentPage) <= 1;
-                    
-                    if (!shouldShow) {
-                      // Show ellipsis for gaps
-                      if (page === 2 && currentPage > 4) {
-                        return <Typography key={`ellipsis-${page}`} sx={{ px: 1 }}>...</Typography>;
-                      }
-                      if (page === totalPages - 1 && currentPage < totalPages - 3) {
-                        return <Typography key={`ellipsis-${page}`} sx={{ px: 1 }}>...</Typography>;
-                      }
-                      return null;
-                    }
-
-                  return (
-                    <Button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      variant={currentPage === page ? 'contained' : 'outlined'}
-                      size="small"
-                      className={currentPage === page ? 'pagination-active' : 'pagination-inactive'}
-                    >
-                      {page}
-                    </Button>
-                  );
-                  })}
-                </Box>
-
-              {/* Next Page Button */}
-              <IconButton
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={!fileListResponse?.hasNext}
-                className={`pagination-nav ${!fileListResponse?.hasNext ? 'disabled' : ''}`}
-              >
-                <ArrowRightIcon />
-              </IconButton>
-              </Box>
-            )}
-
-          {/* Items per page selector - Always visible on the right */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <FormControl size="small" sx={{ minWidth: 80 }}>
-                <Select
-                  value={itemsPerPage}
-                  onChange={(e) => setItemsPerPage(Number(e.target.value))}>
-                <MenuItem value={5}>5</MenuItem>
-                <MenuItem value={10}>10</MenuItem>
-                <MenuItem value={15}>15</MenuItem>
-                <MenuItem value={20}>20</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </PaginationControlBox>
-      )}
+      <FileListPagination
+        totalItems={totalItems}
+        onPaginationChange={handlePaginationChange}
+      />
     </Box>
   );
 });

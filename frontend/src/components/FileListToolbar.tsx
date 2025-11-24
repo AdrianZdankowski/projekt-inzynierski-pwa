@@ -3,19 +3,16 @@ import { Box, Typography, TextField, IconButton, Tooltip, Menu, MenuItem, InputA
 import { Sort as SortIcon, ViewModule as GridViewIcon, ViewList as ListViewIcon,
   ArrowUpward as ArrowUpIcon, ArrowDownward as ArrowDownIcon, Search as SearchIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { ToolbarBox } from '../themes/boxes/ToolbarBox';
 import { SORT_OPTIONS, SortField, SortOrder, getSortLabel } from '../types/SortTypes';
 import { ViewMode } from '../types/FilterTypes';
 import { FileListFilters } from '../types/FileListTypes';
 
 interface FileListToolbarProps {
   onFiltersChange: (filters: FileListFilters) => void;
-  onPageReset?: () => void;
 }
 
 const FileListToolbar = ({
-  onFiltersChange,
-  onPageReset
+  onFiltersChange
 }: FileListToolbarProps) => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -39,11 +36,6 @@ const FileListToolbar = ({
     });
   }, [searchQuery, sortField, sortOrder, viewMode, notifyFiltersChange]);
 
-  useEffect(() => {
-    if (onPageReset) {
-      onPageReset();
-    }
-  }, [searchQuery, sortField, onPageReset]);
 
   const handleSortMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setSortMenuAnchor(event.currentTarget);
@@ -69,7 +61,13 @@ const FileListToolbar = ({
   };
 
   return (
-    <ToolbarBox>
+    <Box sx={{
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        marginBottom: '32px',
+        padding: '0 20px'
+    }}>
       <TextField
         size="small"
         placeholder={t('fileListToolbar.searchPlaceholder')}
@@ -174,7 +172,7 @@ const FileListToolbar = ({
             </IconButton>
           </Tooltip>
       </Box>
-    </ToolbarBox>
+    </Box>
   );
 };
 

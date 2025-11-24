@@ -29,3 +29,8 @@ export interface FileListFilters {
   sortOrder: SortOrder;
   viewMode: ViewMode;
 }
+
+export interface FileListPaginationState {
+  page: number;
+  pageSize: number;
+}
