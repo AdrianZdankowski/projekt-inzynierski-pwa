@@ -56,6 +56,18 @@
     "uploadFile": "Upload file",
     "success": "File uploaded successfully!",
     "error": "An error occurred during file upload"
+  },
+  "fileListToolbar": {
+    "searchPlaceholder": "Search files...",
+    "sort": "Sort",
+    "listView": "List view",
+    "gridView": "Grid view",
+    "sortOptions": {
+      "fileName": "Name",
+      "size": "Size",
+      "uploadTimestamp": "Upload date",
+      "mimeType": "File type"
+    }
   }
 }
 

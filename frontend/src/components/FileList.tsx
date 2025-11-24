@@ -1,21 +1,17 @@
 import { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
 import { Card, CardContent, CardActions, Typography, IconButton, Button, Box, Chip, 
-  Alert, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Menu,
-  MenuItem, Select, FormControl, TextField } from '@mui/material';
-import { Delete as DeleteIcon, Share as ShareIcon, CloudDone as SharedIcon, ViewModule as GridViewIcon,
-  ViewList as ListViewIcon, Sort as SortIcon, ArrowUpward as ArrowUpIcon, ArrowDownward as ArrowDownIcon,
-  KeyboardArrowLeft as ArrowLeftIcon, KeyboardArrowRight as ArrowRightIcon,
-  Search as SearchIcon } from '@mui/icons-material';
+  Alert, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+  MenuItem, Select, FormControl } from '@mui/material';
+import { Delete as DeleteIcon, Share as ShareIcon, CloudDone as SharedIcon,
+  KeyboardArrowLeft as ArrowLeftIcon, KeyboardArrowRight as ArrowRightIcon } from '@mui/icons-material';
 import { FileService } from '../services/FileService';
-import { FileListResponse, FileListParams } from '../types/FileListTypes';
+import { FileListResponse, FileListParams, FileListFilters } from '../types/FileListTypes';
 import { FileMetadata } from '../types/FileMetadata';
 import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
 import { useAuth } from '../context/AuthContext';
 import { decodeUserId } from '../lib/decodeUserId';
+import { useNotification } from '../context/NotificationContext';
 import { PaginationControlBox } from '../themes/boxes/PaginationControlBox';
-import { ToolbarBox } from '../themes/boxes/ToolbarBox';
-import { MenuItemBox } from '../themes/boxes/MenuItemBox';
-import { MenuItemContainerBox } from '../themes/boxes/MenuItemContainerBox';
 import { UserIconBox } from '../themes/boxes/UserIconBox';
 import { CardBox } from '../themes/boxes/CardBox';
 import { FileTypeBox } from '../themes/boxes/FileTypeBox';
@@ -23,34 +19,24 @@ import VideoDialog from './VideoDialog';
 import DocumentDialog from './DocumentDialog';
 import ImageDialog from './ImageDialog';
 import DeleteFileDialog from './DeleteFileDialog';
+import FileListToolbar from './FileListToolbar';
 import { downloadFile } from '../utils/downloadFile';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
-
-const SORT_OPTIONS = [
-  { field: 'fileName', label: 'Nazwa' },
-  { field: 'size', label: 'Rozmiar' },
-  { field: 'uploadTimestamp', label: 'Data dodania' },
-  { field: 'mimeType', label: 'Typ pliku' }
-] as const;
 
 export interface FileListRef {
   refreshFiles: () => void;
 }
 
-type ViewMode = 'grid' | 'list';
-type SortField = 'fileName' | 'size' | 'uploadTimestamp' | 'mimeType';
-type SortOrder = 'asc' | 'desc';
-
 const FileList = forwardRef<FileListRef>((_, ref) => {
   const [fileListResponse, setFileListResponse] = useState<FileListResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [sortField, setSortField] = useState<SortField>('uploadTimestamp');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
-  const [sortMenuAnchor, setSortMenuAnchor] = useState<null | HTMLElement>(null);
+  const [filters, setFilters] = useState<FileListFilters>({
+    searchQuery: '',
+    sortField: 'uploadTimestamp',
+    sortOrder: 'desc',
+    viewMode: 'grid'
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedFile, setSelectedFile] = useState<FileMetadata | null>(null);
   const [isSelectedFileShared, setIsSelectedFileShared] = useState<boolean>(false);
   const [openVideoDialog, setOpenVideoDialog] = useState<boolean>(false);
@@ -59,6 +45,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const [openDeleteFileDialog, setOpenDeleteFileDialog] = useState<boolean>(false);
 
   const { accessToken } = useAuth();
+  const { showNotification } = useNotification();
   const isOnline = useOnlineStatus();
 
   const fetchFiles = useCallback(async () => {
@@ -66,75 +53,56 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       const params: FileListParams = {
         page: currentPage,
         pageSize: itemsPerPage,
-        sortBy: sortField,
-        sortDirection: sortOrder,
-        q: searchQuery || undefined
+        sortBy: filters.sortField,
+        sortDirection: filters.sortOrder,
+        q: filters.searchQuery || undefined
       };
       
       const response = await FileService.getUserFiles(params);
       setFileListResponse(response);
-      setError(null); // Clear any previous errors on success
     } catch (err: any) {
       if (err.response?.status === 401) {
-        setError('Wymagana autoryzacja. Zaloguj się ponownie.');
+        showNotification('Wymagana autoryzacja. Zaloguj się ponownie.', 'error');
       } else if (err.response?.status === 403) {
-        setError('Odmowa dostępu. Nie masz uprawnień do przeglądania plików.');
+        showNotification('Odmowa dostępu. Nie masz uprawnień do przeglądania plików.', 'error');
       } else {
-        setError('Nie udało się załadować plików. Spróbuj ponownie.');
+        showNotification('Nie udało się załadować plików. Spróbuj ponownie.', 'error');
       }
       console.error('Error fetching files:', err);
     }
-  }, [currentPage, itemsPerPage, sortField, sortOrder, searchQuery]);
+  }, [currentPage, itemsPerPage, filters, showNotification]);
   
   useEffect(() => {
     fetchFiles();
   }, [fetchFiles]);
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortOrder('asc');
-    }
-    setCurrentPage(1); 
-  };
+  const handleFiltersChange = useCallback((newFilters: FileListFilters) => {
+    setFilters(newFilters);
+  }, []);
 
-  const handleSortMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setSortMenuAnchor(event.currentTarget);
-  };
-
-  const handleSortMenuClose = () => {
-    setSortMenuAnchor(null);
-  };
+  const handlePageReset = useCallback(() => {
+    setCurrentPage(1);
+  }, []);
 
   const files = fileListResponse?.items || [];
   const totalPages = fileListResponse?.totalPages || 0;
   const totalItems = fileListResponse?.totalItems || 0;
-  const startIndex = fileListResponse ? (fileListResponse.page - 1) * fileListResponse.pageSize + 1 : 0;
-  const endIndex = fileListResponse ? Math.min(fileListResponse.page * fileListResponse.pageSize, fileListResponse.totalItems) : 0;
 
   useEffect(() => {
     setCurrentPage(1);
   }, [itemsPerPage]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
 
   useImperativeHandle(ref, () => ({
     refreshFiles: fetchFiles
   }));
 
   const handleDeleteFile = async (fileId: string) => {
-
     if (!isOnline) {
-        setError('Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.');
-        return;
-      }
+      showNotification('Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.', 'error');
+      return;
+    }
 
     try {
-      setError(null);
       await FileService.deleteFile(fileId);
       setFileListResponse(prev => (
         {
@@ -142,6 +110,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
           items: prev!.items.filter(f => f.id !== fileId)
         }
       ));
+      showNotification('Plik został usunięty pomyślnie.', 'success');
 
       try {
         const metadataCache = await caches.open('file-metadata-cache');
@@ -163,7 +132,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
         console.warn('Nie udało się usunąć z cache:', cacheError);
       }
     } catch (err) {
-      setError("Wystąpił nieoczekiwany błąd przy usuwaniu pliku. Spróbuj ponownie.");
+      showNotification('Wystąpił nieoczekiwany błąd przy usuwaniu pliku. Spróbuj ponownie.', 'error');
     }
   };
 
@@ -173,15 +142,16 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       // For now, download the file
       
       if (!isOnline) {
-        setError('Brak połączenia z internetem. Pobieranie dostępne jest tylko online.');
+        showNotification('Brak połączenia z internetem. Pobieranie dostępne jest tylko online.', 'error');
         return;
       }
       
       console.log('Share file:', fileId);
       await downloadFile(fileId);
+      showNotification('Plik został pobrany pomyślnie.', 'success');
     } catch (err: any) {
       console.error('Error downloading file:', err);
-      setError(err.message || 'Nie udało się pobrać pliku.');
+      showNotification(err.message || 'Nie udało się pobrać pliku.', 'error');
     }
   };
 
@@ -222,21 +192,8 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     return file.userId !== currentUserId;
   };
 
-  // if (error) {
-  //   return (
-  //     <Alert severity="error" sx={{ margin: 2 }}>
-  //       {error}
-  //     </Alert>
-  //   );
-  // }
-
   return (
     <Box sx={{ paddingTop: 3, paddingLeft: 3, paddingRight: 3, paddingBottom: 0 }}>
-      {error && (
-        <Alert severity="error" sx={{ marginBottom: 2 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
       {selectedFile && openVideoDialog && 
       (<VideoDialog open={openVideoDialog} onClose={() => {setOpenVideoDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
       {selectedFile && openDocumentDialog && 
@@ -249,78 +206,14 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       file={selectedFile}
       />)}
       {/* Toolbar - show if user has files OR if user is searching */}
-      {(totalItems > 0 || searchQuery.length > 0) && (
-        <ToolbarBox>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
-            Pliki ({startIndex}-{endIndex} z {totalItems})
-            {searchQuery && ` (wyszukiwanie: "${searchQuery}")`}
-          </Typography>
-          
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-            {/* Search Input */}
-            <TextField
-              size="small"
-              placeholder="Szukaj plików..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
-              InputProps={{
-                startAdornment: <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }} />,
-              }}
-            />
-
-            {/* Sort Menu */}
-            <Tooltip title="Sortuj">
-              <IconButton onClick={handleSortMenuOpen} size="small" sx={{ color: 'white' }}>
-                <SortIcon />
-              </IconButton>
-            </Tooltip>
-          
-            <Menu
-              anchorEl={sortMenuAnchor}
-              open={Boolean(sortMenuAnchor)}
-              onClose={handleSortMenuClose}
-              PaperProps={{
-                className: 'sort-menu'
-              }}
-              transformOrigin={{ horizontal: 'left', vertical: 'top' }}
-              anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-            >
-              {SORT_OPTIONS.map(({ field, label }) => (
-                <MenuItem 
-                  key={field}
-                  onClick={() => handleSort(field as any)} 
-                  className={`sort-menu-item ${sortField === field ? 'active' : ''}`}
-                >
-                  <MenuItemContainerBox>
-                    <MenuItemBox sx={{ backgroundColor: sortField === field ? '#2e7d32' : 'transparent' }}>
-                      {sortField === field && (sortOrder === 'asc' ? <ArrowUpIcon sx={{ fontSize: 14 }} /> : <ArrowDownIcon sx={{ fontSize: 14 }} />)}
-                    </MenuItemBox>
-                    <Typography 
-                      className={`sort-menu-text ${sortField === field ? 'active' : ''}`}
-                    >
-                      {label}
-                    </Typography>
-                  </MenuItemContainerBox>
-                </MenuItem>
-              ))}
-            </Menu>
-
-            {/* View Toggle */}
-            <Tooltip title={viewMode === 'grid' ? 'Widok listy' : 'Widok kafelków'}>
-              <IconButton 
-                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                size="small"
-                sx={{ color: 'white' }}
-              >
-                {viewMode === 'grid' ? <ListViewIcon /> : <GridViewIcon />}
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </ToolbarBox>
+      {(totalItems > 0 || filters.searchQuery.length > 0) && (
+        <FileListToolbar
+          onFiltersChange={handleFiltersChange}
+          onPageReset={handlePageReset}
+        />
       )}
 
-      {totalItems > 0 && viewMode === 'grid' ? (
+      {totalItems > 0 && filters.viewMode === 'grid' ? (
         <CardBox>
         {files.map((file) => {
           const FileIcon = getFileIcon(file.mimeType);
@@ -339,7 +232,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     if (!isOnline) {
-                      setError('Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.');
+                      showNotification('Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.', 'error');
                       return;
                     }
                     setSelectedFile(file);
@@ -493,7 +386,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                             onClick={(e) => {
                               e.stopPropagation();
                               if (!isOnline) {
-                                setError('Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.');
+                                showNotification('Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.', 'error');
                                 return;
                               }
                               setSelectedFile(file);
@@ -520,10 +413,10 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
             className="empty-files-alert"
           >
             <Typography className="alert-title">
-              {searchQuery ? 'Nie znaleziono plików' : 'Nie masz żadnych plików obecnie'}
+              {filters.searchQuery ? 'Nie znaleziono plików' : 'Nie masz żadnych plików obecnie'}
             </Typography>
             <Typography className="alert-subtitle">
-              {searchQuery ? 'Spróbuj zmienić kryteria wyszukiwania' : 'Prześlij pliki, aby rozpocząć korzystanie z aplikacji'}
+              {filters.searchQuery ? 'Spróbuj zmienić kryteria wyszukiwania' : 'Prześlij pliki, aby rozpocząć korzystanie z aplikacji'}
             </Typography>
           </Alert>
         </Box>

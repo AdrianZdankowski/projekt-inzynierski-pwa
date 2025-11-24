@@ -56,6 +56,18 @@
     "uploadFile": "Wyślij plik",
     "success": "Plik został pomyślnie przesłany!",
     "error": "Wystąpił błąd podczas przesyłania pliku"
+  },
+  "fileListToolbar": {
+    "searchPlaceholder": "Szukaj plików...",
+    "sort": "Sortuj",
+    "listView": "Widok listy",
+    "gridView": "Widok kafelków",
+    "sortOptions": {
+      "fileName": "Nazwa",
+      "size": "Rozmiar",
+      "uploadTimestamp": "Data dodania",
+      "mimeType": "Typ pliku"
+    }
   }
 }
 
