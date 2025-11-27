@@ -1,8 +1,10 @@
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
-import { Dialog, DialogTitle, DialogContent, Box, CircularProgress, Typography, Alert } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, Box, CircularProgress, Alert, Typography } from '@mui/material';
 import { FileMetadata } from "../types/FileMetadata";
 import { useEffect, useState } from "react";
 import { FileService } from "../services/FileService";
+import 'react-pdf/dist/Page/TextLayer.css';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
 
 interface DocumentDialogProps {
     open: boolean; 
@@ -49,10 +51,24 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
             <DialogTitle>{file.fileName} {isShared && `Udostępnione przez ${file.userId}`}</DialogTitle>
-            <DialogContent dividers style={{ height: '80vh', overflow: 'hidden' }}>
-                {fetchError && (<Alert severity="error" onClose={() => setFetchError('')}>{fetchError}</Alert>)}
-                <Box>
-                    <Typography>Przesłane: {uploadDate} {uploadTime}</Typography>
+            <DialogContent 
+                dividers 
+                sx={{ 
+                    height: '80vh', 
+                    padding: 0,
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}
+            >
+                {fetchError && (
+                    <Alert severity="error" onClose={() => setFetchError('')} sx={{ margin: 2 }}>
+                        {fetchError}
+                    </Alert>
+                )}
+                <Box sx={{ padding: 2, paddingBottom: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                        Przesłane: {uploadDate} {uploadTime}
+                    </Typography>
                 </Box>
                 {loading ? (
                 <Box
@@ -73,16 +89,70 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
                         height: '100% !important',
                         width: '100% !important',
                     },
+                    '& #pdf-renderer': {
+                        height: '100% !important',
+                        width: '100% !important',
+                        backgroundColor: 'transparent !important',
+                    },
+                    '& #pdf-controls': {
+                        backgroundColor: 'transparent !important',
+                    },
+                    '& #pdf-page-wrapper, & .pdf-page-wrapper': {
+                        display: 'flex !important',
+                        flexDirection: 'column !important',
+                        alignItems: 'center !important',
+                        backgroundColor: 'transparent !important',
+                        padding: '16px !important',
+                        margin: '0 auto !important',
+                        gap: '16px !important',
+                        maxWidth: '100% !important',
+                    },
+                    '& .react-pdf__Page': {
+                        position: 'relative !important',
+                        marginBottom: '16px !important',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1) !important',
+                    },
+                    '& .react-pdf__Page__textContent': {
+                        display: 'none !important',
+                    },
+                    '& .react-pdf__Page__annotations': {
+                        display: 'none !important',
+                    },
+                    '& canvas': {
+                        maxWidth: '100% !important',
+                        width: 'auto !important',
+                        height: 'auto !important',
+                        display: 'block !important',
+                        margin: '0 auto !important',
+                    },
+                    '& #react-doc-viewer': {
+                        backgroundColor: 'transparent !important',
+                    },
                     flex: 1,
                     height: '100%',
                     width: '100%',
                     overflow: "auto",
-                    WebkitOverflowScrolling: "touch"
+                    WebkitOverflowScrolling: "touch",
+                    backgroundColor: 'transparent',
                     }}>
                     <DocViewer
                     documents={documents}
                     pluginRenderers={DocViewerRenderers}
-                    style={{ height: "100%"}}
+                    style={{ height: "100%", width: "100%", backgroundColor: "transparent" }}
+                    config={{
+                        pdfZoom: {
+                            defaultZoom: 1.0,
+                            zoomJump: 0.2,
+                        },
+                        pdfVerticalScrollByDefault: true,
+                        header: {
+                            disableHeader: false,
+                            disableFileName: false,
+                        },
+                        loadingRenderer: {
+                            overrideComponent: () => <CircularProgress />,
+                        },
+                    }}
                     />
                     </Box>
                 )
