@@ -4,7 +4,7 @@ using Azure.Storage.Blobs;
 namespace backend.Services
 {
 
-    public class HlsConversionStrategy(IAzureBlobService azureBlobService) : IFileConversionStrategy
+    public class Mp4HlsConversionStrategy(IAzureBlobService azureBlobService) : IFileConversionStrategy
     {
         public bool CanHandle(string mimeType)
         {

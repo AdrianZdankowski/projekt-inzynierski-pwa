@@ -105,7 +105,7 @@ builder.Services.AddScoped<IFileAccessValidator, FileAccessValidator>();
 builder.Services.AddScoped<IFolderService, FolderService>();
 
 // file conversion strategies
-builder.Services.AddScoped<IFileConversionStrategy, HlsConversionStrategy>();
+builder.Services.AddScoped<IFileConversionStrategy, Mp4HlsConversionStrategy>();
 
 builder.Services.AddScoped<IFileConverter, FileConverter>();
 
