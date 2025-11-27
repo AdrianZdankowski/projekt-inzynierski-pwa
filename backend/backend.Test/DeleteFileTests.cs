@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
+using PwaApp.Application.Interfaces;
 using WebApplication1;
 
 namespace backend.Test
@@ -30,7 +31,7 @@ namespace backend.Test
                 fileUploadServiceMock.Object, 
                 appDbContext, 
                 configuration, 
-                new FileConverter(configuration, azureBlobServiceMock.Object), 
+                new FileConverter(new List<IFileConversionStrategy> { new Mp4HlsConversionStrategy(azureBlobServiceMock.Object) }), 
                 fileAccessValidator);
 
             var claims = new List<Claim>
@@ -102,7 +103,7 @@ namespace backend.Test
                 fileUploadServiceMock.Object,
                 appDbContext,
                 configuration,
-                new FileConverter(configuration, azureBlobServiceMock.Object),
+                new FileConverter(new List<IFileConversionStrategy> { new Mp4HlsConversionStrategy(azureBlobServiceMock.Object) }),
                 fileAccessValidator);
 
             var result = await controllerWithoutUser.DeleteFile(file.id);

@@ -7,6 +7,7 @@ using backend.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using PwaApp.Application.Interfaces;
 using WebApplication1;
 
 namespace backend.Test.IntegrationTests

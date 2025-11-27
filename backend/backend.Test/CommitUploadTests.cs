@@ -13,10 +13,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using NUnit.Framework;
+using PwaApp.Application.Interfaces;
 using WebApplication1;
 /*
  NOTE: CommitUpload directly constructs BlobContainerClient and calls Azure methods.
- It isn’t mockable here. "Happy path" will be covered by integration tests.
+ It isnï¿½t mockable here. "Happy path" will be covered by integration tests.
  */
 namespace backend.Test
 {
@@ -32,7 +33,7 @@ namespace backend.Test
         {
             fileUploadServiceMock = new Mock<IFileUploadService>();
             fileAccessValidator = new FileAccessValidator(appDbContext, configuration);
-            fileController = new FileController(azureBlobServiceMock.Object, fileUploadServiceMock.Object, appDbContext, configuration, new FileConverter(configuration, azureBlobServiceMock.Object), fileAccessValidator);
+            fileController = new FileController(azureBlobServiceMock.Object, fileUploadServiceMock.Object, appDbContext, configuration, new FileConverter(new List<IFileConversionStrategy> { new Mp4HlsConversionStrategy(azureBlobServiceMock.Object) }), fileAccessValidator);
 
 
             //creating HttpContext for test user
@@ -169,7 +170,7 @@ namespace backend.Test
                 fileUploadServiceMock.Object,
                 appDbContext,
                 configuration,
-                new FileConverter(configuration, azureBlobServiceMock.Object),
+                new FileConverter(new List<IFileConversionStrategy> { new Mp4HlsConversionStrategy(azureBlobServiceMock.Object) }),
                 fileAccessValidator);
 
             var commitDto = new FileMetadataDto

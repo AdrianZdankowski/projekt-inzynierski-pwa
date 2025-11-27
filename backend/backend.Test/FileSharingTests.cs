@@ -10,6 +10,7 @@ using backend.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using PwaApp.Application.Interfaces;
 using WebApplication1;
 
 namespace backend.Test
@@ -25,7 +26,7 @@ namespace backend.Test
         {
             fileUploadServiceMock = new Mock<IFileUploadService>();
             fileAccessValidator = new FileAccessValidator(appDbContext, configuration);
-            fileController = new FileController(azureBlobServiceMock.Object, fileUploadServiceMock.Object, appDbContext, configuration, new FileConverter(configuration, azureBlobServiceMock.Object), fileAccessValidator);
+            fileController = new FileController(azureBlobServiceMock.Object, fileUploadServiceMock.Object, appDbContext, configuration, new FileConverter(new List<IFileConversionStrategy> { new Mp4HlsConversionStrategy(azureBlobServiceMock.Object) }), fileAccessValidator);
 
             //creating HttpContext for test user
             var claims = new List<Claim>
