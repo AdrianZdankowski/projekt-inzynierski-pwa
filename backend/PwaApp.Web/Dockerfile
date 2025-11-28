@@ -1,31 +1,41 @@
-# Zobacz https://aka.ms/customizecontainer, aby dowiedzieć się, jak dostosować kontener debugowania i jak program Visual Studio używa tego pliku Dockerfile do kompilowania obrazów w celu szybszego debugowania.
 
-# Ten etap jest używany podczas uruchamiania z programu VS w trybie szybkim (domyślnie dla konfiguracji debugowania)
+# This stage is used when running from VS in fast mode (default for debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER root
 RUN apt-get update && apt-get install -y ffmpeg && apt-get clean && rm -rf /var/lib/apt/lists/*
-USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
-# Ten etap służy do kompilowania projektu usługi
+# This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["backend/backend.csproj", "backend/"]
-RUN dotnet restore "./backend/backend.csproj"
-COPY . .
-WORKDIR "/src/backend"
-RUN dotnet build "./backend.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Ten etap służy do publikowania projektu usługi do skopiowania do etapu końcowego
+# Copy solution file
+COPY ["backend.sln", "./"]
+
+# Copy all project files and source files needed for restore
+COPY ["backend.Test/", "backend.Test/"]
+COPY ["PwaApp.Domain/", "PwaApp.Domain/"]
+COPY ["PwaApp.Application/", "PwaApp.Application/"]
+COPY ["PwaApp.Infrastructure/", "PwaApp.Infrastructure/"]
+COPY ["PwaApp.Web/", "PwaApp.Web/"]
+
+# Restore dependencies - restore only the web project, dependencies will be restored automatically
+RUN dotnet restore "backend.sln"
+
+# Build the project
+WORKDIR "/src/PwaApp.Web"
+RUN dotnet build "PwaApp.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# This stage is used to publish the service project to copy to the final stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./backend.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "PwaApp.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# Ten etap jest używany w środowisku produkcyjnym lub w przypadku uruchamiania z programu VS w trybie regularnym (domyślnie, gdy nie jest używana konfiguracja debugowania)
+# This stage is used in production or when running from VS in regular mode (default when debug configuration is not used)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "backend.dll"]
+ENTRYPOINT ["dotnet", "PwaApp.Web.dll"]
