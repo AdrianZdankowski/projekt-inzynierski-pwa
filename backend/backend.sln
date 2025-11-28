@@ -3,11 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36127.28
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "backend", "backend\backend.csproj", "{FE99691F-581D-4BAB-9105-C15782984B22}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DomainModel", "DomainModel\DomainModel.fsproj", "{23E53FB3-C34B-460B-96CF-28DC7E5CED96}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "PwaApp.Domain", "PwaApp.Domain\PwaApp.Domain.fsproj", "{23E53FB3-C34B-460B-96CF-28DC7E5CED96}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "backend.Test", "backend.Test\backend.Test.csproj", "{6C31EA05-B936-470E-89F5-A3EA24AE3F6C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PwaApp.Application", "PwaApp.Application\PwaApp.Application.csproj", "{A59505A5-CE11-4A80-B65C-534E686C6052}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PwaApp.Infrastructure", "PwaApp.Infrastructure\PwaApp.Infrastructure.csproj", "{C936ED54-6E6D-4B49-9C06-147435C3EA85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PwaApp.Web", "PwaApp.Web\PwaApp.Web.csproj", "{B40FF757-2FA3-421D-9983-EB5C57171730}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +19,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FE99691F-581D-4BAB-9105-C15782984B22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FE99691F-581D-4BAB-9105-C15782984B22}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FE99691F-581D-4BAB-9105-C15782984B22}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FE99691F-581D-4BAB-9105-C15782984B22}.Release|Any CPU.Build.0 = Release|Any CPU
 		{23E53FB3-C34B-460B-96CF-28DC7E5CED96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{23E53FB3-C34B-460B-96CF-28DC7E5CED96}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23E53FB3-C34B-460B-96CF-28DC7E5CED96}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -27,6 +27,18 @@ Global
 		{6C31EA05-B936-470E-89F5-A3EA24AE3F6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C31EA05-B936-470E-89F5-A3EA24AE3F6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6C31EA05-B936-470E-89F5-A3EA24AE3F6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A59505A5-CE11-4A80-B65C-534E686C6052}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A59505A5-CE11-4A80-B65C-534E686C6052}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A59505A5-CE11-4A80-B65C-534E686C6052}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A59505A5-CE11-4A80-B65C-534E686C6052}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C936ED54-6E6D-4B49-9C06-147435C3EA85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C936ED54-6E6D-4B49-9C06-147435C3EA85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C936ED54-6E6D-4B49-9C06-147435C3EA85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C936ED54-6E6D-4B49-9C06-147435C3EA85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B40FF757-2FA3-421D-9983-EB5C57171730}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B40FF757-2FA3-421D-9983-EB5C57171730}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B40FF757-2FA3-421D-9983-EB5C57171730}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B40FF757-2FA3-421D-9983-EB5C57171730}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

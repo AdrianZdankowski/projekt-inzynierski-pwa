@@ -1,0 +1,6 @@
+@PwaApp.Web_HostAddress = http://localhost:5166
+
+GET {{PwaApp.Web_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
