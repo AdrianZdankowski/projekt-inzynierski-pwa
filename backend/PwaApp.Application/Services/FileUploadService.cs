@@ -2,10 +2,13 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using backend.Data;
+using backend.DTO.File;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using PwaApp.Application.Interfaces;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using WebApplication1;
 using FileEntity = WebApplication1.File;
@@ -101,6 +104,95 @@ namespace backend.Services
             }
 
             return true;
+        }
+
+        private void UpdateFileName(FileEntity file, string? fileName)
+        {
+            if (!string.IsNullOrWhiteSpace(fileName))
+            {
+                file.FileName = fileName;
+            }
+        }
+
+        private bool UpdateFileFolder(FileEntity file, Guid? folderId)
+        {
+            if (!folderId.HasValue)
+            {
+                return true;
+            }
+
+            if (folderId.Value == Guid.Empty)
+            {
+                // Guid.Empty means move file to root
+                file.ParentFolder = null;
+                return true;
+            }
+
+            var folder = _context.Folders.FirstOrDefault(f => f.id == folderId.Value);
+            if (folder == null)
+            {
+                return false;
+            }
+
+            file.ParentFolder = folder;
+            return true;
+        }
+
+        private async Task<FileListItem?> MapFileToDtoAsync(FileEntity file)
+        {
+            var owner = await _context.Users
+                .Where(u => u.id == file.UserId)
+                .Select(u => u.username)
+                .FirstOrDefaultAsync();
+
+            return new FileListItem
+            {
+                Id = file.id,
+                FileName = file.FileName,
+                MimeType = file.MimeType,
+                Size = file.Size,
+                UploadTimestamp = file.UploadTimestamp,
+                Status = (int)file.Status,
+                UserId = file.UserId,
+                OwnerName = owner ?? "Unknown"
+            };
+        }
+
+        public async Task<FileListItem?> UpdateFileAsync(Guid fileId, string? fileName, Guid? folderId)
+        {
+            var file = _context.Files.FirstOrDefault(f => f.id == fileId);
+            if (file == null)
+            {
+                return null;
+            }
+
+            UpdateFileName(file, fileName);
+
+            if (!UpdateFileFolder(file, folderId))
+            {
+                return null;
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+
+                // Reload the file to get updated data
+                var updatedFile = await _context.Files
+                    .Include(f => f.ParentFolder)
+                    .FirstOrDefaultAsync(f => f.id == fileId);
+
+                if (updatedFile == null)
+                {
+                    return null;
+                }
+
+                return await MapFileToDtoAsync(updatedFile);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

@@ -527,6 +527,76 @@ namespace backend.Controllers
         }
 
         [Authorize]
+        [HttpPatch("{id:guid}")]
+        public async Task<IActionResult> UpdateFile(Guid id, [FromBody] UpdateFileDto updateDto)
+        {
+            Guid userId;
+            try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
+
+            var file = appDbContext.Files
+                .Include(f => f.ParentFolder)
+                .FirstOrDefault(f => f.id == id);
+            if (file == null)
+            {
+                return NotFound("File not found");
+            }
+
+            // Check if user has access to the file
+            if (!await fileAccessValidator.ValidateUserAccess(userId, file))
+            {
+                return Unauthorized("User does not have access to this file");
+            }
+
+            // If file is in a folder, check if user has Update permission for that folder
+            if (file.ParentFolder != null)
+            {
+                if (!await fileAccessValidator.ValidateFolderPermissions(userId, file.ParentFolder, WebApplication1.PermissionFlags.Update))
+                {
+                    return Unauthorized("User does not have permission to update files in this folder");
+                }
+            }
+
+            // Only file owner can change the folder
+            bool isOwner = file.UserId == userId;
+            if (!isOwner && updateDto.FolderId.HasValue)
+            {
+                return Unauthorized("Only file owner can change the file folder");
+            }
+
+            // Validate folder access if folderId is provided (not null and not Empty)
+            Guid? folderIdToUpdate = null;
+            if (updateDto.FolderId.HasValue)
+            {
+                if (updateDto.FolderId.Value == Guid.Empty)
+                {
+                    // Guid.Empty means move to root
+                    folderIdToUpdate = Guid.Empty;
+                }
+                else
+                {
+                    var folder = appDbContext.Folders.FirstOrDefault(f => f.id == updateDto.FolderId.Value);
+                    if (folder == null)
+                    {
+                        return NotFound("Folder not found");
+                    }
+                    if (await fileAccessValidator.ValidateFolderAddPermission(userId, folder) == false)
+                    {
+                        return Unauthorized("User does not have permission to add files to this folder");
+                    }
+                    folderIdToUpdate = updateDto.FolderId;
+                }
+            }
+
+            var updatedFile = await uploadService.UpdateFileAsync(id, updateDto.FileName, folderIdToUpdate);
+            if (updatedFile == null)
+            {
+                return BadRequest("Failed to update file");
+            }
+
+            return Ok(updatedFile);
+        }
+
+        [Authorize]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteFile(Guid id)
         {
