@@ -12,10 +12,7 @@ namespace backend.Services
     {
         public async Task<bool> ValidateUserAccess(Guid userId, WebApplication1.File file)
         {
-
-            //var user = await GetUserFromJwt(accessToken);
-
-
+            // Check if user is the file owner
             if (file.UserId.Equals(userId))
             {
                 return true;
@@ -61,31 +58,60 @@ namespace backend.Services
                 return true;
             }
 
-            //checking if user has permissions for creating files in folder
-            var permissions = context.FolderAccesses.FirstOrDefault(f => f.user.id == userId).permissions;
-            if (WebApplication1.Permissions.hasPermission(WebApplication1.PermissionFlags.Create, permissions))
-            {
-                return true;
-            }
-
-            return false;
+            // Check permissions up the folder hierarchy
+            return await ValidateFolderPermissionsWithParentCheck(userId, folder, WebApplication1.PermissionFlags.Create);
         }
 
         //function for validating permissions for given user in specified folder
         //to set multiple permissions use '|' eg. PermissionFlags.Create | PermissionFlags.Delete
         public async Task<bool> ValidateFolderPermissions(Guid userId, WebApplication1.Folder folder, WebApplication1.PermissionFlags requiredPermissions)
         {
-            //owner can do everything
-            if (folder.OwnerId.Equals(userId))
+            // Check permissions up the folder hierarchy
+            return await ValidateFolderPermissionsWithParentCheck(userId, folder, requiredPermissions);
+        }
+
+        // Check permissions up the folder hierarchy using while loop
+        // If user has access to a parent folder, they should have access to child folders
+        private async Task<bool> ValidateFolderPermissionsWithParentCheck(Guid userId, WebApplication1.Folder folder, WebApplication1.PermissionFlags requiredPermissions)
+        {
+            if (folder == null)
             {
-                return true;
+                return false;
             }
 
-            //checking if user has required permissions
-            var permissions = context.FolderAccesses.FirstOrDefault(f => f.user.id == userId).permissions;
-            if (WebApplication1.Permissions.hasPermission(requiredPermissions, permissions))
+            var currentFolder = folder;
+
+            while (currentFolder != null)
             {
-                return true;
+                // Owner can do everything
+                if (currentFolder.OwnerId.Equals(userId))
+                {
+                    return true;
+                }
+
+                // Check if user has direct permissions for this folder
+                var folderAccess = await context.FolderAccesses
+                    .FirstOrDefaultAsync(f => f.user.id == userId && f.folder.id == currentFolder.id);
+                
+                if (folderAccess != null)
+                {
+                    if (WebApplication1.Permissions.hasPermission(requiredPermissions, folderAccess.permissions))
+                    {
+                        return true;
+                    }
+                }
+
+                // Move to parent folder
+                if (currentFolder.ParentFolder != null)
+                {
+                    currentFolder = await context.Folders
+                        .Include(f => f.ParentFolder)
+                        .FirstOrDefaultAsync(f => f.id == currentFolder.ParentFolder.id);
+                }
+                else
+                {
+                    currentFolder = null;
+                }
             }
 
             return false;

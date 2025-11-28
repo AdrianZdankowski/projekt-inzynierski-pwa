@@ -40,6 +40,10 @@ namespace backend.Controllers
             }
 
             var folder = appDbContext.Folders.FirstOrDefault(f => f.id == folderId);
+            if (folder == null)
+            {
+                return NotFound("Folder not found");
+            }
             if (await fileAccessValidator.ValidateFolderPermissions(userId, folder, WebApplication1.PermissionFlags.Delete) == false)
             {
                 return Unauthorized("User does not have permission to delete this folder");
