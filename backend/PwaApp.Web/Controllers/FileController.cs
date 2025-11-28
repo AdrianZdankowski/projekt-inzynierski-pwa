@@ -243,80 +243,194 @@ namespace backend.Controllers
                 }
             }
 
-                page = Math.Max(1, page);
+            page = Math.Max(1, page);
             pageSize = Math.Clamp(pageSize, 1, 100);
             var keyRaw = (sortBy ?? "uploadTimestamp").ToLowerInvariant();
             var desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
 
-            var files = appDbContext.Files.Where(f => f.UserId == userId && f.ParentFolder.id == folderId).Select(f => new { f.id, f.FileName, f.MimeType, f.Size, f.UploadTimestamp, f.Status, f.UserId }).ToList();
-            
-            //todo: add sorting and pagination for folders
-            var folders = appDbContext.Folders.Where(f => f.ParentFolder.id == folderId && f.OwnerId == userId).ToList();
-
-            //add shared files to the final list
-            var SharedWithUserFileIds = appDbContext.FileAccesses.Where(f => f.user.id == userId).Select(f => f.file.id).ToList();
-            var SharedWithUserFiles = await appDbContext.Files
-                .Where(f => SharedWithUserFileIds.Contains(f.id))
-                .Select(f => new { f.id, f.FileName, f.MimeType, f.Size, f.UploadTimestamp, f.Status, f.UserId })
-                .ToListAsync();
-            files.AddRange(SharedWithUserFiles);
-
-            if (!string.IsNullOrWhiteSpace(q))
-            {
-                var term = q.Trim();
-
-                files = files.Where(f =>
-                    (!string.IsNullOrEmpty(f.FileName) && f.FileName.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
-                    (!string.IsNullOrEmpty(f.MimeType) && f.MimeType.Contains(term, StringComparison.OrdinalIgnoreCase))
-                ).ToList();
-            }
-
             var appliedKey = keyRaw switch
             {
-                "filename" => "filename",
+                "filename" => "name",
                 "mimetype" => "mimetype",
                 "size" => "size",
-                "uploadtimestamp" => "uploadtimestamp",
-                _ => "uploadtimestamp"   //default
+                "uploadtimestamp" => "date",
+                _ => "date"   //default
             };
 
-            IEnumerable <dynamic> ordered = appliedKey switch
+            IQueryable<WebApplication1.Folder> ownFolderQuery = appDbContext.Folders
+                .Where(f => f.OwnerId == userId); 
+
+            if (folderId is null) 
+                ownFolderQuery = ownFolderQuery.Where(f => f.ParentFolder == null); 
+            else
+                ownFolderQuery = ownFolderQuery.Where(f => f.ParentFolder.id == folderId); 
+
+            var ownFolders = await ownFolderQuery.ToListAsync();
+
+            //if folderId == null sharedFolders already loaded above avoid duplicates
+            if (folderId is null)
             {
-                "filename" => desc ? files.OrderByDescending(f => f.FileName) : files.OrderBy(f => f.FileName),
-                "mimetype" => desc ? files.OrderByDescending(f => f.MimeType) : files.OrderBy(f => f.MimeType),
-                "size" => desc ? files.OrderByDescending(f => f.Size) : files.OrderBy(f => f.Size),
-                "uploadtimestamp" => desc ? files.OrderByDescending(f => f.UploadTimestamp) : files.OrderBy(f => f.UploadTimestamp),
-                _ => desc ? files.OrderByDescending(f => f.UploadTimestamp) : files.OrderBy(f => f.UploadTimestamp),
-            };
+                var ownFolderIds = ownFolders.Select(f => f.id).ToHashSet();
+                sharedFolders = sharedFolders
+                    .Where(f => !ownFolderIds.Contains(f.id))
+                    .ToList();
+            }
+            else
+            {
+                //if we're not in root, we don't show shared root folders here
+                sharedFolders = new List<WebApplication1.Folder>();
+            }
 
-            var totalItems = ordered.LongCount();
-            var totalPages = (int)Math.Ceiling(totalItems/(double)pageSize);
-            var pageItems = ordered.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            //load own files with proper root/folder handling
+            IQueryable<WebApplication1.File> ownFileQuery = appDbContext.Files
+                .Where(f => f.UserId == userId);
 
-            var userIds = pageItems.Select(f => f.UserId).Distinct().ToList();
+            if (folderId is null)
+                ownFileQuery = ownFileQuery.Where(f => f.ParentFolder == null);
+            else
+                ownFileQuery = ownFileQuery.Where(f => f.ParentFolder.id == folderId);
+
+            var ownFiles = await ownFileQuery.ToListAsync();
+
+            var SharedWithUserFileIds = appDbContext.FileAccesses
+                .Where(f => f.user.id == userId)
+                .Select(f => f.file.id)
+                .ToList();
+
+            var SharedWithUserFiles = await appDbContext.Files
+                .Where(f => SharedWithUserFileIds.Contains(f.id))
+                .ToListAsync();
+
+            // ADDED: avoid duplicate files (if user also owns file)
+            var ownFileIds = ownFiles.Select(f => f.id).ToHashSet();
+            SharedWithUserFiles = SharedWithUserFiles
+                .Where(f => !ownFileIds.Contains(f.id))
+                .ToList();
+        
+            var ownerIds = ownFolders.Select(f => f.OwnerId)
+                .Concat(sharedFolders.Select(f => f.OwnerId))
+                .Concat(ownFiles.Select(f => f.UserId))
+                .Concat(SharedWithUserFiles.Select(f => f.UserId))
+                .Distinct()
+                .ToList();
+
             var users = await appDbContext.Users
-                .Where(u => userIds.Contains(u.id))
+                .Where(u => ownerIds.Contains(u.id))
                 .Select(u => new { u.id, u.username })
                 .ToListAsync();
 
             var userMap = users.ToDictionary(u => u.id, u => u.username);
 
-            var result = pageItems.Select(f => new FileListItem
-            {
-                Id = f.id,
-                FileName = f.FileName,
-                MimeType = f.MimeType,
-                Size = f.Size,
-                UploadTimestamp = f.UploadTimestamp,
-                Status = (int)f.Status,
-                UserId = f.UserId,
-                OwnerName = userMap.TryGetValue((Guid)f.UserId, out var name) ? name : "Unknown"
-            });
+            string GetOwnerName(Guid id) =>
+                userMap.TryGetValue(id, out var name) ? name : "Unknown";
 
+            
+            //unified list of UserItemDto (folders+files+shared)            
+            var allItems = new List<backend.DTO.UserItemDto>();
+
+            //own folders
+            allItems.AddRange(
+                ownFolders.Select(f => new backend.DTO.UserItemDto
+                {
+                    Type = "folder",
+                    Id = f.id,
+                    Name = f.FolderName,
+                    Size = null,
+                    MimeType = null,
+                    Date = f.CreatedDate,
+                    IsShared = false,
+                    Status = 0,
+                    UserId = f.OwnerId,
+                    OwnerName = GetOwnerName(f.OwnerId)
+                })
+            );
+
+            //shared folders (only in root)
+            allItems.AddRange(
+                sharedFolders.Select(f => new backend.DTO.UserItemDto
+                {
+                    Type = "folder",
+                    Id = f.id,
+                    Name = f.FolderName,
+                    Size = null,
+                    MimeType = null,
+                    Date = f.CreatedDate,
+                    IsShared = true,
+                    Status = 0,
+                    UserId = f.OwnerId,
+                    OwnerName = GetOwnerName(f.OwnerId)
+                })
+            );
+
+            //own files
+            allItems.AddRange(
+                ownFiles.Select(f => new backend.DTO.UserItemDto
+                {
+                    Type = "file",
+                    Id = f.id,
+                    Name = f.FileName,
+                    Size = f.Size,
+                    MimeType = f.MimeType,
+                    Date = f.UploadTimestamp,
+                    IsShared = false,
+                    Status = (int)f.Status,
+                    UserId = f.UserId,
+                    OwnerName = GetOwnerName(f.UserId)
+                })
+            );
+
+            //shared files
+            allItems.AddRange(
+                SharedWithUserFiles.Select(f => new backend.DTO.UserItemDto
+                {
+                    Type = "file",
+                    Id = f.id,
+                    Name = f.FileName,
+                    Size = f.Size,
+                    MimeType = f.MimeType,
+                    Date = f.UploadTimestamp,
+                    IsShared = true,
+                    Status = (int)f.Status,
+                    UserId = f.UserId,
+                    OwnerName = GetOwnerName(f.UserId)
+                })
+            );
+
+            //search now applies to unified list
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var term = q.Trim();
+
+                allItems = allItems.Where(f =>
+                    (!string.IsNullOrEmpty(f.Name) && f.Name.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(f.MimeType) && f.MimeType.Contains(term, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+            }
+
+            //sorting unified list            
+            Func<backend.DTO.UserItemDto, object?> selector = appliedKey switch
+            {
+                "name" => f => f.Name,
+                "mimetype" => f => f.MimeType,
+                "size" => f => f.Size ?? 0,
+                "date" => f => f.Date,
+                _ => f => f.Date
+            };
+
+            IEnumerable<backend.DTO.UserItemDto> ordered =
+                desc ? allItems.OrderByDescending(selector)
+                     : allItems.OrderBy(selector);
+
+            //pagination now on unified list
+            var totalItems = ordered.LongCount();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            var pageItems = ordered.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            //final response now uses unified items list
             return Ok(new
             {
-                items = result,
-                folders = folders,
+                items = pageItems,
+                folders = ownFolders,
                 sharedFolders = sharedFolders,
                 page,
                 pageSize,

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FileMetadata } from "../types/FileMetadata";
 import { FileService } from "../services/FileService";
-import { Alert, Box, Button, CircularProgress, Dialog, DialogContent, DialogTitle, Typography } from "@mui/material";
+import { Alert, Box, CircularProgress, Dialog, DialogContent, DialogTitle, Typography } from "@mui/material";
 
 interface ImageDialogProps {
     open: boolean;
@@ -61,9 +61,8 @@ const ImageDialog = ({open, onClose, file, isShared} : ImageDialogProps) => {
             <DialogTitle>{file.fileName} {isShared && `Udostępnione przez ${file.userId}`}</DialogTitle>
             <DialogContent dividers style={{ height: '80vh', overflow: 'hidden' }}>
                 {fetchError && (<Alert severity="error" onClose={() => setFetchError('')}>{fetchError}</Alert>)}
-                <Box sx={{display: 'flex', gap: 2}}>
+                <Box>
                     <Typography>Przesłane: {uploadDate} {uploadTime}</Typography>
-                    <Button variant="contained" sx={{borderRadius: "6px"}}>Pobierz</Button>
                 </Box>
                 {loading ? (
                 <Box
@@ -82,14 +81,19 @@ const ImageDialog = ({open, onClose, file, isShared} : ImageDialogProps) => {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    height: "100%",
+                    height: "calc(100% - 60px)", // Odejmij wysokość paska z datą i przyciskiem
+                    width: "100%",
+                    overflow: "hidden",
                     }}
                     >
                     <img 
                     src={sasLink}
+                    alt={file.fileName}
                     style={{
                         maxWidth: "100%",
                         maxHeight: "100%",
+                        width: "auto",
+                        height: "auto",
                         objectFit: "contain"
                     }}/>
                     </Box>

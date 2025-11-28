@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using backend.Controllers;
+using backend.DTO;
 using backend.DTO.File;
 using backend.Services;
 using Microsoft.AspNetCore.Http;
@@ -12,6 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
 using PwaApp.Application.Interfaces;
 using WebApplication1;
 
@@ -142,7 +143,7 @@ namespace backend.Test
             var sortByProperty = responseType.GetProperty("sortBy");
             var sortDirProperty = responseType.GetProperty("sortDir");
 
-            Assert.That(sortByProperty.GetValue(response), Is.EqualTo("filename"));
+            Assert.That(sortByProperty.GetValue(response), Is.EqualTo("name"));
             Assert.That(sortDirProperty.GetValue(response), Is.EqualTo("asc"));
         }
 
@@ -180,7 +181,7 @@ namespace backend.Test
             var responseType = response.GetType();
             var sortByProperty = responseType.GetProperty("sortBy");
 
-            Assert.That(sortByProperty.GetValue(response), Is.EqualTo("uploadtimestamp"));
+            Assert.That(sortByProperty.GetValue(response), Is.EqualTo("date"));
         }
 
         [Test]
@@ -262,12 +263,12 @@ namespace backend.Test
 
             var responseType = response.GetType();
             var itemsProperty = responseType.GetProperty("items");
-            var items = itemsProperty.GetValue(response) as IEnumerable<FileListItem>;
+            var items = itemsProperty.GetValue(response) as IEnumerable<UserItemDto>;
 
             Assert.IsNotNull(items);
             Assert.That(items.Count(), Is.GreaterThan(0));
 
-            var hasSharedFile = items.Any(f => f.FileName == "shared-file.txt");
+            var hasSharedFile = items.Any(f => f.Name == "shared-file.txt");
             Assert.IsTrue(hasSharedFile);
         }
 

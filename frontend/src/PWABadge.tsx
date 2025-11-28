@@ -1,77 +1,96 @@
-import './PWABadge.css'
+import { useState, useEffect } from "react";
+import { Snackbar, Alert, Button, Stack } from "@mui/material";
+import { useRegisterSW } from "virtual:pwa-register/react";
+import { usePwaInstallPrompt } from "./usePwaInstallPrompt";
 
-import { useRegisterSW } from 'virtual:pwa-register/react'
-
-function PWABadge() {
-  // check for updates every hour
-  const period = 60 * 60 * 1000
-
+export default function PWABadge() {
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
-  } = useRegisterSW({
-    onRegisteredSW(swUrl, r) {
-      if (period <= 0) return
-      if (r?.active?.state === 'activated') {
-        registerPeriodicSync(period, swUrl, r)
-      }
-      else if (r?.installing) {
-        r.installing.addEventListener('statechange', (e) => {
-          const sw = e.target as ServiceWorker
-          if (sw.state === 'activated')
-            registerPeriodicSync(period, swUrl, r)
-        })
-      }
-    },
-  })
+  } = useRegisterSW();
 
-  function close() {
-    setOfflineReady(false)
-    setNeedRefresh(false)
-  }
+  const { canInstall, install } = usePwaInstallPrompt();
+
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (offlineReady || needRefresh || canInstall) {
+      setOpen(true);
+    }
+  }, [offlineReady, needRefresh, canInstall]);
+
+  const handleClose = () => {
+    setOpen(false);
+    setOfflineReady(false);
+    setNeedRefresh(false);
+  };
+
+  let message = "";
+  if (offlineReady) message = "Aplikacja gotowa do pracy offline";
+  if (needRefresh) message = "Nowa wersja dostępna — odśwież, aby zaktualizować.";
+  if (canInstall) message = "Zainstaluj aplikację PWA na swoim urządzeniu";
 
   return (
-    <div className="PWABadge" role="alert" aria-labelledby="toast-message">
-      { (offlineReady || needRefresh)
-      && (
-        <div className="PWABadge-toast">
-          <div className="PWABadge-message">
-            { offlineReady
-              ? <span id="toast-message">App ready to work offline</span>
-              : <span id="toast-message">New content available, click on reload button to update.</span>}
-          </div>
-          <div className="PWABadge-buttons">
-            { needRefresh && <button className="PWABadge-toast-button" onClick={() => updateServiceWorker(true)}>Reload</button> }
-            <button className="PWABadge-toast-button" onClick={() => close()}>Close</button>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+    <Snackbar
+      open={open}
+      onClose={handleClose}
+      anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      autoHideDuration={null}
+    >
+      <Alert
+        severity="info"
+        onClose={handleClose}
+        variant="filled"
+        sx={{
+          width: "100%",
+          bgcolor: "#333",       
+          color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          gap: 2,         
+          "& .MuiAlert-icon": {
+            color: "#fff",       
+          }
+        }}
+      >
+        <Stack spacing={1}>
+          <div>{message}</div>
 
-export default PWABadge
+          <Stack direction="row" spacing={1} justifyContent={"center"}>
+            {needRefresh && (
+              <Button
+                variant="contained"
+                size="small"
+                sx={{
+                  bgcolor: "#fff",
+                  color: "#000",
+                  "&:hover": { bgcolor: "#e0e0e0" },
+                }}
+                onClick={() => updateServiceWorker(true)}
+              >
+                Reload
+              </Button>
+            )}
 
-/**
- * This function will register a periodic sync check every hour, you can modify the interval as needed.
- */
-function registerPeriodicSync(period: number, swUrl: string, r: ServiceWorkerRegistration) {
-  if (period <= 0) return
+            {canInstall && (
+              <Button
+                color="secondary"
+                size="small"
+                sx={{
+                  bgcolor: "#fff",
+                  color: "#000",
+                  "&:hover": { bgcolor: "#e0e0e0" },
+                }}
+                onClick={install}
+              >
+                Zainstaluj
+              </Button>
+            )}
+          </Stack>
+        </Stack>
 
-  setInterval(async () => {
-    if ('onLine' in navigator && !navigator.onLine)
-      return
-
-    const resp = await fetch(swUrl, {
-      cache: 'no-store',
-      headers: {
-        'cache': 'no-store',
-        'cache-control': 'no-cache',
-      },
-    })
-
-    if (resp?.status === 200)
-      await r.update()
-  }, period)
+      </Alert>
+    </Snackbar>
+  );
 }
