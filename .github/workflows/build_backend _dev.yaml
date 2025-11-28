@@ -24,7 +24,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: create docker image
-      run: docker build -t pwa_backend:dev -f ./backend/backend/Dockerfile ./backend
+      run: docker build -t pwa_backend:dev -f ./backend/PwaApp.Web/Dockerfile ./backend
   
     - name: Tag and push Docker image for pwa_backend to GHCR
       run: |
