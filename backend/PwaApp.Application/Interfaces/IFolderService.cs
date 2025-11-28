@@ -8,5 +8,7 @@ namespace PwaApp.Application.Interfaces
         Task<Folder?> AddFolderAsync(CreateFolderDto folderDto, Guid userId);
         Task DeleteFolderAsync(Guid folderId);
         Task<FolderAccess> AddFolderPermissions(User user, Folder folder, PermissionFlags permissions);
+        Task<List<FolderDto>> GetUserOwnFoldersTreeAsync(Guid userId);
+        Task<List<FolderDto>> GetUserSharedFoldersTreeAsync(Guid userId);
     }
 }

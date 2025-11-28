@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using backend.Data;
 using backend.DTO.Folder;
-using backend.Migrations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PwaApp.Application.Interfaces;
@@ -74,6 +73,34 @@ namespace backend.Controllers
             var folderPermissions = await folderService.AddFolderPermissions(user, folder, (PermissionFlags)request.Permissions);
 
             return Ok(folderPermissions);
+        }
+
+        [Authorize]
+        [HttpGet("owned")]
+        public async Task<ActionResult<List<FolderDto>>> GetUserOwnFolders()
+        {
+            var claims = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(claims, out var userId))
+            {
+                return Unauthorized("Invalid or missing user ID");
+            }
+
+            var folders = await folderService.GetUserOwnFoldersTreeAsync(userId);
+            return Ok(folders);
+        }
+
+        [Authorize]
+        [HttpGet("shared")]
+        public async Task<ActionResult<List<FolderDto>>> GetUserSharedFolders()
+        {
+            var claims = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(claims, out var userId))
+            {
+                return Unauthorized("Invalid or missing user ID");
+            }
+
+            var folders = await folderService.GetUserSharedFoldersTreeAsync(userId);
+            return Ok(folders);
         }
 
     }
