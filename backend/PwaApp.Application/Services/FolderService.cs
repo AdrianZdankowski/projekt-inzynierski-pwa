@@ -123,5 +123,108 @@ namespace backend.Services
             }).ToList();
         }
 
+        private void UpdateFolderName(WebApplication1.Folder folder, string? folderName)
+        {
+            if (!string.IsNullOrWhiteSpace(folderName))
+            {
+                folder.FolderName = folderName;
+            }
+        }
+
+        private bool UpdateFolderParent(WebApplication1.Folder folder, Guid? parentFolderId)
+        {
+            if (!parentFolderId.HasValue)
+            {
+                return true;
+            }
+
+            if (parentFolderId.Value == Guid.Empty)
+            {
+                // Guid.Empty means move folder to root
+                folder.ParentFolder = null;
+                return true;
+            }
+
+            // Prevent moving folder to itself or its subfolder (circular reference)
+            if (parentFolderId.Value == folder.id)
+            {
+                return false;
+            }
+
+            // Check if target folder is a subfolder of current folder
+            var targetFolder = appDbContext.Folders
+                .Include(f => f.ParentFolder)
+                .FirstOrDefault(f => f.id == parentFolderId.Value);
+            
+            if (targetFolder == null)
+            {
+                return false;
+            }
+
+            // Check for circular reference by traversing up the parent chain
+            var current = targetFolder;
+            while (current?.ParentFolder != null)
+            {
+                if (current.ParentFolder.id == folder.id)
+                {
+                    return false; // Would create circular reference
+                }
+                current = current.ParentFolder;
+            }
+
+            folder.ParentFolder = targetFolder;
+            return true;
+        }
+
+        private FolderDto MapFolderToDto(WebApplication1.Folder folder)
+        {
+            return new FolderDto
+            {
+                Id = folder.id,
+                FolderName = folder.FolderName,
+                SubFolders = new List<FolderDto>()
+            };
+        }
+
+        public async Task<FolderDto?> UpdateFolderAsync(Guid folderId, string? folderName, Guid? parentFolderId)
+        {
+            var folder = appDbContext.Folders
+                .Include(f => f.ParentFolder)
+                .FirstOrDefault(f => f.id == folderId);
+            
+            if (folder == null)
+            {
+                return null;
+            }
+
+            UpdateFolderName(folder, folderName);
+
+            if (!UpdateFolderParent(folder, parentFolderId))
+            {
+                return null;
+            }
+
+            try
+            {
+                await appDbContext.SaveChangesAsync();
+
+                // Reload the folder to get updated data
+                var updatedFolder = await appDbContext.Folders
+                    .Include(f => f.ParentFolder)
+                    .FirstOrDefaultAsync(f => f.id == folderId);
+
+                if (updatedFolder == null)
+                {
+                    return null;
+                }
+
+                return MapFolderToDto(updatedFolder);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
     }
 }

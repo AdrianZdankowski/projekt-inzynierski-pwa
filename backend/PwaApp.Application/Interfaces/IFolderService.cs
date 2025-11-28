@@ -10,5 +10,6 @@ namespace PwaApp.Application.Interfaces
         Task<FolderAccess> AddFolderPermissions(User user, Folder folder, PermissionFlags permissions);
         Task<List<FolderDto>> GetUserOwnFoldersTreeAsync(Guid userId);
         Task<List<FolderDto>> GetUserSharedFoldersTreeAsync(Guid userId);
+        Task<FolderDto?> UpdateFolderAsync(Guid folderId, string? folderName, Guid? parentFolderId);
     }
 }
