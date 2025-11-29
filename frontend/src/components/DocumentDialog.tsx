@@ -50,8 +50,7 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
-<<<<<<< Updated upstream
-            <DialogTitle>{file.fileName} {isShared && `Udostępnione przez ${file.userId}`}</DialogTitle>
+            <DialogTitle>{file.name} {isShared && `Udostępnione przez ${file.userId}`}</DialogTitle>
             <DialogContent 
                 dividers 
                 sx={{ 
@@ -70,13 +69,6 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
                     <Typography variant="body2" color="text.secondary">
                         Przesłane: {uploadDate} {uploadTime}
                     </Typography>
-=======
-            <DialogTitle>{file.name} {isShared && `Udostępnione przez ${file.userId}`}</DialogTitle>
-            <DialogContent dividers style={{ height: '80vh', overflow: 'hidden' }}>
-                {fetchError && (<Alert severity="error" onClose={() => setFetchError('')}>{fetchError}</Alert>)}
-                <Box>
-                    <Typography>Przesłane: {uploadDate} {uploadTime}</Typography>
->>>>>>> Stashed changes
                 </Box>
                 {loading ? (
                 <Box
