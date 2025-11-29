@@ -39,10 +39,6 @@ const FileListPagination = ({
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-  if (totalItems === 0) {
-    return null;
-  }
-
   return (
     <Box sx={{
         display: 'flex', 

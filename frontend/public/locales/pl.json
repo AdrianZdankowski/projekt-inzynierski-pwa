@@ -101,6 +101,12 @@
     "updatedToday": "Aktualizacja: dzisiaj",
     "updatedYesterday": "Aktualizacja: wczoraj",
     "updatedDaysAgo": "Aktualizacja: {{days}} dni temu"
+  },
+  "fileList": {
+    "empty": {
+      "noItems": "Brak elementów",
+      "noItemsFiltered": "Brak elementów spełniających kryteria wyszukiwania."
+    }
   }
 }
 

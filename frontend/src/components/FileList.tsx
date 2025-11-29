@@ -1,5 +1,5 @@
 import { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
-import { Box, Alert, Typography, useMediaQuery } from '@mui/material';
+import { Box, Typography, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { FileListResponse, FileListParams, FileListFilters, FileListPaginationState } from '../types/FileListTypes';
 import { FileMetadata } from '../types/FileMetadata';
@@ -14,6 +14,8 @@ import FileListPagination from './FileListPagination';
 import FileCard from './FileCard';
 import { useFileOperations } from '../hooks/useFileOperations';
 import FileTable from './FileTable';
+import { useNotification } from '../context/NotificationContext';
+import { useTranslation } from 'react-i18next';
 
 export interface FileListRef {
   refreshFiles: () => void;
@@ -44,6 +46,9 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
   const { accessToken } = useAuth();
   const { fetchFilesList, deleteFile } = useFileOperations();
+  const { showNotification } = useNotification();
+  const { t } = useTranslation();
+  const [emptyNotificationShown, setEmptyNotificationShown] = useState(false);
   
   const fetchFiles = useCallback(async () => {
     const params: FileListParams = {
@@ -63,6 +68,24 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   useEffect(() => {
     fetchFiles();
   }, [fetchFiles]);
+
+  useEffect(() => {
+    if (!fileListResponse) return;
+
+    if (fileListResponse.totalItems === 0) {
+      if (!emptyNotificationShown) {
+        showNotification(
+          filters.searchQuery
+            ? t('fileList.empty.noItemsFiltered')
+            : t('fileList.empty.noItems'),
+          'error'
+        );
+        setEmptyNotificationShown(true);
+      }
+    } else if (emptyNotificationShown) {
+      setEmptyNotificationShown(false);
+    }
+  }, [fileListResponse?.totalItems, filters.searchQuery, showNotification, t, emptyNotificationShown]);
 
   const handleFiltersChange = useCallback((newFilters: FileListFilters) => {
     setFilters(newFilters);
@@ -154,11 +177,10 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       onConfirm={handleDeleteFile}
       file={selectedFile}
       />)}
-      {(totalItems > 0 || filters.searchQuery.length > 0) && (
-        <FileListToolbar
-          onFiltersChange={handleFiltersChange}
-        />
-      )}
+      
+      <FileListToolbar
+        onFiltersChange={handleFiltersChange}
+      />
 
       {totalItems > 0 && (filters.viewMode === 'grid' || !isDesktop) ? (
         <Box sx={{
@@ -200,7 +222,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
           );
         })}
         </Box>
-      ) : totalItems > 0 && files.length > 0 && isDesktop ? (
+      ) : totalItems > 0 && isDesktop ? (
         <FileTable
           files={files}
           isSharedFile={isSharedFile}
@@ -211,17 +233,17 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
       {totalItems === 0 && (
         <Box sx={{ marginTop: '16px' }}>
-          <Alert 
-            severity="info" 
-            className="empty-files-alert"
+          <Typography
+            align="center"
+            sx={{
+              fontWeight: '600',
+              color: filters.searchQuery ? 'error.main' : 'text.secondary',
+            }}
           >
-            <Typography className="alert-title">
-              {filters.searchQuery ? 'Nie znaleziono plików' : 'Nie masz żadnych plików obecnie'}
-            </Typography>
-            <Typography className="alert-subtitle">
-              {filters.searchQuery ? 'Spróbuj zmienić kryteria wyszukiwania' : 'Prześlij pliki, aby rozpocząć korzystanie z aplikacji'}
-            </Typography>
-          </Alert>
+            {filters.searchQuery
+              ? t('fileList.empty.noItemsFiltered')
+              : t('fileList.empty.noItems')}
+          </Typography>
         </Box>
       )}
 
