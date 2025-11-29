@@ -77,6 +77,26 @@
     "noConnectionDelete": "Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.",
     "noConnectionDownload": "Brak połączenia z internetem. Pobieranie dostępne jest tylko online."
   },
+  "deleteFileDialog": {
+    "title": "Usunąć plik {{fileName}}?",
+    "description": "Plik {{fileName}} zostanie permanentnie usunięty.",
+    "cancel": "Nie",
+    "confirm": "Tak"
+  },
+  "fileTable": {
+    "columns": {
+      "name": "Nazwa",
+      "owner": "Właściciel",
+      "date": "Data modyfikacji",
+      "size": "Rozmiar pliku",
+      "actions": "Akcje"
+    },
+    "actions": {
+      "share": "Udostępnij",
+      "download": "Pobierz",
+      "delete": "Usuń"
+    }
+  },
   "date": {
     "updatedToday": "Aktualizacja: dzisiaj",
     "updatedYesterday": "Aktualizacja: wczoraj",

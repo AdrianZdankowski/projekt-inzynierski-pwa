@@ -102,17 +102,14 @@ const Header = () => {
                     sx={{ 
                       cursor: 'pointer',
                       padding: '4px 8px',
-                      borderRadius: '8px',
-                      '&:hover': {
-                        backgroundColor: (theme) => theme.palette.action.hover
-                      }
+                      borderRadius: '8px'
                     }}
                     onClick={handleAvatarClick}
                   >
                     <Avatar 
                       sx={{ 
-                        width: 40, 
-                        height: 40,
+                        width: '40px', 
+                        height: '40px',
                         bgcolor: 'secondary.main'
                       }}
                     >
@@ -122,7 +119,7 @@ const Header = () => {
                       <Typography 
                         variant="body1" 
                         sx={{ 
-                          fontWeight: 500,
+                          fontWeight: '500',
                           fontSize: '1.1rem',
                         }}
                       >

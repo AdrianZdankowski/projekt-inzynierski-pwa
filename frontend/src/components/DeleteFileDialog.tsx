@@ -1,4 +1,5 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { FileMetadata } from "../types/FileMetadata";
 
 interface DeleteFileDialogProps {
@@ -9,6 +10,7 @@ interface DeleteFileDialogProps {
 }
 
 const DeleteFileDialog = ({open, onClose, onConfirm, file} : DeleteFileDialogProps) => {
+    const { t } = useTranslation();
 
     if (!file) return null;
 
@@ -18,19 +20,22 @@ const DeleteFileDialog = ({open, onClose, onConfirm, file} : DeleteFileDialogPro
         onClose={onClose}
         >
             <DialogTitle>
-                Usunąć plik {file.name}?
+                {t('deleteFileDialog.title', { fileName: file.name })}
             </DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    Plik {file.name} zostanie permanentnie usunięty.
+                    {t('deleteFileDialog.description', { fileName: file.name })}
                 </DialogContentText>
                 <DialogActions>
-                    <Button onClick={onClose}>NIE</Button>
+                    <Button onClick={onClose}>
+                        {t('deleteFileDialog.cancel')}
+                    </Button>
                     <Button onClick={() => {
                         onConfirm(file.id)
                         onClose();
                     }}>
-                        TAK</Button>
+                        {t('deleteFileDialog.confirm')}
+                    </Button>
                 </DialogActions>
             </DialogContent>
         </Dialog>

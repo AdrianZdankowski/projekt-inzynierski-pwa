@@ -42,23 +42,23 @@ const UserFilesPage = () => {
                     position: "fixed",
                     bottom: {
                         xs: theme.spacing(3),
-                        sm: theme.spacing(4)
+                        md: theme.spacing(4)
                     },
                     right: {
                         xs: theme.spacing(3),
-                        sm: theme.spacing(4)
+                        md: theme.spacing(4)
                     },
                     width: {
                         xs: '56px',
-                        sm: '72px'
+                        md: '72px'
                     },
                     height: {
                         xs: '56px',
-                        sm: '72px'
+                        md: '72px'
                     },
                     fontSize: {
                         xs: theme.spacing(4),
-                        sm: theme.spacing(5)
+                        md: theme.spacing(5)
                     },
                 }}
             >

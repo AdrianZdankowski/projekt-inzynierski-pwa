@@ -77,6 +77,26 @@
     "noConnectionDelete": "No internet connection. File deletion is only available online.",
     "noConnectionDownload": "No internet connection. File download is only available online."
   },
+  "deleteFileDialog": {
+    "title": "Delete file {{fileName}}?",
+    "description": "File {{fileName}} will be permanently deleted.",
+    "cancel": "No",
+    "confirm": "Yes"
+  },
+  "fileTable": {
+    "columns": {
+      "name": "Name",
+      "owner": "Owner",
+      "date": "Modified date",
+      "size": "File size",
+      "actions": "Actions"
+    },
+    "actions": {
+      "share": "Share",
+      "download": "Download",
+      "delete": "Delete"
+    }
+  },
   "date": {
     "updatedToday": "Updated: today",
     "updatedYesterday": "Updated: yesterday",

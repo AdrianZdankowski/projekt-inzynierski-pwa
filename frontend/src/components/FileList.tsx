@@ -1,13 +1,10 @@
 import { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
-import { Box, Alert, Typography, IconButton, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { Delete as DeleteIcon, Share as ShareIcon, CloudDone as SharedIcon, Download as DownloadIcon } from '@mui/icons-material';
-import { useTranslation } from 'react-i18next';
+import { Box, Alert, Typography, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { FileListResponse, FileListParams, FileListFilters, FileListPaginationState } from '../types/FileListTypes';
 import { FileMetadata } from '../types/FileMetadata';
-import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
 import { useAuth } from '../context/AuthContext';
 import { decodeUserId } from '../lib/decodeUserId';
-import { UserIconBox } from '../themes/boxes/UserIconBox';
 import VideoDialog from './VideoDialog';
 import DocumentDialog from './DocumentDialog';
 import ImageDialog from './ImageDialog';
@@ -16,6 +13,7 @@ import FileListToolbar from './FileListToolbar';
 import FileListPagination from './FileListPagination';
 import FileCard from './FileCard';
 import { useFileOperations } from '../hooks/useFileOperations';
+import FileTable from './FileTable';
 
 export interface FileListRef {
   refreshFiles: () => void;
@@ -38,11 +36,13 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const [openVideoDialog, setOpenVideoDialog] = useState<boolean>(false);
   const [openDocumentDialog, setOpenDocumentDialog] = useState<boolean>(false);
   const [openImageDialog, setOpenImageDialog] = useState<boolean>(false);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [openDeleteFileDialog, setOpenDeleteFileDialog] = useState<boolean>(false);
 
   const { accessToken } = useAuth();
-  const { t } = useTranslation();
-  const { fetchFilesList, deleteFile, downloadFile, shareFile } = useFileOperations();
+  const { fetchFilesList, deleteFile } = useFileOperations();
   
   const fetchFiles = useCallback(async () => {
     const params: FileListParams = {
@@ -130,12 +130,18 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     if (!accessToken) return false;
     const currentUserId = decodeUserId(accessToken);
     if (!currentUserId) return false;
-    // File is shared if the owner is different from current user
+
     return file.userId !== currentUserId;
   };
 
   return (
-    <Box sx={{ paddingTop: 3, paddingLeft: 3, paddingRight: 3, paddingBottom: 0 }}>
+    <Box
+      sx={{
+        paddingTop: '24px',
+        paddingBottom: '0px',
+        px: isMobile ? '16px' : '24px',
+      }}
+    >
       {selectedFile && openVideoDialog && 
       (<VideoDialog open={openVideoDialog} onClose={() => {setOpenVideoDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
       {selectedFile && openDocumentDialog && 
@@ -158,7 +164,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
           display: 'flex',
           flexWrap: 'wrap',
           justifyContent: 'center',
-          gap: 3,
+          gap: '24px',
           maxWidth: '1200px',
           margin: '0 auto',
         }}>
@@ -169,13 +175,17 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
             <Box
               key={file.id}
               sx={{
+              display: 'flex',
+              justifyContent: 'center',
                 width: {
-                  xs: '100%',
-                  md: 'calc((100% - 48px) / 3)',
+                  xs: '100%',                
+                  md: 'calc((100% - 24px) / 2)',               
+                  lg: 'calc((100% - 48px) / 3)',
                 },
                 maxWidth: {
                   xs: '100%',
-                  md: '320px',
+                  md: '400px',
+                  lg: '320px',
                 },
               }}
             >
@@ -190,110 +200,12 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
         })}
         </Box>
       ) : totalItems > 0 && files.length > 0 ? (
-        /* List View */
-        <TableContainer 
-          component={Paper} 
-          className="files-table-container"
-        >
-          <Table>
-            <TableHead>
-              <TableRow className="table-header-row">
-                <TableCell className="table-header-cell">Nazwa</TableCell>
-                <TableCell className="table-header-cell-center">Właściciel</TableCell>
-                <TableCell className="table-header-cell-center">Data modyfikacji</TableCell>
-                <TableCell className="table-header-cell-center">Rozmiar pliku</TableCell>
-                <TableCell align="center" className="table-header-cell-center">Akcje</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {files.map((file, index) => {
-                const FileIcon = getFileIcon(file.mimeType);
-                const fileColor = getFileTypeColor(file.mimeType);
-                const isShared = isSharedFile(file);
-                const isEvenRow = index % 2 === 0;
-
-                return (
-                  <TableRow 
-                    key={file.id}
-                    hover
-                    className={isEvenRow ? 'table-body-row' : 'table-body-row-odd'}
-                    onClick={() => handleFileClick(file, isShared)}
-                  >
-                    <TableCell className="table-body-cell">
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <FileIcon sx={{ color: fileColor, fontSize: 24 }} />
-                        {isShared && <SharedIcon sx={{ fontSize: 18, color: '#4CAF50' }} />}
-                        <Typography className="table-file-name">
-                          {file.name}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell className="table-body-cell-center">
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
-                        <UserIconBox>
-                          {file.ownerName.charAt(0).toUpperCase()}
-                        </UserIconBox>
-                        <Typography className="table-owner-name">
-                          {file.ownerName}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell className="table-body-cell-center">
-                      <Typography className="table-date">
-                        {formatDate(file.date, t)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell className="table-body-cell-center">
-                      <Typography className="table-size">
-                        {formatFileSize(file.size)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell align="center" className="table-actions-cell">
-                      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                        <Tooltip title="Udostępnij">
-                          <IconButton
-                            size="small"
-                            className="table-share-button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              shareFile(file.id);
-                            }}
-                          >
-                            <ShareIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Pobierz">
-                          <IconButton
-                            size="small"
-                            className="table-download-button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              downloadFile(file.id);
-                            }}
-                          >
-                            <DownloadIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Usuń">
-                          <IconButton
-                            size="small"
-                            className="table-delete-button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenDeleteDialog(file);
-                            }}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <FileTable
+          files={files}
+          isSharedFile={isSharedFile}
+          onFileClick={handleFileClick}
+          onDeleteDialogOpen={handleOpenDeleteDialog}
+        />
       ) : null}
 
       {totalItems === 0 && (
