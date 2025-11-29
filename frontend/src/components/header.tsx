@@ -70,9 +70,9 @@ const Header = () => {
               sx={{ 
                 justifyContent: 'space-between',
                 minHeight: '70px',
-                '@media (min-width:600px)': {
-                  minHeight: '80px',
-                },
+                [theme.breakpoints.up('sm')]: {
+                    minHeight: '80px',
+                  },
               }}
             >
               <Box sx={{ flex: 1 }} />
@@ -143,14 +143,16 @@ const Header = () => {
                       vertical: 'top',
                       horizontal: 'right',
                     }}
-                    PaperProps={{
-                      sx: {
-                        minWidth: '160px',
-                        width: '160px',
-                        mt: '0.5rem',
-                        p: '4px',
-                        borderRadius: '12px'
-                      },
+                    slotProps={{
+                      paper: {
+                        sx: {
+                          minWidth: '160px',
+                          width: '160px',
+                          mt: '0.5rem',
+                          p: '4px',
+                          borderRadius: '12px'
+                        }
+                      }
                     }}
                   >
                     <MenuItem 

@@ -9,8 +9,7 @@ import {
 } from '@mui/material';
 import { Person, Lock } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import axiosInstance from '../api/axiosInstance';
-import { useNotification } from '../context/NotificationContext';
+import { useAuthRequests } from '../hooks/useAuthRequests';
 
 const RegisterForm = () => {
   const { t } = useTranslation();
@@ -23,7 +22,7 @@ const RegisterForm = () => {
   const [repeatPasswordError, setRepeatPasswordError] = useState('');
 
   const navigate = useNavigate();
-  const { showNotification } = useNotification();
+  const { registerUser } = useAuthRequests();
 
   // walidacja nazwy użytkownika
   const validateUsername = (name: string) => {
@@ -63,18 +62,9 @@ const RegisterForm = () => {
 
     if (passwordError || nameError || repeatPasswordError) return;
 
-    try {
-      await axiosInstance.post('/auth/register', { username, password });
-      showNotification(t('login.accountCreated'), 'success');
+    const success = await registerUser(username, password);
+    if (success) {
       navigate('/login', { replace: true });
-    } catch (error: any) {
-      console.error(error);
-
-      if (error.response?.status === 400) {
-        showNotification(t('register.userExistsError'), 'error');
-      } else {
-        showNotification(t('register.generalError'), 'error');
-      }
     }
   };
 

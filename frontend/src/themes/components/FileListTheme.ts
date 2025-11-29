@@ -45,18 +45,6 @@ const FileListTheme = createTheme({
               borderColor: '#2e7d32'
             }
           },
-          '&.share-button': {
-            fontSize: '0.75rem',
-            padding: '4px 8px',
-            minWidth: 'auto',
-            borderColor: '#1976d2',
-            color: '#1976d2',
-            borderRadius: 12,
-            '&:hover': {
-              borderColor: '#1976d2',
-              backgroundColor: 'rgba(117, 117, 117, 0.1)'
-            }
-          }
         }
       }
     },
@@ -130,24 +118,6 @@ const FileListTheme = createTheme({
               color: '#2e7d32'
             }
           },
-          '&.file-name': {
-            fontWeight: 'bold',
-            marginBottom: 0.5,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            fontSize: '0.9rem',
-            color: '#000000'
-          },
-          '&.file-size': {
-            fontSize: '0.8rem',
-            marginBottom: 0.2,
-            color: 'rgba(0, 0, 0, 0.7)'
-          },
-          '&.file-date': {
-            fontSize: '0.75rem',
-            color: 'rgba(0, 0, 0, 0.7)'
-          },
           '&.alert-title': {
             marginBottom: 1,
             fontWeight: 'bold',
@@ -187,41 +157,6 @@ const FileListTheme = createTheme({
         }
       }
     },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          '&.file-card': {
-            height: '280px',
-            width: '280px',
-            display: 'flex',
-            flexDirection: 'column',
-            cursor: 'pointer',
-            transition: 'transform 0.2s, box-shadow 0.2s',
-            background: '#ffffff',
-            color: '#000000',
-            position: 'relative',
-            margin: '0 auto',
-            '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: 4,
-              background: '#f0f0f0'
-            },
-            '&.even-row': {
-              background: '#ffffff',
-              '&:hover': {
-                background: '#f0f0f0'
-              }
-            },
-            '&.odd-row': {
-              background: '#f8f9fa',
-              '&:hover': {
-                background: '#e8e8e8'
-              }
-            }
-          }
-        }
-      }
-    },
     MuiIconButton: {
       styleOverrides: {
         root: {
@@ -237,17 +172,6 @@ const FileListTheme = createTheme({
               }
             }
           },
-          '&.delete-button': {
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            zIndex: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            color: 'white',
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.7)'
-            }
-          },
           '&.table-share-button': {
             color: '#1976d2',
             '&:hover': {
@@ -259,48 +183,6 @@ const FileListTheme = createTheme({
             '&:hover': {
               backgroundColor: 'rgba(117, 117, 117, 0.1)'
             }
-          }
-        }
-      }
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          '&.shared-chip': {
-            position: 'absolute',
-            top: 8,
-            left: 8,
-            zIndex: 1,
-            backgroundColor: '#4CAF50',
-            color: 'white'
-          }
-        }
-      }
-    },
-    MuiCardContent: {
-      styleOverrides: {
-        root: {
-          '&.file-card-content': {
-            flexGrow: 1,
-            textAlign: 'center',
-            padding: 24,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            height: '100%'
-          }
-        }
-      }
-    },
-    MuiCardActions: {
-      styleOverrides: {
-        root: {
-          '&.file-card-actions': {
-            justifyContent: 'center',
-            padding: 10,
-            paddingTop: 0,
-            marginBottom: 6,
-            minHeight: 'auto'
           }
         }
       }

@@ -48,7 +48,6 @@ const FileListPagination = ({
         display: 'flex', 
         justifyContent: { xs: 'center', sm: 'space-between' },
         alignItems: 'center',
-        marginTop: '32px',
         gap: { xs: '0px', sm: '32px' },
         paddingTop: '40px',
         paddingBottom: '0px',

@@ -20,9 +20,9 @@ const ImageDialog = ({open, onClose, file, isShared} : ImageDialogProps) => {
     let uploadDate;
     let uploadTime;
 
-    uploadDate = file.uploadTimestamp.slice(0,10).split("-");
+    uploadDate = file.date.slice(0,10).split("-");
     uploadDate = `${uploadDate[2]}-${uploadDate[1]}-${uploadDate[0]}`;
-    uploadTime = file.uploadTimestamp.slice(11,16);
+    uploadTime = file.date.slice(11,16);
 
     useEffect(() => {
             const fetchFileLink = async () => {
@@ -58,7 +58,7 @@ const ImageDialog = ({open, onClose, file, isShared} : ImageDialogProps) => {
                 }
             }
         }}>
-            <DialogTitle>{file.fileName} {isShared && `Udostępnione przez ${file.userId}`}</DialogTitle>
+            <DialogTitle>{file.name} {isShared && `Udostępnione przez ${file.userId}`}</DialogTitle>
             <DialogContent dividers style={{ height: '80vh', overflow: 'hidden' }}>
                 {fetchError && (<Alert severity="error" onClose={() => setFetchError('')}>{fetchError}</Alert>)}
                 <Box>
@@ -88,7 +88,7 @@ const ImageDialog = ({open, onClose, file, isShared} : ImageDialogProps) => {
                     >
                     <img 
                     src={sasLink}
-                    alt={file.fileName}
+                    alt={file.name}
                     style={{
                         maxWidth: "100%",
                         maxHeight: "100%",

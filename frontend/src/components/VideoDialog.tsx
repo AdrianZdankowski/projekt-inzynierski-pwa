@@ -31,9 +31,9 @@ const VideoDialog = ({file, isShared, open, onClose} : VideoDialogProps) => {
                 <ThemeProvider theme={VideoPlayerTheme}>
                     <VideoPlayer 
                     src={`${API_BASE_URL}/Stream/${file.id}/master.m3u8`} 
-                    fileName={file.fileName} 
+                    fileName={file.name} 
                     ownerName={file.ownerName}
-                    uploadTimestamp={file.uploadTimestamp}
+                    uploadTimestamp={file.date}
                     isShared={isShared}/>
                 </ThemeProvider>
             </DialogContent>

@@ -23,9 +23,9 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
     let uploadDate;
     let uploadTime;
 
-    uploadDate = file.uploadTimestamp.slice(0,10).split("-");
+    uploadDate = file.date.slice(0,10).split("-");
     uploadDate = `${uploadDate[2]}-${uploadDate[1]}-${uploadDate[0]}`;
-    uploadTime = file.uploadTimestamp.slice(11,16);
+    uploadTime = file.date.slice(11,16);
 
     useEffect(() => {
         const fetchFileLink = async () => {
@@ -50,6 +50,7 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
+<<<<<<< Updated upstream
             <DialogTitle>{file.fileName} {isShared && `Udostępnione przez ${file.userId}`}</DialogTitle>
             <DialogContent 
                 dividers 
@@ -69,6 +70,13 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
                     <Typography variant="body2" color="text.secondary">
                         Przesłane: {uploadDate} {uploadTime}
                     </Typography>
+=======
+            <DialogTitle>{file.name} {isShared && `Udostępnione przez ${file.userId}`}</DialogTitle>
+            <DialogContent dividers style={{ height: '80vh', overflow: 'hidden' }}>
+                {fetchError && (<Alert severity="error" onClose={() => setFetchError('')}>{fetchError}</Alert>)}
+                <Box>
+                    <Typography>Przesłane: {uploadDate} {uploadTime}</Typography>
+>>>>>>> Stashed changes
                 </Box>
                 {loading ? (
                 <Box

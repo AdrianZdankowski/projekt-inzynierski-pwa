@@ -18,11 +18,11 @@ const DeleteFileDialog = ({open, onClose, onConfirm, file} : DeleteFileDialogPro
         onClose={onClose}
         >
             <DialogTitle>
-                Usunąć plik {file.fileName}?
+                Usunąć plik {file.name}?
             </DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    Plik {file.fileName} zostanie permanentnie usunięty.
+                    Plik {file.name} zostanie permanentnie usunięty.
                 </DialogContentText>
                 <DialogActions>
                     <Button onClick={onClose}>NIE</Button>

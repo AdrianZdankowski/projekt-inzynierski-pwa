@@ -9,9 +9,7 @@ import {
 } from '@mui/material';
 import { Person, Lock } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import axiosInstance from '../api/axiosInstance';
-import { useAuth } from '../context/AuthContext';
-import { useNotification } from '../context/NotificationContext';
+import { useAuthRequests } from '../hooks/useAuthRequests';
 
 const LoginForm = () => {
   const { t } = useTranslation();
@@ -21,20 +19,15 @@ const LoginForm = () => {
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  const { login } = useAuth();
-  const { showNotification } = useNotification();
+  const { loginUser } = useAuthRequests();
 
-  // walidacja nazwy użytkownika
   const validateUsername = (name: string) => {
-    // maks. 32 znaki alfanumeryczne (bez spacji, znaków specjalnych)
     const nameRegex = /^[a-zA-Z0-9_.-]{3,32}$/;
     const errorMessage = t('login.usernameError');
     return nameRegex.test(name) ? "" : errorMessage;
   }
 
-  // walidacja hasła
   const validatePassword = (pass: string) => {
-    // min. 8 znaków, wielka i mała litera, liczba i znak specjalny
     const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
     const errorMessage = t('login.passwordError');
     return passRegex.test(pass) ? "" : errorMessage;
@@ -54,22 +47,9 @@ const LoginForm = () => {
 
     if (passwordError || nameError) return;
 
-    try {
-      const result = await axiosInstance.post('/auth/login', {username, password});
-      const accessToken = result.data.accessToken;
-      login(accessToken);
-      showNotification(t('login.loginSuccess'), 'success');
-      
+    const success = await loginUser(username, password);
+    if (success) {
       window.location.replace('/user-files');
-    }
-    catch (error: any) {
-      console.error(error);
-      
-      if (error.response?.status === 400) {
-        showNotification(t('login.loginError'), 'error');
-      } else {
-        showNotification(t('login.generalError'), 'error');
-      }
     }
   };
 

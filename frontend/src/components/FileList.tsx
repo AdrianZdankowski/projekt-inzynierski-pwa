@@ -1,25 +1,21 @@
 import { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
-import { Card, CardContent, CardActions, Typography, IconButton, Button, Box, Chip, 
-  Alert, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { Delete as DeleteIcon, Share as ShareIcon, CloudDone as SharedIcon } from '@mui/icons-material';
-import { FileService } from '../services/FileService';
+import { Box, Alert, Typography, IconButton, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Delete as DeleteIcon, Share as ShareIcon, CloudDone as SharedIcon, Download as DownloadIcon } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { FileListResponse, FileListParams, FileListFilters, FileListPaginationState } from '../types/FileListTypes';
 import { FileMetadata } from '../types/FileMetadata';
 import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
 import { useAuth } from '../context/AuthContext';
 import { decodeUserId } from '../lib/decodeUserId';
-import { useNotification } from '../context/NotificationContext';
 import { UserIconBox } from '../themes/boxes/UserIconBox';
-import { CardBox } from '../themes/boxes/CardBox';
-import { FileTypeBox } from '../themes/boxes/FileTypeBox';
 import VideoDialog from './VideoDialog';
 import DocumentDialog from './DocumentDialog';
 import ImageDialog from './ImageDialog';
 import DeleteFileDialog from './DeleteFileDialog';
 import FileListToolbar from './FileListToolbar';
 import FileListPagination from './FileListPagination';
-import { downloadFile } from '../utils/downloadFile';
-import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import FileCard from './FileCard';
+import { useFileOperations } from '../hooks/useFileOperations';
 
 export interface FileListRef {
   refreshFiles: () => void;
@@ -29,7 +25,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const [fileListResponse, setFileListResponse] = useState<FileListResponse | null>(null);
   const [filters, setFilters] = useState<FileListFilters>({
     searchQuery: '',
-    sortField: 'uploadTimestamp',
+    sortField: 'date',
     sortOrder: 'desc',
     viewMode: 'grid'
   });
@@ -45,32 +41,23 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const [openDeleteFileDialog, setOpenDeleteFileDialog] = useState<boolean>(false);
 
   const { accessToken } = useAuth();
-  const { showNotification } = useNotification();
-  const isOnline = useOnlineStatus();
-
+  const { t } = useTranslation();
+  const { fetchFilesList, deleteFile, downloadFile, shareFile } = useFileOperations();
+  
   const fetchFiles = useCallback(async () => {
-    try {
-      const params: FileListParams = {
-        page: pagination.page,
-        pageSize: pagination.pageSize,
-        sortBy: filters.sortField,
-        sortDirection: filters.sortOrder,
-        q: filters.searchQuery || undefined
-      };
-      
-      const response = await FileService.getUserFiles(params);
+    const params: FileListParams = {
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      sortBy: filters.sortField,
+      sortDirection: filters.sortOrder,
+      q: filters.searchQuery || undefined
+    };
+    
+    const response = await fetchFilesList(params);
+    if (response) {
       setFileListResponse(response);
-    } catch (err: any) {
-      if (err.response?.status === 401) {
-        showNotification('Wymagana autoryzacja. Zaloguj się ponownie.', 'error');
-      } else if (err.response?.status === 403) {
-        showNotification('Odmowa dostępu. Nie masz uprawnień do przeglądania plików.', 'error');
-      } else {
-        showNotification('Nie udało się załadować plików. Spróbuj ponownie.', 'error');
-      }
-      console.error('Error fetching files:', err);
     }
-  }, [pagination, filters, showNotification]);
+  }, [pagination, filters, fetchFilesList]);
   
   useEffect(() => {
     fetchFiles();
@@ -92,91 +79,51 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   }));
 
   const handleDeleteFile = async (fileId: string) => {
-    if (!isOnline) {
-      showNotification('Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.', 'error');
-      return;
-    }
-
-    try {
-      await FileService.deleteFile(fileId);
+    const success = await deleteFile(fileId);
+    if (success) {
       setFileListResponse(prev => (
         {
           ...prev!,
           items: prev!.items.filter(f => f.id !== fileId)
         }
       ));
-      showNotification('Plik został usunięty pomyślnie.', 'success');
-
-      try {
-        const metadataCache = await caches.open('file-metadata-cache');
-        const metadataKeys = await metadataCache.keys();
-        const metadataKey = metadataKeys.find(req => req.url.includes(`/api/file/${fileId}`));
-        if (metadataKey) {
-          await metadataCache.delete(metadataKey);
-          console.log('Usunięto metadata z cache:', fileId);
-        }
-
-        const blobCache = await caches.open('azure-blob-files');
-        const blobKeys = await blobCache.keys();
-        const blobKey = blobKeys.find(req => req.url.includes(fileId));
-        if (blobKey) {
-          await blobCache.delete(blobKey);
-          console.log('Usunięto blob z cache:', fileId);
-        }
-      } catch (cacheError) {
-        console.warn('Nie udało się usunąć z cache:', cacheError);
-      }
-    } catch (err) {
-      showNotification('Wystąpił nieoczekiwany błąd przy usuwaniu pliku. Spróbuj ponownie.', 'error');
     }
   };
-
-  const handleShareFile = async (fileId: string) => {
-    try {
-      // TODO: Implement proper sharing endpoint in backend
-      // For now, download the file
-      
-      if (!isOnline) {
-        showNotification('Brak połączenia z internetem. Pobieranie dostępne jest tylko online.', 'error');
-        return;
-      }
-      
-      console.log('Share file:', fileId);
-      await downloadFile(fileId);
-      showNotification('Plik został pobrany pomyślnie.', 'success');
-    } catch (err: any) {
-      console.error('Error downloading file:', err);
-      showNotification(err.message || 'Nie udało się pobrać pliku.', 'error');
-    }
-  };
-
+ 
   const handleFileClick = (file: FileMetadata, isShared: boolean) => {
-    // TODO: Implement functionality in the future
     console.log('Open file:', file);
+    setSelectedFile(file);
+    setIsSelectedFileShared(isShared);
 
-    // Open video page
-    switch(file.mimeType) {
-      case 'video/mp4':
-        setSelectedFile(file);
-        setIsSelectedFileShared(isShared);
-        setOpenVideoDialog(true);
-        break;
-      case 'application/pdf':
-      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-      case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-      case 'text/plain':
-        setSelectedFile(file);
-        setIsSelectedFileShared(isShared);
-        setOpenDocumentDialog(true);
-        break;
-      case 'image/png':
-      case 'image/jpeg':
-      case 'image/gif':
-        setSelectedFile(file);
-        setIsSelectedFileShared(isShared);
-        setOpenImageDialog(true);
-        break;
+    const mime = file.mimeType;
+
+    if (mime === 'video/mp4') {
+      setOpenVideoDialog(true);
+      return;
     }
+
+    if (
+      mime === 'application/pdf' ||
+      mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      mime === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      mime === 'text/plain'
+    ) {
+      setOpenDocumentDialog(true);
+      return;
+    }
+
+    if (
+      mime === 'image/png' ||
+      mime === 'image/jpeg' ||
+      mime === 'image/gif'
+    ) {
+      setOpenImageDialog(true);
+    }
+  };
+
+  const handleOpenDeleteDialog = (file: FileMetadata) => {
+    setSelectedFile(file);
+    setOpenDeleteFileDialog(true);
   };
 
   const isSharedFile = (file: FileMetadata) => {
@@ -207,98 +154,41 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       )}
 
       {totalItems > 0 && filters.viewMode === 'grid' ? (
-        <CardBox>
+        <Box sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: 3,
+          maxWidth: '1200px',
+          margin: '0 auto',
+        }}>
         {files.map((file) => {
-          const FileIcon = getFileIcon(file.mimeType);
-          const fileColor = getFileTypeColor(file.mimeType);
           const isShared = isSharedFile(file);
 
           return (
-            <Box key={file.id}>
-              <Card
-                className="file-card"
-                onClick={() => handleFileClick(file, isShared)}
-              >
-                {/* Delete button in top-right corner */}
-                <IconButton
-                  className="delete-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!isOnline) {
-                      showNotification('Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.', 'error');
-                      return;
-                    }
-                    setSelectedFile(file);
-                    setOpenDeleteFileDialog(true);
-                  }}
-                  size="small"
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-
-                {/* Shared indicator */}
-                {isShared && (
-                  <Chip
-                    icon={<SharedIcon />}
-                    label="Shared"
-                    size="small"
-                    className="shared-chip"
-                  />
-                )}
-
-                <CardContent className="file-card-content">
-                  {/* File type icon */}
-                  <FileTypeBox>
-                    <FileIcon
-                      sx={{
-                        fontSize: 64,
-                        color: fileColor
-                      }}
-                    />
-                  </FileTypeBox>
-
-                  {/* File name */}
-                  <Typography
-                    component="div"
-                    className="file-name"
-                    title={file.fileName}
-                  >
-                    {file.fileName}
-                  </Typography>
-
-                  {/* File size and date */}
-                  <Box sx={{ marginBottom: 1 }}>
-                    <Typography className="file-size">
-                      {formatFileSize(file.size)}
-                    </Typography>
-                    <Typography className="file-date">
-                      {formatDate(file.uploadTimestamp)}
-                    </Typography>
-                  </Box>
-                </CardContent>  
-
-                <CardActions className="file-card-actions">
-                  <Tooltip title="Udostępnij plik">
-                    <Button
-                      variant="outlined"
-                      startIcon={<ShareIcon />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedFile(file);
-                        handleShareFile(file.id);
-                      }}
-                      size="small"
-                      className="share-button"
-                    >
-                      UDOSTĘPNIJ
-                    </Button>
-                  </Tooltip>
-                </CardActions>
-              </Card>
+            <Box
+              key={file.id}
+              sx={{
+                width: {
+                  xs: '100%',
+                  md: 'calc((100% - 48px) / 3)',
+                },
+                maxWidth: {
+                  xs: '100%',
+                  md: '320px',
+                },
+              }}
+            >
+              <FileCard
+                file={file}
+                isShared={isShared}
+                onFileClick={handleFileClick}
+                onDeleteDialogOpen={handleOpenDeleteDialog}
+              />
             </Box>
           );
         })}
-        </CardBox>
+        </Box>
       ) : totalItems > 0 && files.length > 0 ? (
         /* List View */
         <TableContainer 
@@ -334,7 +224,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                         <FileIcon sx={{ color: fileColor, fontSize: 24 }} />
                         {isShared && <SharedIcon sx={{ fontSize: 18, color: '#4CAF50' }} />}
                         <Typography className="table-file-name">
-                          {file.fileName}
+                          {file.name}
                         </Typography>
                       </Box>
                     </TableCell>
@@ -350,7 +240,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                     </TableCell>
                     <TableCell className="table-body-cell-center">
                       <Typography className="table-date">
-                        {formatDate(file.uploadTimestamp)}
+                        {formatDate(file.date, t)}
                       </Typography>
                     </TableCell>
                     <TableCell className="table-body-cell-center">
@@ -366,10 +256,22 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                             className="table-share-button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleShareFile(file.id);
+                              shareFile(file.id);
                             }}
                           >
                             <ShareIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Pobierz">
+                          <IconButton
+                            size="small"
+                            className="table-download-button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              downloadFile(file.id);
+                            }}
+                          >
+                            <DownloadIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Usuń">
@@ -378,12 +280,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
                             className="table-delete-button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (!isOnline) {
-                                showNotification('Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.', 'error');
-                                return;
-                              }
-                              setSelectedFile(file);
-                              setOpenDeleteFileDialog(true);
+                              handleOpenDeleteDialog(file);
                             }}
                           >
                             <DeleteIcon fontSize="small" />
@@ -400,7 +297,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       ) : null}
 
       {totalItems === 0 && (
-        <Box sx={{ marginTop: 4 }}>
+        <Box sx={{ marginTop: '16px' }}>
           <Alert 
             severity="info" 
             className="empty-files-alert"

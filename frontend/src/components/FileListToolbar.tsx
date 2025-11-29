@@ -19,7 +19,7 @@ const FileListToolbar = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [sortMenuAnchor, setSortMenuAnchor] = useState<null | HTMLElement>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [sortField, setSortField] = useState<SortField>('uploadTimestamp');
+  const [sortField, setSortField] = useState<SortField>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
@@ -66,7 +66,7 @@ const FileListToolbar = ({
         justifyContent: 'space-between', 
         alignItems: 'center',
         marginBottom: '32px',
-        padding: '0 20px'
+        padding: isMobile ? '0 10px' : '0 20px'
     }}>
       <TextField
         size="small"

@@ -63,11 +63,24 @@
     "listView": "List view",
     "gridView": "Grid view",
     "sortOptions": {
-      "fileName": "Name",
+      "name": "Name",
       "size": "Size",
-      "uploadTimestamp": "Upload date",
+      "date": "Upload date",
       "mimeType": "File type"
     }
+  },
+  "fileCard": {
+    "shareFile": "Share file",
+    "share": "Share",
+    "download": "Download file",
+    "delete": "Delete file",
+    "noConnectionDelete": "No internet connection. File deletion is only available online.",
+    "noConnectionDownload": "No internet connection. File download is only available online."
+  },
+  "date": {
+    "updatedToday": "Updated: today",
+    "updatedYesterday": "Updated: yesterday",
+    "updatedDaysAgo": "Updated: {{days}} days ago"
   }
 }
 

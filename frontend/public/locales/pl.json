@@ -63,11 +63,24 @@
     "listView": "Widok listy",
     "gridView": "Widok kafelków",
     "sortOptions": {
-      "fileName": "Nazwa",
+      "name": "Nazwa",
       "size": "Rozmiar",
-      "uploadTimestamp": "Data dodania",
+      "date": "Data dodania",
       "mimeType": "Typ pliku"
     }
+  },
+  "fileCard": {
+    "shareFile": "Udostępnij plik",
+    "share": "Udostępnij",
+    "download": "Pobierz plik",
+    "delete": "Usuń plik",
+    "noConnectionDelete": "Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.",
+    "noConnectionDownload": "Brak połączenia z internetem. Pobieranie dostępne jest tylko online."
+  },
+  "date": {
+    "updatedToday": "Aktualizacja: dzisiaj",
+    "updatedYesterday": "Aktualizacja: wczoraj",
+    "updatedDaysAgo": "Aktualizacja: {{days}} dni temu"
   }
 }
 
