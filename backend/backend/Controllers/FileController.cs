@@ -175,7 +175,7 @@ namespace backend.Controllers
                     await appDbContext.SaveChangesAsync();
                     if (file.MimeType == "video/mp4")
                     {
-                        string tempDirectory = Path.Combine(@"C:\temp", dto.FileId.ToString().Replace(".", ""), DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                        string tempDirectory = Path.Combine(Path.GetTempPath(), dto.FileId.ToString().Replace(".", ""), DateTime.Now.ToString("yyyyMMdd_HHmmss"));
                         await fileConverter.CreateHlsPlaylistAsync(tempDirectory, file, userId);
                     }
                     return Ok(new { Message = "Upload committed", FileId = file.id });
