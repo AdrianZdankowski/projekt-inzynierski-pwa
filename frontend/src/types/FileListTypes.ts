@@ -18,8 +18,8 @@ export interface FileListResponse {
 export interface FileListParams {
   page?: number;
   pageSize?: number;
-  sortBy?: string;
-  sortDirection?: string;
+  sortBy?: SortField;
+  sortDirection?: SortOrder;
   q?: string;
 }
 

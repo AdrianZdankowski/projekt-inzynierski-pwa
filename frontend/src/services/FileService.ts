@@ -2,6 +2,20 @@ import axiosInstance from '../api/axiosInstance';
 import { FileListResponse, FileListParams } from '../types/FileListTypes';
 import { SingleFileMetadata } from '../types/SingleFileMetadata';
 import { downloadFile as downloadFileUtil } from '../utils/downloadFile';
+import { SortField } from '../types/SortTypes';
+
+const mapSortFieldToBackend = (field?: SortField): string | undefined => {
+  if (!field) return undefined;
+
+  switch (field) {
+    case 'name':
+      return 'fileName';
+    case 'date':
+      return 'uploadTimestamp';
+    default:
+      return field;
+  }
+};
 
 export const FileService = {
   async getUserFiles(params?: FileListParams): Promise<FileListResponse> {
@@ -9,7 +23,8 @@ export const FileService = {
     
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
-    if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
+    const sortBy = mapSortFieldToBackend(params?.sortBy);
+    if (sortBy) queryParams.append('sortBy', sortBy);
     if (params?.sortDirection) queryParams.append('sortDirection', params.sortDirection);
     if (params?.q) queryParams.append('q', params.q);
 
