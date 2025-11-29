@@ -17,6 +17,7 @@ const FileListToolbar = ({
   const theme = useTheme();
   const { t } = useTranslation();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const [sortMenuAnchor, setSortMenuAnchor] = useState<null | HTMLElement>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortField, setSortField] = useState<SortField>('date');
@@ -61,10 +62,10 @@ const FileListToolbar = ({
   };
 
   useEffect(() => {
-    if (isMobile && viewMode !== 'grid') {
+    if (!isDesktop && viewMode !== 'grid') {
       setViewMode('grid');
     }
-  }, [isMobile, viewMode]);
+  }, [isDesktop, viewMode]);
 
   return (
     <Box sx={{
@@ -169,7 +170,7 @@ const FileListToolbar = ({
             })}
           </Menu>
 
-          {!isMobile && (
+          {isDesktop && (
             <Tooltip title={viewMode === 'grid' ? t('fileListToolbar.listView') : t('fileListToolbar.gridView')}>
               <IconButton 
                 onClick={handleViewModeToggle}

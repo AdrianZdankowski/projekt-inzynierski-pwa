@@ -164,7 +164,10 @@ const FileTableRow = ({
       hover
       onClick={handleRowClick}
       sx={{
-        cursor: 'pointer'
+        cursor: 'pointer',
+        '&:last-of-type td, &:last-of-type th': {
+          borderBottom: 0,
+        },
       }}
     >
       {tableCells.map((cell) => (
@@ -172,7 +175,6 @@ const FileTableRow = ({
           key={cell.key}
           align={cell.align}
           sx={{
-            py: '12px',
             textAlign: cell.align === 'center' ? 'center' : 'left',
           }}
         >
@@ -182,7 +184,10 @@ const FileTableRow = ({
       <TableCell
         align="center"
         sx={{
-          py: '16px'
+          py: {
+            xs: '10px',
+            md: '16px',
+          },
         }}
       >
         <Box sx={{ 

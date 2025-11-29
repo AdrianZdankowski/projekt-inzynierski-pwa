@@ -39,6 +39,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const [openDeleteFileDialog, setOpenDeleteFileDialog] = useState<boolean>(false);
 
   const { accessToken } = useAuth();
@@ -159,7 +160,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
         />
       )}
 
-      {totalItems > 0 && filters.viewMode === 'grid' ? (
+      {totalItems > 0 && (filters.viewMode === 'grid' || !isDesktop) ? (
         <Box sx={{
           display: 'flex',
           flexWrap: 'wrap',
@@ -199,7 +200,7 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
           );
         })}
         </Box>
-      ) : totalItems > 0 && files.length > 0 ? (
+      ) : totalItems > 0 && files.length > 0 && isDesktop ? (
         <FileTable
           files={files}
           isSharedFile={isSharedFile}
