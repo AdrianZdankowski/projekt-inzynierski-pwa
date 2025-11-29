@@ -44,7 +44,9 @@
   "header": {
     "changeLanguage": "Zmiana języka",
     "selectLanguage": "Wybierz język",
-    "logout": "Wyloguj"
+    "logout": "Wyloguj",
+    "online": "Jesteś online",
+    "offline": "Jesteś offline"
   },
   "fileUpload": {
     "title": "Prześlij plik",

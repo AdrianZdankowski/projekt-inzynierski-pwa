@@ -4,7 +4,7 @@ import {
   Box,
 } from '@mui/material';
 import LanguageSwitcher from '../components/LanguageSwitcher';
-import LoginForm from '../components/LoginForm';
+import LoginForm from '../components/form/LoginForm';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { useTranslation } from 'react-i18next';

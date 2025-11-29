@@ -21,6 +21,7 @@ import axiosInstance from '../api/axiosInstance';
 import { decodeUsername } from '../lib/decodeUsername';
 import SelectLanguageDialog from './SelectLanguageDialog';
 import ModeSwitcher from './ModeSwitcher';
+import ConnectionStatus from './ConnectionStatus';
 
 const Header = () => {
     const {isAuthenticated, logout, accessToken} = useAuth();
@@ -79,6 +80,8 @@ const Header = () => {
       
               {isAuthenticated && username ? (
                 <Stack direction="row" spacing={1} alignItems="center">
+                  <ConnectionStatus />
+                  
                   <ModeSwitcher />
 
                   <Tooltip title={t('header.changeLanguage')}>

@@ -44,7 +44,9 @@
   "header": {
     "changeLanguage": "Change language",
     "selectLanguage": "Select language",
-    "logout": "Log out"
+    "logout": "Log out",
+    "online": "You are online",
+    "offline": "You are offline"
   },
   "fileUpload": {
     "title": "Upload file",

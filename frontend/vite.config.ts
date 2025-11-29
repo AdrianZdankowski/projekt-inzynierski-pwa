@@ -18,9 +18,9 @@ export default defineConfig({
 
     // Manifest injection
     manifest: {
-      name: 'my-pwa-app',
-      short_name: 'pwa-app',
-      description: 'my test pwa app',
+      name: 'Storigo',
+      start_url: '/',
+      description: 'Application to store and share your files securely.',
       theme_color: '#ffffff',
       display: 'minimal-ui',
       icons: [
