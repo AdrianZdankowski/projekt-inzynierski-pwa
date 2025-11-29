@@ -1,4 +1,5 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Typography } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { useTranslation } from "react-i18next";
 import { FileMetadata } from "../types/FileMetadata";
 
@@ -18,9 +19,39 @@ const DeleteFileDialog = ({open, onClose, onConfirm, file} : DeleteFileDialogPro
         <Dialog
         open={open}
         onClose={onClose}
+        maxWidth="xs"
+        fullWidth
         >
-            <DialogTitle>
-                {t('deleteFileDialog.title', { fileName: file.name })}
+            <DialogTitle
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    pr: 2,
+                }}
+            >
+                <Typography
+                    variant="subtitle1"
+                    sx={{
+                        fontWeight: '600',
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: { xs: "70%", sm: "80%" },
+                        flexShrink: 1,
+                    }}
+                    title={t('deleteFileDialog.title', { fileName: file.name })}
+                >
+                    {t('deleteFileDialog.title', { fileName: file.name })}
+                </Typography>
+                <IconButton
+                    aria-label={t("common.close")}
+                    onClick={onClose}
+                    edge="end"
+                    size="small"
+                >
+                    <CloseIcon />
+                </IconButton>
             </DialogTitle>
             <DialogContent>
                 <DialogContentText>

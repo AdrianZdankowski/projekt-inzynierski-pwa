@@ -1,8 +1,11 @@
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
-import { Dialog, DialogTitle, DialogContent, Box, CircularProgress, Alert, Typography } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, Box, CircularProgress, Alert, Typography, IconButton, useMediaQuery } from '@mui/material';
+import CloseIcon from "@mui/icons-material/Close";
 import { FileMetadata } from "../types/FileMetadata";
 import { useEffect, useState } from "react";
 import { FileService } from "../services/FileService";
+import { useTranslation } from "react-i18next";
+import { useTheme } from "@mui/material/styles";
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 
@@ -15,6 +18,10 @@ interface DocumentDialogProps {
 
 const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) => {
     if (!file) return null;
+
+    const { t } = useTranslation();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     const [sasLink, setSasLink] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
@@ -36,7 +43,7 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
             }
             catch (error: any) {
                 console.error(error);
-                setFetchError('Błąd przy pobieraniu danych pliku. Spróbuj ponownie.')
+                setFetchError(t("documentDialog.fetchError"));
             }
             finally {
                 setLoading(false);
@@ -50,11 +57,50 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
-            <DialogTitle>{file.name} {isShared && `Udostępnione przez ${file.userId}`}</DialogTitle>
+            <DialogTitle
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    pr: '16px',
+                }}
+            >
+                <Typography
+                    variant="subtitle1"
+                    sx={{
+                        fontWeight: '600',
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: { xs: "70%", sm: "80%" },
+                        flexShrink: 1,
+                    }}
+                    title={file.name}
+                >
+                    {file.name}
+                </Typography>
+                {isShared && (
+                    <Typography
+                        variant="subtitle2"
+                        color="text.secondary"
+                        sx={{ ml: '8px', flex: '1', overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                    >
+                        {t("documentDialog.sharedBy", { owner: file.userId })}
+                    </Typography>
+                )}
+                <IconButton
+                    aria-label={t("common.close")}
+                    onClick={onClose}
+                    edge="end"
+                    size="small"
+                >
+                    <CloseIcon />
+                </IconButton>
+            </DialogTitle>
             <DialogContent 
                 dividers 
                 sx={{ 
-                    height: '80vh', 
+                    height: isMobile ? "60vh" : "80vh", 
                     padding: 0,
                     display: 'flex',
                     flexDirection: 'column'
@@ -65,9 +111,9 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
                         {fetchError}
                     </Alert>
                 )}
-                <Box sx={{ padding: 2, paddingBottom: 1 }}>
+                <Box sx={{ padding: '16px', paddingBottom: '8px' }}>
                     <Typography variant="body2" color="text.secondary">
-                        Przesłane: {uploadDate} {uploadTime}
+                        {t("documentDialog.uploadedAt", { date: uploadDate, time: uploadTime })}
                     </Typography>
                 </Box>
                 {loading ? (

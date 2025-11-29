@@ -107,6 +107,25 @@
       "noItems": "Brak elementów",
       "noItemsFiltered": "Brak elementów spełniających kryteria wyszukiwania."
     }
+  },
+  "common": {
+    "close": "Zamknij"
+  },
+  "documentDialog": {
+    "fetchError": "Błąd przy pobieraniu danych pliku. Spróbuj ponownie.",
+    "uploadedAt": "Przesłane: {{date}} {{time}}",
+    "sharedBy": "Udostępnione przez {{owner}}"
+  },
+  "imageDialog": {
+    "fetchError": "Błąd przy pobieraniu danych pliku. Spróbuj ponownie.",
+    "uploadedAt": "Przesłane: {{date}} {{time}}",
+    "sharedBy": "Udostępnione przez {{owner}}"
+  },
+  "videoPlayer": {
+    "uploadedAt": "Przesłane: {{date}} {{time}}",
+    "sharedBy": "Udostępnione przez: {{owner}}",
+    "quality": "Jakość wideo:",
+    "qualityAuto": "Auto"
   }
 }
 

@@ -107,6 +107,25 @@
       "noItems": "No items",
       "noItemsFiltered": "No items match the search criteria."
     }
+  },
+  "common": {
+    "close": "Close"
+  },
+  "documentDialog": {
+    "fetchError": "An error occurred while fetching file data. Please try again.",
+    "uploadedAt": "Uploaded: {{date}} {{time}}",
+    "sharedBy": "Shared by {{owner}}"
+  },
+  "imageDialog": {
+    "fetchError": "An error occurred while fetching file data. Please try again.",
+    "uploadedAt": "Uploaded: {{date}} {{time}}",
+    "sharedBy": "Shared by {{owner}}"
+  },
+  "videoPlayer": {
+    "uploadedAt": "Uploaded: {{date}} {{time}}",
+    "sharedBy": "Shared by: {{owner}}",
+    "quality": "Video quality:",
+    "qualityAuto": "Auto"
   }
 }
 

@@ -150,6 +150,26 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
     setOpenDeleteFileDialog(true);
   };
 
+  const handleCloseVideoDialog = () => {
+    setOpenVideoDialog(false);
+    setSelectedFile(null);
+  };
+
+  const handleCloseDocumentDialog = () => {
+    setOpenDocumentDialog(false);
+    setSelectedFile(null);
+  };
+
+  const handleCloseImageDialog = () => {
+    setOpenImageDialog(false);
+    setSelectedFile(null);
+  };
+
+  const handleCloseDeleteFileDialog = () => {
+    setOpenDeleteFileDialog(false);
+    setSelectedFile(null);
+  };
+
   const isSharedFile = (file: FileMetadata) => {
     if (!accessToken) return false;
     const currentUserId = decodeUserId(accessToken);
@@ -166,17 +186,41 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
         px: isMobile ? '16px' : '24px',
       }}
     >
-      {selectedFile && openVideoDialog && 
-      (<VideoDialog open={openVideoDialog} onClose={() => {setOpenVideoDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
-      {selectedFile && openDocumentDialog && 
-      (<DocumentDialog open={openDocumentDialog} onClose={() => {setOpenDocumentDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
-      {selectedFile && openImageDialog &&
-      (<ImageDialog open={openImageDialog} onClose={() => {setOpenImageDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
-      {selectedFile && openDeleteFileDialog && 
-      (<DeleteFileDialog open={openDeleteFileDialog} onClose={() => {setOpenDeleteFileDialog(false); setSelectedFile(null)}}
-      onConfirm={handleDeleteFile}
-      file={selectedFile}
-      />)}
+      {selectedFile && openVideoDialog && (
+        <VideoDialog
+          open={openVideoDialog}
+          onClose={handleCloseVideoDialog}
+          file={selectedFile}
+          isShared={isSelectedFileShared}
+        />
+      )}
+
+      {selectedFile && openDocumentDialog && (
+        <DocumentDialog
+          open={openDocumentDialog}
+          onClose={handleCloseDocumentDialog}
+          file={selectedFile}
+          isShared={isSelectedFileShared}
+        />
+      )}
+
+      {selectedFile && openImageDialog && (
+        <ImageDialog
+          open={openImageDialog}
+          onClose={handleCloseImageDialog}
+          file={selectedFile}
+          isShared={isSelectedFileShared}
+        />
+      )}
+
+      {selectedFile && openDeleteFileDialog && (
+        <DeleteFileDialog
+          open={openDeleteFileDialog}
+          onClose={handleCloseDeleteFileDialog}
+          onConfirm={handleDeleteFile}
+          file={selectedFile}
+        />
+      )}
       
       <FileListToolbar
         onFiltersChange={handleFiltersChange}
