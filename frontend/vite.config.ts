@@ -12,18 +12,23 @@ export default defineConfig({
     injectRegister: false,
 
     pwaAssets: {
-      disabled: false,
-      config: true,
+      disabled: true,
+      config: false,
     },
 
     // Manifest injection
     manifest: {
-      name: 'my-pwa-app',
-      short_name: 'pwa-app',
-      description: 'my test pwa app',
+      name: 'Storigo',
+      start_url: '/',
+      description: 'Application to store and share your files securely.',
       theme_color: '#ffffff',
       display: 'minimal-ui',
       icons: [
+        {
+          src: 'favicon.ico',
+          sizes: '48x48',
+          type: 'image/x-icon'
+        },
         {
           src: 'android-chrome-192x192.png',
           sizes: '192x192',

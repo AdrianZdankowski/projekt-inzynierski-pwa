@@ -1,614 +1,317 @@
-import { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
-import { Card, CardContent, CardActions, Typography, IconButton, Button, Box, Chip, 
-  Alert, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Menu,
-  MenuItem, Select, FormControl, TextField } from '@mui/material';
-import { Delete as DeleteIcon, Share as ShareIcon, CloudDone as SharedIcon, ViewModule as GridViewIcon,
-  ViewList as ListViewIcon, Sort as SortIcon, ArrowUpward as ArrowUpIcon, ArrowDownward as ArrowDownIcon,
-  KeyboardArrowLeft as ArrowLeftIcon, KeyboardArrowRight as ArrowRightIcon,
-  Search as SearchIcon } from '@mui/icons-material';
-import { FileService } from '../services/FileService';
-import { FileListResponse, FileListParams } from '../types/FileListTypes';
+import { useState, useEffect, useCallback } from 'react';
+import { Box, Typography, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { FileListResponse, FileListParams, FileListFilters, FileListPaginationState } from '../types/FileListTypes';
 import { FileMetadata } from '../types/FileMetadata';
-import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
 import { useAuth } from '../context/AuthContext';
-import { decodeUserId } from '../lib/decodeUserId';
-import { PaginationControlBox } from '../themes/boxes/PaginationControlBox';
-import { ToolbarBox } from '../themes/boxes/ToolbarBox';
-import { MenuItemBox } from '../themes/boxes/MenuItemBox';
-import { MenuItemContainerBox } from '../themes/boxes/MenuItemContainerBox';
-import { UserIconBox } from '../themes/boxes/UserIconBox';
-import { CardBox } from '../themes/boxes/CardBox';
-import { FileTypeBox } from '../themes/boxes/FileTypeBox';
+import { decodeUserId } from '../utils/decodeUserId';
 import VideoDialog from './VideoDialog';
 import DocumentDialog from './DocumentDialog';
 import ImageDialog from './ImageDialog';
 import DeleteFileDialog from './DeleteFileDialog';
-import { downloadFile } from '../utils/downloadFile';
-import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import FileListToolbar from './FileListToolbar';
+import FileListPagination from './FileListPagination';
+import FileCard from './FileCard';
+import { useFileOperations } from '../hooks/useFileOperations';
+import FileTable from './FileTable';
+import { useNotification } from '../context/NotificationContext';
+import { useTranslation } from 'react-i18next';
 
-const SORT_OPTIONS = [
-  { field: 'fileName', label: 'Nazwa' },
-  { field: 'size', label: 'Rozmiar' },
-  { field: 'uploadTimestamp', label: 'Data dodania' },
-  { field: 'mimeType', label: 'Typ pliku' }
-] as const;
-
-export interface FileListRef {
-  refreshFiles: () => void;
+interface FileListProps {
+  onRefreshReady?: (refreshFn: () => void) => void;
 }
 
-type ViewMode = 'grid' | 'list';
-type SortField = 'fileName' | 'size' | 'uploadTimestamp' | 'mimeType';
-type SortOrder = 'asc' | 'desc';
-
-const FileList = forwardRef<FileListRef>((_, ref) => {
+const FileList = ({ onRefreshReady }: FileListProps) => {
   const [fileListResponse, setFileListResponse] = useState<FileListResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [sortField, setSortField] = useState<SortField>('uploadTimestamp');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
-  const [sortMenuAnchor, setSortMenuAnchor] = useState<null | HTMLElement>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState<FileListFilters>({
+    searchQuery: '',
+    sortField: 'date',
+    sortOrder: 'desc',
+    viewMode: 'grid'
+  });
+  const [pagination, setPagination] = useState<FileListPaginationState>({
+    page: 1,
+    pageSize: 10
+  });
   const [selectedFile, setSelectedFile] = useState<FileMetadata | null>(null);
   const [isSelectedFileShared, setIsSelectedFileShared] = useState<boolean>(false);
   const [openVideoDialog, setOpenVideoDialog] = useState<boolean>(false);
   const [openDocumentDialog, setOpenDocumentDialog] = useState<boolean>(false);
   const [openImageDialog, setOpenImageDialog] = useState<boolean>(false);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const [openDeleteFileDialog, setOpenDeleteFileDialog] = useState<boolean>(false);
 
   const { accessToken } = useAuth();
-  const isOnline = useOnlineStatus();
-
+  const { fetchFilesList, deleteFile } = useFileOperations();
+  const { showNotification } = useNotification();
+  const { t } = useTranslation();
+  const [emptyNotificationShown, setEmptyNotificationShown] = useState(false);
+  
   const fetchFiles = useCallback(async () => {
-    try {
-      const params: FileListParams = {
-        page: currentPage,
-        pageSize: itemsPerPage,
-        sortBy: sortField,
-        sortDirection: sortOrder,
-        q: searchQuery || undefined
-      };
-      
-      const response = await FileService.getUserFiles(params);
+    const params: FileListParams = {
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      sortBy: filters.sortField,
+      sortDirection: filters.sortOrder,
+      q: filters.searchQuery || undefined
+    };
+    
+    const response = await fetchFilesList(params);
+    if (response) {
       setFileListResponse(response);
-      setError(null); // Clear any previous errors on success
-    } catch (err: any) {
-      if (err.response?.status === 401) {
-        setError('Wymagana autoryzacja. Zaloguj się ponownie.');
-      } else if (err.response?.status === 403) {
-        setError('Odmowa dostępu. Nie masz uprawnień do przeglądania plików.');
-      } else {
-        setError('Nie udało się załadować plików. Spróbuj ponownie.');
-      }
-      console.error('Error fetching files:', err);
     }
-  }, [currentPage, itemsPerPage, sortField, sortOrder, searchQuery]);
+  }, [pagination, filters, fetchFilesList]);
   
   useEffect(() => {
     fetchFiles();
   }, [fetchFiles]);
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortOrder('asc');
+  useEffect(() => {
+    if (!fileListResponse) return;
+
+    if (fileListResponse.totalItems === 0) {
+      if (!emptyNotificationShown) {
+        showNotification(
+          filters.searchQuery
+            ? t('fileList.empty.noItemsFiltered')
+            : t('fileList.empty.noItems'),
+          'error'
+        );
+        setEmptyNotificationShown(true);
+      }
+    } else if (emptyNotificationShown) {
+      setEmptyNotificationShown(false);
     }
-    setCurrentPage(1); 
-  };
+  }, [fileListResponse?.totalItems, filters.searchQuery, showNotification, t, emptyNotificationShown]);
 
-  const handleSortMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setSortMenuAnchor(event.currentTarget);
-  };
+  const handleFiltersChange = useCallback((newFilters: FileListFilters) => {
+    setFilters(newFilters);
+    setPagination(prev => ({ ...prev, page: 1 }));
+  }, []);
 
-  const handleSortMenuClose = () => {
-    setSortMenuAnchor(null);
-  };
+  useEffect(() => {
+    const newPageSize = isMobile ? 5 : 10;
+    setPagination(prev => {
+      if (prev.pageSize !== newPageSize) {
+        return { ...prev, pageSize: newPageSize, page: 1 };
+      }
+      return prev;
+    });
+  }, [isMobile]);
+
+  const handlePaginationChange = useCallback((page: number, itemsPerPage: number) => {
+    setPagination(prev => ({ ...prev, page, pageSize: itemsPerPage }));
+  }, []);
 
   const files = fileListResponse?.items || [];
-  const totalPages = fileListResponse?.totalPages || 0;
   const totalItems = fileListResponse?.totalItems || 0;
-  const startIndex = fileListResponse ? (fileListResponse.page - 1) * fileListResponse.pageSize + 1 : 0;
-  const endIndex = fileListResponse ? Math.min(fileListResponse.page * fileListResponse.pageSize, fileListResponse.totalItems) : 0;
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [itemsPerPage]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
-
-  useImperativeHandle(ref, () => ({
-    refreshFiles: fetchFiles
-  }));
+    if (onRefreshReady) {
+      onRefreshReady(fetchFiles);
+    }
+  }, [onRefreshReady, fetchFiles]);
 
   const handleDeleteFile = async (fileId: string) => {
-
-    if (!isOnline) {
-        setError('Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.');
-        return;
-      }
-
-    try {
-      setError(null);
-      await FileService.deleteFile(fileId);
+    const success = await deleteFile(fileId);
+    if (success) {
       setFileListResponse(prev => (
         {
           ...prev!,
           items: prev!.items.filter(f => f.id !== fileId)
         }
       ));
-
-      try {
-        const metadataCache = await caches.open('file-metadata-cache');
-        const metadataKeys = await metadataCache.keys();
-        const metadataKey = metadataKeys.find(req => req.url.includes(`/api/file/${fileId}`));
-        if (metadataKey) {
-          await metadataCache.delete(metadataKey);
-          console.log('Usunięto metadata z cache:', fileId);
-        }
-
-        const blobCache = await caches.open('azure-blob-files');
-        const blobKeys = await blobCache.keys();
-        const blobKey = blobKeys.find(req => req.url.includes(fileId));
-        if (blobKey) {
-          await blobCache.delete(blobKey);
-          console.log('Usunięto blob z cache:', fileId);
-        }
-      } catch (cacheError) {
-        console.warn('Nie udało się usunąć z cache:', cacheError);
-      }
-    } catch (err) {
-      setError("Wystąpił nieoczekiwany błąd przy usuwaniu pliku. Spróbuj ponownie.");
     }
   };
-
-  const handleShareFile = async (fileId: string) => {
-    try {
-      // TODO: Implement proper sharing endpoint in backend
-      // For now, download the file
-      
-      if (!isOnline) {
-        setError('Brak połączenia z internetem. Pobieranie dostępne jest tylko online.');
-        return;
-      }
-      
-      console.log('Share file:', fileId);
-      await downloadFile(fileId);
-    } catch (err: any) {
-      console.error('Error downloading file:', err);
-      setError(err.message || 'Nie udało się pobrać pliku.');
-    }
-  };
-
+ 
   const handleFileClick = (file: FileMetadata, isShared: boolean) => {
-    // TODO: Implement functionality in the future
     console.log('Open file:', file);
+    setSelectedFile(file);
+    setIsSelectedFileShared(isShared);
 
-    // Open video page
-    switch(file.mimeType) {
-      case 'video/mp4':
-        setSelectedFile(file);
-        setIsSelectedFileShared(isShared);
-        setOpenVideoDialog(true);
-        break;
-      case 'application/pdf':
-      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-      case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-      case 'text/plain':
-        setSelectedFile(file);
-        setIsSelectedFileShared(isShared);
-        setOpenDocumentDialog(true);
-        break;
-      case 'image/png':
-      case 'image/jpeg':
-      case 'image/gif':
-        setSelectedFile(file);
-        setIsSelectedFileShared(isShared);
-        setOpenImageDialog(true);
-        break;
+    const mime = file.mimeType;
+
+    if (mime === 'video/mp4') {
+      setOpenVideoDialog(true);
+      return;
     }
+
+    if (
+      mime === 'application/pdf' ||
+      mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      mime === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      mime === 'text/plain'
+    ) {
+      setOpenDocumentDialog(true);
+      return;
+    }
+
+    if (
+      mime === 'image/png' ||
+      mime === 'image/jpeg' ||
+      mime === 'image/gif'
+    ) {
+      setOpenImageDialog(true);
+    }
+  };
+
+  const handleOpenDeleteDialog = (file: FileMetadata) => {
+    setSelectedFile(file);
+    setOpenDeleteFileDialog(true);
+  };
+
+  const handleCloseVideoDialog = () => {
+    setOpenVideoDialog(false);
+    setSelectedFile(null);
+  };
+
+  const handleCloseDocumentDialog = () => {
+    setOpenDocumentDialog(false);
+    setSelectedFile(null);
+  };
+
+  const handleCloseImageDialog = () => {
+    setOpenImageDialog(false);
+    setSelectedFile(null);
+  };
+
+  const handleCloseDeleteFileDialog = () => {
+    setOpenDeleteFileDialog(false);
+    setSelectedFile(null);
   };
 
   const isSharedFile = (file: FileMetadata) => {
     if (!accessToken) return false;
     const currentUserId = decodeUserId(accessToken);
     if (!currentUserId) return false;
-    // File is shared if the owner is different from current user
+
     return file.userId !== currentUserId;
   };
 
-  // if (error) {
-  //   return (
-  //     <Alert severity="error" sx={{ margin: 2 }}>
-  //       {error}
-  //     </Alert>
-  //   );
-  // }
-
   return (
-    <Box sx={{ padding: 3 }}>
-      {error && (
-        <Alert severity="error" sx={{ marginBottom: 2 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-      {selectedFile && openVideoDialog && 
-      (<VideoDialog open={openVideoDialog} onClose={() => {setOpenVideoDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
-      {selectedFile && openDocumentDialog && 
-      (<DocumentDialog open={openDocumentDialog} onClose={() => {setOpenDocumentDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
-      {selectedFile && openImageDialog &&
-      (<ImageDialog open={openImageDialog} onClose={() => {setOpenImageDialog(false); setSelectedFile(null)}} file={selectedFile} isShared={isSelectedFileShared}/>)}
-      {selectedFile && openDeleteFileDialog && 
-      (<DeleteFileDialog open={openDeleteFileDialog} onClose={() => {setOpenDeleteFileDialog(false); setSelectedFile(null)}}
-      onConfirm={handleDeleteFile}
-      file={selectedFile}
-      />)}
-      {/* Toolbar - show if user has files OR if user is searching */}
-      {(totalItems > 0 || searchQuery.length > 0) && (
-        <ToolbarBox>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
-            Pliki ({startIndex}-{endIndex} z {totalItems})
-            {searchQuery && ` (wyszukiwanie: "${searchQuery}")`}
-          </Typography>
-          
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-            {/* Search Input */}
-            <TextField
-              size="small"
-              placeholder="Szukaj plików..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
-              InputProps={{
-                startAdornment: <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }} />,
-              }}
-            />
-
-            {/* Sort Menu */}
-            <Tooltip title="Sortuj">
-              <IconButton onClick={handleSortMenuOpen} size="small" sx={{ color: 'white' }}>
-                <SortIcon />
-              </IconButton>
-            </Tooltip>
-          
-            <Menu
-              anchorEl={sortMenuAnchor}
-              open={Boolean(sortMenuAnchor)}
-              onClose={handleSortMenuClose}
-              PaperProps={{
-                className: 'sort-menu'
-              }}
-              transformOrigin={{ horizontal: 'left', vertical: 'top' }}
-              anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-            >
-              {SORT_OPTIONS.map(({ field, label }) => (
-                <MenuItem 
-                  key={field}
-                  onClick={() => handleSort(field as any)} 
-                  className={`sort-menu-item ${sortField === field ? 'active' : ''}`}
-                >
-                  <MenuItemContainerBox>
-                    <MenuItemBox sx={{ backgroundColor: sortField === field ? '#2e7d32' : 'transparent' }}>
-                      {sortField === field && (sortOrder === 'asc' ? <ArrowUpIcon sx={{ fontSize: 14 }} /> : <ArrowDownIcon sx={{ fontSize: 14 }} />)}
-                    </MenuItemBox>
-                    <Typography 
-                      className={`sort-menu-text ${sortField === field ? 'active' : ''}`}
-                    >
-                      {label}
-                    </Typography>
-                  </MenuItemContainerBox>
-                </MenuItem>
-              ))}
-            </Menu>
-
-            {/* View Toggle */}
-            <Tooltip title={viewMode === 'grid' ? 'Widok listy' : 'Widok kafelków'}>
-              <IconButton 
-                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                size="small"
-                sx={{ color: 'white' }}
-              >
-                {viewMode === 'grid' ? <ListViewIcon /> : <GridViewIcon />}
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </ToolbarBox>
+    <Box
+      sx={{
+        paddingTop: '24px',
+        paddingBottom: '0px',
+        px: isMobile ? '16px' : '24px',
+      }}
+    >
+      {selectedFile && openVideoDialog && (
+        <VideoDialog
+          open={openVideoDialog}
+          onClose={handleCloseVideoDialog}
+          file={selectedFile}
+          isShared={isSelectedFileShared}
+        />
       )}
 
-      {totalItems > 0 && viewMode === 'grid' ? (
-        <CardBox>
+      {selectedFile && openDocumentDialog && (
+        <DocumentDialog
+          open={openDocumentDialog}
+          onClose={handleCloseDocumentDialog}
+          file={selectedFile}
+          isShared={isSelectedFileShared}
+        />
+      )}
+
+      {selectedFile && openImageDialog && (
+        <ImageDialog
+          open={openImageDialog}
+          onClose={handleCloseImageDialog}
+          file={selectedFile}
+          isShared={isSelectedFileShared}
+        />
+      )}
+
+      {selectedFile && openDeleteFileDialog && (
+        <DeleteFileDialog
+          open={openDeleteFileDialog}
+          onClose={handleCloseDeleteFileDialog}
+          onConfirm={handleDeleteFile}
+          file={selectedFile}
+        />
+      )}
+      
+      <FileListToolbar
+        onFiltersChange={handleFiltersChange}
+      />
+
+      {totalItems > 0 && (filters.viewMode === 'grid' || !isDesktop) ? (
+        <Box sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: '24px',
+          maxWidth: '1200px',
+          margin: '0 auto',
+        }}>
         {files.map((file) => {
-          const FileIcon = getFileIcon(file.mimeType);
-          const fileColor = getFileTypeColor(file.mimeType);
           const isShared = isSharedFile(file);
 
           return (
-            <Box key={file.id}>
-              <Card
-                className="file-card"
-                onClick={() => handleFileClick(file, isShared)}
-              >
-                {/* Delete button in top-right corner */}
-                <IconButton
-                  className="delete-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!isOnline) {
-                      setError('Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.');
-                      return;
-                    }
-                    setSelectedFile(file);
-                    setOpenDeleteFileDialog(true);
-                  }}
-                  size="small"
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-
-                {/* Shared indicator */}
-                {isShared && (
-                  <Chip
-                    icon={<SharedIcon />}
-                    label="Shared"
-                    size="small"
-                    className="shared-chip"
-                  />
-                )}
-
-                <CardContent className="file-card-content">
-                  {/* File type icon */}
-                  <FileTypeBox>
-                    <FileIcon
-                      sx={{
-                        fontSize: 64,
-                        color: fileColor
-                      }}
-                    />
-                  </FileTypeBox>
-
-                  {/* File name */}
-                  <Typography
-                    component="div"
-                    className="file-name"
-                    title={file.fileName}
-                  >
-                    {file.fileName}
-                  </Typography>
-
-                  {/* File size and date */}
-                  <Box sx={{ marginBottom: 1 }}>
-                    <Typography className="file-size">
-                      {formatFileSize(file.size)}
-                    </Typography>
-                    <Typography className="file-date">
-                      {formatDate(file.uploadTimestamp)}
-                    </Typography>
-                  </Box>
-                </CardContent>  
-
-                <CardActions className="file-card-actions">
-                  <Tooltip title="Udostępnij plik">
-                    <Button
-                      variant="outlined"
-                      startIcon={<ShareIcon />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedFile(file);
-                        handleShareFile(file.id);
-                      }}
-                      size="small"
-                      className="share-button"
-                    >
-                      UDOSTĘPNIJ
-                    </Button>
-                  </Tooltip>
-                </CardActions>
-              </Card>
+            <Box
+              key={file.id}
+              sx={{
+              display: 'flex',
+              justifyContent: 'center',
+                width: {
+                  xs: '100%',                
+                  md: 'calc((100% - 24px) / 2)',               
+                  lg: 'calc((100% - 48px) / 3)',
+                },
+                maxWidth: {
+                  xs: '100%',
+                  md: '400px',
+                  lg: '320px',
+                },
+              }}
+            >
+              <FileCard
+                file={file}
+                isShared={isShared}
+                onFileClick={handleFileClick}
+                onDeleteDialogOpen={handleOpenDeleteDialog}
+              />
             </Box>
           );
         })}
-        </CardBox>
-      ) : totalItems > 0 && files.length > 0 ? (
-        /* List View */
-        <TableContainer 
-          component={Paper} 
-          className="files-table-container"
-        >
-          <Table>
-            <TableHead>
-              <TableRow className="table-header-row">
-                <TableCell className="table-header-cell">Nazwa</TableCell>
-                <TableCell className="table-header-cell-center">Właściciel</TableCell>
-                <TableCell className="table-header-cell-center">Data modyfikacji</TableCell>
-                <TableCell className="table-header-cell-center">Rozmiar pliku</TableCell>
-                <TableCell align="center" className="table-header-cell-center">Akcje</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {files.map((file, index) => {
-                const FileIcon = getFileIcon(file.mimeType);
-                const fileColor = getFileTypeColor(file.mimeType);
-                const isShared = isSharedFile(file);
-                const isEvenRow = index % 2 === 0;
-
-                return (
-                  <TableRow 
-                    key={file.id}
-                    hover
-                    className={isEvenRow ? 'table-body-row' : 'table-body-row-odd'}
-                    onClick={() => handleFileClick(file, isShared)}
-                  >
-                    <TableCell className="table-body-cell">
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <FileIcon sx={{ color: fileColor, fontSize: 24 }} />
-                        {isShared && <SharedIcon sx={{ fontSize: 18, color: '#4CAF50' }} />}
-                        <Typography className="table-file-name">
-                          {file.fileName}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell className="table-body-cell-center">
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
-                        <UserIconBox>
-                          {file.ownerName.charAt(0).toUpperCase()}
-                        </UserIconBox>
-                        <Typography className="table-owner-name">
-                          {file.ownerName}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell className="table-body-cell-center">
-                      <Typography className="table-date">
-                        {formatDate(file.uploadTimestamp)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell className="table-body-cell-center">
-                      <Typography className="table-size">
-                        {formatFileSize(file.size)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell align="center" className="table-actions-cell">
-                      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                        <Tooltip title="Udostępnij">
-                          <IconButton
-                            size="small"
-                            className="table-share-button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleShareFile(file.id);
-                            }}
-                          >
-                            <ShareIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Usuń">
-                          <IconButton
-                            size="small"
-                            className="table-delete-button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (!isOnline) {
-                                setError('Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.');
-                                return;
-                              }
-                              setSelectedFile(file);
-                              setOpenDeleteFileDialog(true);
-                            }}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        </Box>
+      ) : totalItems > 0 && isDesktop ? (
+        <FileTable
+          files={files}
+          isSharedFile={isSharedFile}
+          onFileClick={handleFileClick}
+          onDeleteDialogOpen={handleOpenDeleteDialog}
+        />
       ) : null}
 
       {totalItems === 0 && (
-        <Box sx={{ marginTop: 4 }}>
-          <Alert 
-            severity="info" 
-            className="empty-files-alert"
+        <Box sx={{ marginTop: '16px' }}>
+          <Typography
+            align="center"
+            sx={{
+              fontWeight: '600',
+              color: filters.searchQuery ? 'error.main' : 'text.secondary',
+            }}
           >
-            <Typography className="alert-title">
-              {searchQuery ? 'Nie znaleziono plików' : 'Nie masz żadnych plików obecnie'}
-            </Typography>
-            <Typography className="alert-subtitle">
-              {searchQuery ? 'Spróbuj zmienić kryteria wyszukiwania' : 'Prześlij pliki, aby rozpocząć korzystanie z aplikacji'}
-            </Typography>
-          </Alert>
+            {filters.searchQuery
+              ? t('fileList.empty.noItemsFiltered')
+              : t('fileList.empty.noItems')}
+          </Typography>
         </Box>
       )}
 
-      {/* Pagination Controls */}
-      {totalItems > 0 && (
-        <PaginationControlBox>
-          {/* Left spacer */}
-          <Box sx={{ width: 80 }} />
-          
-          {/* Center pagination - only show if more than 1 page */}
-          {totalPages > 1 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              {/* Previous Page Button */}
-              <IconButton
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={!fileListResponse?.hasPrev}
-                className={`pagination-nav ${!fileListResponse?.hasPrev ? 'disabled' : ''}`}
-              >
-                <ArrowLeftIcon />
-              </IconButton>
-
-                {/* Page Numbers */}
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                    // Show first page, last page, current page, and pages around current page
-                    const shouldShow = 
-                      page === 1 || 
-                      page === totalPages || 
-                      Math.abs(page - currentPage) <= 1;
-                    
-                    if (!shouldShow) {
-                      // Show ellipsis for gaps
-                      if (page === 2 && currentPage > 4) {
-                        return <Typography key={`ellipsis-${page}`} sx={{ px: 1 }}>...</Typography>;
-                      }
-                      if (page === totalPages - 1 && currentPage < totalPages - 3) {
-                        return <Typography key={`ellipsis-${page}`} sx={{ px: 1 }}>...</Typography>;
-                      }
-                      return null;
-                    }
-
-                  return (
-                    <Button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      variant={currentPage === page ? 'contained' : 'outlined'}
-                      size="small"
-                      className={currentPage === page ? 'pagination-active' : 'pagination-inactive'}
-                    >
-                      {page}
-                    </Button>
-                  );
-                  })}
-                </Box>
-
-              {/* Next Page Button */}
-              <IconButton
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={!fileListResponse?.hasNext}
-                className={`pagination-nav ${!fileListResponse?.hasNext ? 'disabled' : ''}`}
-              >
-                <ArrowRightIcon />
-              </IconButton>
-              </Box>
-            )}
-
-          {/* Items per page selector - Always visible on the right */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <FormControl size="small" sx={{ minWidth: 80 }}>
-                <Select
-                  value={itemsPerPage}
-                  onChange={(e) => setItemsPerPage(Number(e.target.value))}>
-                <MenuItem value={5}>5</MenuItem>
-                <MenuItem value={10}>10</MenuItem>
-                <MenuItem value={15}>15</MenuItem>
-                <MenuItem value={20}>20</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </PaginationControlBox>
-      )}
+      <FileListPagination
+        totalItems={totalItems}
+        page={pagination.page}
+        pageSize={pagination.pageSize}
+        onPaginationChange={handlePaginationChange}
+      />
     </Box>
   );
-});
+};
 
 export default FileList;

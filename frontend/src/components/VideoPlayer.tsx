@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import Hls, { LoaderCallbacks, LoaderConfiguration, LoaderContext } from "hls.js";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
 
 interface VideoPlayerProps {
     src: string;
@@ -30,6 +31,7 @@ const VideoPlayer = ({src, fileName, ownerName, uploadTimestamp, isShared}: Vide
     const autoQuality = -1;
 
     const {accessToken} = useAuth();
+    const { t } = useTranslation();
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
@@ -116,30 +118,48 @@ const VideoPlayer = ({src, fileName, ownerName, uploadTimestamp, isShared}: Vide
     };
 
     return (
-        <Container maxWidth="lg" sx={{mt: 4}}>
+        <Container 
+            maxWidth="lg" 
+            sx={{
+                mt: '16px',
+                px: { xs: '0', sm: '16px' },
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+                boxSizing: "border-box",
+            }}
+        >
             {error && (
-            <Box sx={{ mb: 2 }}>
-                <Alert severity="error" onClose={() => setError('')}>
-                    {error}
-                </Alert>
-            </Box>
-        )}
+                <Box sx={{ mb: '8px' }}>
+                    <Alert severity="error" onClose={() => setError('')}>
+                        {error}
+                    </Alert>
+                </Box>
+            )}
             <video
                 ref={videoRef}
                 controls
-                style={{width: "100%", aspectRatio: "16 / 9"}}
+                style={{ width: "100%", maxHeight: "60vh", aspectRatio: "16 / 9" }}
             />
-            <Box sx={{display: "flex", justifyContent: "space-between", flexDirection: {xs: "column", sm: "row"}}}>
+            <Box
+                sx={{
+                    display: "flex", 
+                    justifyContent: "space-between", 
+                    flexDirection: {xs: "column", sm: "row"},
+                    mt: '16px',
+                    gap: '16px',
+                }}
+            >
                 <Box sx={{display: "flex", flexDirection: "column"}}>
                     <Typography variant="h6" gutterBottom mt={1}>
                         {fileName}
                     </Typography>
                     <Typography variant="body2" gutterBottom>
-                    Przesłane: {uploadDate} {uploadTime}
-                </Typography>
+                        {t("videoPlayer.uploadedAt", { date: uploadDate, time: uploadTime })}
+                    </Typography>
                 {isShared && 
                     <Typography variant="subtitle1" gutterBottom>
-                        Udostępnione przez: {ownerName}
+                        {t("videoPlayer.sharedBy", { owner: ownerName })}
                     </Typography>
                 }
                 </Box>
@@ -151,7 +171,7 @@ const VideoPlayer = ({src, fileName, ownerName, uploadTimestamp, isShared}: Vide
                     alignItems: "center"
                     }}>
                     <Typography variant="subtitle1" mt={1}>
-                        Jakość wideo: 
+                        {t("videoPlayer.quality")}
                     </Typography>
                         <FormControl size="small">
                             <Select
@@ -160,7 +180,7 @@ const VideoPlayer = ({src, fileName, ownerName, uploadTimestamp, isShared}: Vide
                                 onChange={(e) => changeQuality(Number(e.target.value))}
                             >
                                 <MenuItem value={autoQuality}
-                                >Auto</MenuItem>
+                                >{t("videoPlayer.qualityAuto")}</MenuItem>
                                 {levels.map(lvl => (
                                     <MenuItem value={lvl.index}>
                                     {`${lvl.height}p`}
