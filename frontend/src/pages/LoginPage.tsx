@@ -8,6 +8,7 @@ import LoginForm from '../components/form/LoginForm';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { useTranslation } from 'react-i18next';
+import Logo from '../components/Logo';
 
 const LoginPage = () => {
   const { logoutReason } = useAuth();
@@ -34,6 +35,21 @@ const LoginPage = () => {
         position: 'relative'
       }}
     >
+      <Box
+        sx={{
+          position: 'absolute',
+          top: {
+            xs: '20px',
+            sm: '16px'
+          },
+          left: '16px',
+          zIndex: '1000',
+          display: 'flex',
+          alignItems: 'center'
+        }}
+      >
+        <Logo />
+      </Box>
       <Box
         sx={{
           position: 'absolute',

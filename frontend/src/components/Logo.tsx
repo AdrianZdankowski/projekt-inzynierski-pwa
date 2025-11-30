@@ -1,6 +1,8 @@
-import { Typography } from '@mui/material';
+import { Typography, useTheme } from '@mui/material';
 
 const Logo = () => {
+  const theme = useTheme();
+  
   return (
     <Typography
       variant="h3"
@@ -16,6 +18,10 @@ const Logo = () => {
         userSelect: 'none',
         display: 'inline-block',
         filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.2))',
+        fontSize: '1.75rem',
+        [theme.breakpoints.up('sm')]: {
+          fontSize: '3rem',
+        },
       }}
     >
       Storigo

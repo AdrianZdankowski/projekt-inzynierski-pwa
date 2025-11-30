@@ -1,6 +1,7 @@
 import { Container, Box } from '@mui/material';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import RegisterForm from '../components/form/RegisterForm';
+import Logo from '../components/Logo';
 
 const RegisterPage = () => {
   return (
@@ -17,6 +18,21 @@ const RegisterPage = () => {
         position: 'relative',
       }}
     >
+      <Box
+        sx={{
+          position: 'absolute',
+          top: {
+            xs: '20px',
+            sm: '16px'
+          },
+          left: '16px',
+          zIndex: '1000',
+          display: 'flex',
+          alignItems: 'center'
+        }}
+      >
+        <Logo />
+      </Box>
       <Box
         sx={{
           position: 'absolute',
