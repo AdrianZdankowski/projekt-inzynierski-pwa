@@ -189,8 +189,8 @@ namespace backend.Controllers
                     // Convert file if a strategy is available for this MIME type
                     try
                     {
-                        string tempDirectory = Path.Combine(@"C:\temp", dto.FileId.ToString().Replace(".", ""), DateTime.Now.ToString("yyyyMMdd_HHmmss"));
-                        await fileConverter.ConvertFileAsync(tempDirectory, file, userId);
+                        string tempDirectory = Path.Combine(Path.GetTempPath(), dto.FileId.ToString().Replace(".", ""), DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                        await fileConverter.CreateHlsPlaylistAsync(tempDirectory, file, userId);
                     }
                     catch (NotSupportedException)
                     {

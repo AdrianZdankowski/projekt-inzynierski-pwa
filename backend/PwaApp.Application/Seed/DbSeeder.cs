@@ -33,12 +33,12 @@ public static class DbSeeder
 
             var video = new WebApplication1.File
             {
-                id = Guid.Parse("C79D1220-76BE-4779-BF70-FB74ADC52E22"),
+                id = Guid.Parse("4138879d-1bd0-407a-8d2a-6906a1c20320"),
                 UserId = Guid.Parse("0EDDE0A7-4DBE-40B4-7834-08DDFD222C2B"),
                 FileName = "gameplay.mp4",
                 MimeType = "video/mp4",
                 Size = 4294967296,
-                BlobName = "0EDDE0A7-4DBE-40B4-7834-08DDFD222C2B/C79D1220-76BE-4779-BF70-FB74ADC52E22/file_example_MP4_1920_18MG.mp4",
+                BlobName = "0EDDE0A7-4DBE-40B4-7834-08DDFD222C2B/4138879d-1bd0-407a-8d2a-6906a1c20320/gameplay.mp4",
                 UploadTimestamp = DateTime.Now,
                 Status = FileStatus.Uploaded,
                 Checksum = "16PezbYoDrDvOgWaw16g7g=="
