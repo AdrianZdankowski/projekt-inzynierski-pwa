@@ -18,7 +18,7 @@ import { Public as PublicIcon, Logout as LogoutIcon } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../api/axiosInstance';
-import { decodeUsername } from '../lib/decodeUsername';
+import { decodeUsername } from '../utils/decodeUsername';
 import SelectLanguageDialog from './SelectLanguageDialog';
 import ModeSwitcher from './ModeSwitcher';
 import ConnectionStatus from './ConnectionStatus';

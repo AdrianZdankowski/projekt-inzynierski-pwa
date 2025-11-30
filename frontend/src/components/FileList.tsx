@@ -4,7 +4,7 @@ import { useTheme } from '@mui/material/styles';
 import { FileListResponse, FileListParams, FileListFilters, FileListPaginationState } from '../types/FileListTypes';
 import { FileMetadata } from '../types/FileMetadata';
 import { useAuth } from '../context/AuthContext';
-import { decodeUserId } from '../lib/decodeUserId';
+import { decodeUserId } from '../utils/decodeUserId';
 import VideoDialog from './VideoDialog';
 import DocumentDialog from './DocumentDialog';
 import ImageDialog from './ImageDialog';
