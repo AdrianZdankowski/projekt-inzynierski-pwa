@@ -1,43 +1,32 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { Box, Pagination, MenuItem, Select, FormControl, useTheme, useMediaQuery } from '@mui/material';
 import { ITEMS_PER_PAGE_OPTIONS } from '../types/FilterTypes';
 
 interface FileListPaginationProps {
   totalItems: number;
+  page: number;
+  pageSize: number;
   onPaginationChange: (page: number, itemsPerPage: number) => void;
 }
 
 const FileListPagination = ({
   totalItems,
+  page,
+  pageSize,
   onPaginationChange
 }: FileListPaginationProps) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(isMobile ? 5 : 10);
 
-  const handlePageChange = useCallback((_: React.ChangeEvent<unknown>, page: number) => {
-    setCurrentPage(page);
-  }, []);
+  const handlePageChange = useCallback((_: React.ChangeEvent<unknown>, newPage: number) => {
+    onPaginationChange(newPage, pageSize);
+  }, [pageSize, onPaginationChange]);
 
   const handleItemsPerPageChange = useCallback((value: number) => {
-    setItemsPerPage(value);
-    setCurrentPage(1);
-  }, []);
+    onPaginationChange(1, value);
+  }, [onPaginationChange]);
 
-  useEffect(() => {
-    const newItemsPerPage = isMobile ? 5 : 10;
-    if (itemsPerPage !== newItemsPerPage) {
-      setItemsPerPage(newItemsPerPage);
-      setCurrentPage(1);
-    }
-  }, [isMobile]);
-
-  useEffect(() => {
-    onPaginationChange(currentPage, itemsPerPage);
-  }, [currentPage, itemsPerPage, onPaginationChange]);
-
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const totalPages = Math.ceil(totalItems / pageSize);
 
   return (
     <Box sx={{
@@ -55,7 +44,7 @@ const FileListPagination = ({
         display: { xs: 'none', sm: 'block' }
       }} />
       
-      {totalPages > 1 && (
+      {totalPages > 0 && (
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'center', 
@@ -63,7 +52,7 @@ const FileListPagination = ({
         }}>
           <Pagination
             count={totalPages}
-            page={currentPage}
+            page={page}
             onChange={handlePageChange}
             variant="outlined"
             shape="rounded"
@@ -81,7 +70,7 @@ const FileListPagination = ({
       }}>
         <FormControl size="small" sx={{ minWidth: '80px' }}>
           <Select
-            value={itemsPerPage}
+            value={pageSize}
             onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
             MenuProps={{
               anchorOrigin: {

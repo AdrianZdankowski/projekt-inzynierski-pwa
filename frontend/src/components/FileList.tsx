@@ -89,10 +89,21 @@ const FileList = ({ onRefreshReady }: FileListProps) => {
 
   const handleFiltersChange = useCallback((newFilters: FileListFilters) => {
     setFilters(newFilters);
+    setPagination(prev => ({ ...prev, page: 1 }));
   }, []);
 
+  useEffect(() => {
+    const newPageSize = isMobile ? 5 : 10;
+    setPagination(prev => {
+      if (prev.pageSize !== newPageSize) {
+        return { ...prev, pageSize: newPageSize, page: 1 };
+      }
+      return prev;
+    });
+  }, [isMobile]);
+
   const handlePaginationChange = useCallback((page: number, itemsPerPage: number) => {
-    setPagination({ page, pageSize: itemsPerPage });
+    setPagination(prev => ({ ...prev, page, pageSize: itemsPerPage }));
   }, []);
 
   const files = fileListResponse?.items || [];
@@ -295,6 +306,8 @@ const FileList = ({ onRefreshReady }: FileListProps) => {
 
       <FileListPagination
         totalItems={totalItems}
+        page={pagination.page}
+        pageSize={pagination.pageSize}
         onPaginationChange={handlePaginationChange}
       />
     </Box>
