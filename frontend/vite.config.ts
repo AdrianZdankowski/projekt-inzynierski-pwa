@@ -12,8 +12,8 @@ export default defineConfig({
     injectRegister: false,
 
     pwaAssets: {
-      disabled: false,
-      config: true,
+      disabled: true,
+      config: false,
     },
 
     // Manifest injection
@@ -24,6 +24,11 @@ export default defineConfig({
       theme_color: '#ffffff',
       display: 'minimal-ui',
       icons: [
+        {
+          src: 'favicon.ico',
+          sizes: '48x48',
+          type: 'image/x-icon'
+        },
         {
           src: 'android-chrome-192x192.png',
           sizes: '192x192',

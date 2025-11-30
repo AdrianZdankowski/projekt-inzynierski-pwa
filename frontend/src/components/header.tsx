@@ -22,6 +22,7 @@ import { decodeUsername } from '../lib/decodeUsername';
 import SelectLanguageDialog from './SelectLanguageDialog';
 import ModeSwitcher from './ModeSwitcher';
 import ConnectionStatus from './ConnectionStatus';
+import Logo from './Logo';
 
 const Header = () => {
     const {isAuthenticated, logout, accessToken} = useAuth();
@@ -76,7 +77,9 @@ const Header = () => {
                   },
               }}
             >
-              <Box sx={{ flex: 1 }} />
+              <Box sx={{ flex: 1 }}>
+                <Logo />
+              </Box>
       
               {isAuthenticated && username ? (
                 <Stack direction="row" spacing={1} alignItems="center">
