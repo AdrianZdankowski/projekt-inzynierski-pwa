@@ -536,14 +536,6 @@ namespace backend.Controllers
                 return Unauthorized("User does not have access to this file");
             }
 
-            // If file is in a folder, check if user has Update permission for that folder
-            if (file.ParentFolder != null)
-            {
-                if (!await fileAccessValidator.ValidateFolderPermissions(userId, file.ParentFolder, WebApplication1.PermissionFlags.Update))
-                {
-                    return Unauthorized("User does not have permission to update files in this folder");
-                }
-            }
 
             // Only file owner can change the folder
             bool isOwner = file.UserId == userId;
