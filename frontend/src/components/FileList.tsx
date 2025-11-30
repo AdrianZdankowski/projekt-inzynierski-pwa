@@ -1,4 +1,4 @@
-import { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { FileListResponse, FileListParams, FileListFilters, FileListPaginationState } from '../types/FileListTypes';
@@ -17,11 +17,11 @@ import FileTable from './FileTable';
 import { useNotification } from '../context/NotificationContext';
 import { useTranslation } from 'react-i18next';
 
-export interface FileListRef {
-  refreshFiles: () => void;
+interface FileListProps {
+  onRefreshReady?: (refreshFn: () => void) => void;
 }
 
-const FileList = forwardRef<FileListRef>((_, ref) => {
+const FileList = ({ onRefreshReady }: FileListProps) => {
   const [fileListResponse, setFileListResponse] = useState<FileListResponse | null>(null);
   const [filters, setFilters] = useState<FileListFilters>({
     searchQuery: '',
@@ -98,9 +98,11 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
   const files = fileListResponse?.items || [];
   const totalItems = fileListResponse?.totalItems || 0;
 
-  useImperativeHandle(ref, () => ({
-    refreshFiles: fetchFiles
-  }));
+  useEffect(() => {
+    if (onRefreshReady) {
+      onRefreshReady(fetchFiles);
+    }
+  }, [onRefreshReady, fetchFiles]);
 
   const handleDeleteFile = async (fileId: string) => {
     const success = await deleteFile(fileId);
@@ -297,6 +299,6 @@ const FileList = forwardRef<FileListRef>((_, ref) => {
       />
     </Box>
   );
-});
+};
 
 export default FileList;

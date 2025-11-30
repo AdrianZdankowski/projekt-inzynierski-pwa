@@ -1,12 +1,12 @@
-import { useState, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { Container, Fab } from '@mui/material';
-import FileList, { FileListRef } from "../components/FileList";
+import FileList from "../components/FileList";
 import FileUploadModal from "../components/FileUploadModal";
 import { useTheme } from '@mui/material/styles';
 
 const UserFilesPage = () => {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-    const fileListRef = useRef<FileListRef>(null);
+    const [refreshFiles, setRefreshFiles] = useState<(() => void) | null>(null);
     const theme = useTheme();
 
     const handleOpenUploadModal = () => {
@@ -17,9 +17,13 @@ const UserFilesPage = () => {
         setIsUploadModalOpen(false);
     };
 
-    const handleFileUploaded = () => {
-        fileListRef.current?.refreshFiles();
-    };
+    const handleFileUploaded = useCallback(() => {
+        refreshFiles?.();
+    }, [refreshFiles]);
+
+    const handleRefreshReady = useCallback((refreshFn: () => void) => {
+        setRefreshFiles(() => refreshFn);
+    }, []);
 
     return (
         <Container
@@ -31,7 +35,7 @@ const UserFilesPage = () => {
                 paddingBottom: '24px'
             }}
         >
-                <FileList ref={fileListRef} />
+                <FileList onRefreshReady={handleRefreshReady} />
                 
             <Fab
                 color="primary"
