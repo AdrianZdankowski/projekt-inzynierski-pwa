@@ -24,6 +24,24 @@ namespace backend.Services
                 return true;
             }
 
+            // If file is in a folder, check if user has Read permission for that folder
+            // Load ParentFolder if not already loaded
+            if (file.ParentFolder == null)
+            {
+                var fileWithFolder = await context.Files
+                    .Include(f => f.ParentFolder)
+                    .FirstOrDefaultAsync(f => f.id == file.id);
+                
+                if (fileWithFolder?.ParentFolder != null)
+                {
+                    return await ValidateFolderPermissions(userId, fileWithFolder.ParentFolder, WebApplication1.PermissionFlags.Read);
+                }
+            }
+            else
+            {
+                return await ValidateFolderPermissions(userId, file.ParentFolder, WebApplication1.PermissionFlags.Read);
+            }
+
             return false;
         }
 
