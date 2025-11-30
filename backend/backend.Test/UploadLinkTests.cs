@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using NUnit.Framework;
+using PwaApp.Application.Interfaces;
 using WebApplication1;
 
 namespace backend.Test
@@ -28,7 +29,7 @@ namespace backend.Test
         {
             fileUploadServiceMock = new Mock<IFileUploadService>();
             fileAccessValidator = new FileAccessValidator(appDbContext, configuration);
-            fileController = new FileController(azureBlobServiceMock.Object, fileUploadServiceMock.Object, appDbContext, configuration, new FileConverter(configuration, azureBlobServiceMock.Object), fileAccessValidator);
+            fileController = new FileController(azureBlobServiceMock.Object, fileUploadServiceMock.Object, appDbContext, configuration, new FileConverter(new List<IFileConversionStrategy> { new Mp4HlsConversionStrategy(azureBlobServiceMock.Object) }), fileAccessValidator);
 
             //setup Azure blob service mock for upload link scenarios
             azureBlobServiceMock.Setup(s => s.BuildUserScopedBlobName(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>()))
@@ -146,7 +147,7 @@ namespace backend.Test
                 fileUploadServiceMock.Object,
                 appDbContext,
                 configuration,
-                new FileConverter(configuration, azureBlobServiceMock.Object),
+                new FileConverter(new List<IFileConversionStrategy> { new Mp4HlsConversionStrategy(azureBlobServiceMock.Object) }),
                 fileAccessValidator);
 
             var request = new CreateUploadLinkRequest

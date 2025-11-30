@@ -1,168 +1,81 @@
-import { useState, useEffect } from 'react';
-import {Link, useNavigate, useLocation} from 'react-router-dom';
+import { useEffect } from 'react';
 import {
   Container,
-  TextField,
-  Button,
-  Typography,
   Box,
-  Paper,
-  Alert
 } from '@mui/material';
-import axiosInstance from '../api/axiosInstance';
+import LanguageSwitcher from '../components/LanguageSwitcher';
+import LoginForm from '../components/form/LoginForm';
 import { useAuth } from '../context/AuthContext';
-
-interface LocationState {
-  registered?: boolean;
-  loggedOutDueToNetworkError?: boolean;
-}
-
+import { useNotification } from '../context/NotificationContext';
+import { useTranslation } from 'react-i18next';
+import Logo from '../components/Logo';
 
 const LoginPage = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-
-  const [usernameError, setUsernameError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [loginError, setLoginError] = useState('');
-
-  const location = useLocation();
-  const state =  location.state as LocationState | null;
-  const [showAlert, setShowAlert] = useState<boolean>(
-    () => !!state?.registered
-  );
- 
-  const navigate = useNavigate();
-
-  const {login, logoutReason} = useAuth();
-
-  const [showNetworkAlert, setShowNetworkAlert] = useState<boolean>(
-    () => logoutReason === "network"
-  );
+  const { logoutReason } = useAuth();
+  const { showNotification } = useNotification();
+  const { t } = useTranslation();
 
   useEffect(() => {
-        if (state?.registered) {
-            navigate('.',{replace: true, state: {} });
-        }
-  }, []);
-
-  // walidacja nazwy użytkownika
-  const validateUsername = (name: string) => {
-    // maks. 32 znaki alfanumeryczne (bez spacji, znaków specjalnych)
-    const nameRegex = /^[a-zA-Z0-9_.-]{3,32}$/;
-    const errorMessage = "Nazwa użytkownika może mieć maksymalnie 32 znaki alfanumeryczne!"
-    return nameRegex.test(name) ? "" : errorMessage;
-  }
-
-  // walidacja hasła
-  const validatePassword = (pass: string) => {
-    // min. 8 znaków, wielka i mała litera, liczba i znak specjalny
-    const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
-    const errorMessage = "Hasło musi zawierać min. 8 znaków, wielką i małą literę, liczbę oraz znak specjalny!";
-    return passRegex.test(pass) ? "" : errorMessage;
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    setLoginError('');
-    setUsernameError('');
-    setPasswordError('');
-
-    const passwordError = validatePassword(password);
-    const nameError = validateUsername(username);
-
-    setPasswordError(passwordError);
-    setUsernameError(nameError);
-
-    if (passwordError || nameError) return;
-
-    try {
-      const result = await axiosInstance.post('/auth/login', {username, password});
-      const accessToken = result.data.accessToken;
-      login(accessToken);
-      navigate('/', {
-        replace: true
-      })
+    if (logoutReason === "network") {
+      showNotification(t('login.connectionLost'), 'error');
     }
-    catch (error: any) {
-      console.error(error);
-      
-      if (error.response?.status === 400) {
-        setLoginError('Użytkownik o podanej nazwie oraz wprowadzonym haśle nie istnieje. Spróbuj ponownie.');
-      } else {
-        setLoginError('Wystąpił błąd podczas logowania. Spróbuj ponownie.');
-      }
-    }
-  };
+  }, [logoutReason, showNotification, t]);
 
   return (
-    <Container>
-      <Paper elevation={3}>
-
-        {showAlert && 
-            <Alert variant="filled" 
-            severity="success" 
-            onClose={() => setShowAlert(false)}>
-              'Konto utworzone! Zaloguj się.'
-            </Alert>}
-
-        {showNetworkAlert && 
-            <Alert variant="filled" 
-            severity="error" 
-            onClose={() => setShowNetworkAlert(false)}>
-              Utracono połączenie z serwerem.
-              Zaloguj się ponownie, gdy połączenie zostanie przywrócone.
-            </Alert>}
-
-        {loginError && 
-            <Alert variant="filled" 
-            severity="error" 
-            onClose={() => setLoginError('')}>
-              {loginError}
-            </Alert>}
-
-        <Typography variant="h5" gutterBottom>
-          Zaloguj się
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            label="Nazwa użytkownika"
-            type="text"
-            margin="normal"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            error={!!usernameError}
-            helperText= {usernameError}
-            required
-          />
-          <TextField
-            fullWidth
-            label="Hasło"
-            type="password"
-            margin="normal"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            error={!!passwordError}
-            helperText={passwordError}
-            required
-          />
-          <Button
-            type="submit"
-            variant="contained"
-          >
-            Zaloguj
-          </Button>
-
-          <Box
-          sx={{textAlign: 'center', mt: 2, color: 'white'}}
-          >
-            <Link className='clean-link' to="/register">Nie masz konta? Zarejestruj się!</Link>
-          </Box>
-        </Box>
-      </Paper>
-    </Container>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: {
+          xs: 3,
+          sm: 4
+        },
+        position: 'relative'
+      }}
+    >
+      <Box
+        sx={{
+          position: 'absolute',
+          top: {
+            xs: '20px',
+            sm: '16px'
+          },
+          left: '16px',
+          zIndex: '1000',
+          display: 'flex',
+          alignItems: 'center'
+        }}
+      >
+        <Logo />
+      </Box>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '16px',
+          right: '16px',
+          zIndex: '1000'
+        }}
+      >
+        <LanguageSwitcher isCompactModeAvailable />
+      </Box>
+      <Container
+        sx={{
+          width: '100%',
+          maxWidth: {
+            xs: '100%',
+            sm: '600px'
+          },
+          padding: {
+            xs:  '16px',
+            sm: '0px'
+          },
+        }}
+      >
+        <LoginForm />
+      </Container>
+    </Box>
   );
 };
 

@@ -20,8 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\backend\backend.csproj" />
-    <ProjectReference Include="..\DomainModel\DomainModel.fsproj" />
+    <ProjectReference Include="..\PwaApp.Application\PwaApp.Application.csproj" />
+    <ProjectReference Include="..\PwaApp.Domain\PwaApp.Domain.fsproj" />
+    <ProjectReference Include="..\PwaApp.Infrastructure\PwaApp.Infrastructure.csproj" />
+    <ProjectReference Include="..\PwaApp.Web\PwaApp.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>

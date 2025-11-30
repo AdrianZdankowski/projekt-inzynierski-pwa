@@ -1,13 +1,12 @@
-body {
+html, body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  min-height: 100vh;
+  -ms-overflow-style: none;  /* Edge */
+  scrollbar-width: none;     /* Firefox */
 }
 
-:root {
-  background-color: #2C3A47;
-  margin: 0;
-}
 
 .clean-link {
   text-decoration: none;

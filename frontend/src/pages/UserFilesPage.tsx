@@ -1,14 +1,13 @@
-import { useState, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { Container, Fab } from '@mui/material';
-import FileList, { FileListRef } from "../components/FileList";
-import FileUpload from "../components/FileUpload";
-import { ThemeProvider } from '@emotion/react';
-import UploadFileTheme from '../themes/components/UploadFileTheme';
-import FileListTheme from '../themes/components/FileListTheme';
+import FileList from "../components/FileList";
+import FileUploadModal from "../components/FileUploadModal";
+import { useTheme } from '@mui/material/styles';
 
 const UserFilesPage = () => {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-    const fileListRef = useRef<FileListRef>(null);
+    const [refreshFiles, setRefreshFiles] = useState<(() => void) | null>(null);
+    const theme = useTheme();
 
     const handleOpenUploadModal = () => {
         setIsUploadModalOpen(true);
@@ -18,33 +17,63 @@ const UserFilesPage = () => {
         setIsUploadModalOpen(false);
     };
 
-    const handleFileUploaded = () => {
-        // Trigger refresh of file list using ref
-        fileListRef.current?.refreshFiles();
-    };
+    const handleFileUploaded = useCallback(() => {
+        refreshFiles?.();
+    }, [refreshFiles]);
+
+    const handleRefreshReady = useCallback((refreshFn: () => void) => {
+        setRefreshFiles(() => refreshFn);
+    }, []);
 
     return (
-        <Container>
-            <ThemeProvider theme={FileListTheme}>
-                <FileList ref={fileListRef} />
-            </ThemeProvider>
+        <Container
+            sx={{
+                position: "relative",
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                paddingBottom: '24px'
+            }}
+        >
+                <FileList onRefreshReady={handleRefreshReady} />
                 
             <Fab
                 color="primary"
                 aria-label="add"
                 onClick={handleOpenUploadModal}
                 size="large"
+                sx={{
+                    position: "fixed",
+                    bottom: {
+                        xs: theme.spacing(3),
+                        md: theme.spacing(4)
+                    },
+                    right: {
+                        xs: theme.spacing(3),
+                        md: theme.spacing(4)
+                    },
+                    width: {
+                        xs: '56px',
+                        md: '72px'
+                    },
+                    height: {
+                        xs: '56px',
+                        md: '72px'
+                    },
+                    fontSize: {
+                        xs: theme.spacing(4),
+                        md: theme.spacing(5)
+                    },
+                }}
             >
                 +
             </Fab>
 
-            <ThemeProvider theme={UploadFileTheme}>
-                <FileUpload 
+                <FileUploadModal 
                     isOpen={isUploadModalOpen} 
                     onClose={handleCloseUploadModal}
                     onFileUploaded={handleFileUploaded}
                 />
-            </ThemeProvider>
         </Container>
     );
 }

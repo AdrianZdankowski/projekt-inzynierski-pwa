@@ -1,0 +1,133 @@
+{
+  "login": {
+    "title": "Log in",
+    "subtitle": "Return to the app and take charge of your media again.",
+    "username": "Username",
+    "usernamePlaceholder": "Enter login",
+    "password": "Password",
+    "passwordPlaceholder": "Enter password",
+    "submit": "Log in",
+    "noAccount": "Don't have an account yet?",
+    "registerLink": "Register",
+    "usernameError": "Username can have a maximum of 32 alphanumeric characters!",
+    "passwordError": "Password must contain at least 8 characters, uppercase and lowercase letters, a number and a special character!",
+    "loginError": "User with the given name and password does not exist. Please try again.",
+    "generalError": "An error occurred during login. Please try again.",
+    "accountCreated": "Account created! Please log in.",
+    "connectionLost": "Connection to server lost. Please log in again when the connection is restored.",
+    "loginSuccess": "Successfully logged in!"
+  },
+  "register": {
+    "title": "Register",
+    "username": "Username",
+    "password": "Password",
+    "repeatPassword": "Repeat password",
+    "subtitle": "Create an account to store and share your files securely.",
+    "submit": "Register",
+    "hasAccount": "Have an account? Log in!",
+    "usernameError": "Username can have a maximum of 32 alphanumeric characters!",
+    "passwordError": "Password must contain at least 8 characters, uppercase and lowercase letters, a number and a special character!",
+    "repeatPasswordError": "Passwords do not match!",
+    "userExistsError": "User with the given name already exists. Choose a different username.",
+    "generalError": "An error occurred during registration. Please try again."
+  },
+  "languageSwitcher": {
+    "languages": {
+      "pl": "Polish",
+      "en": "English"
+    }
+  },
+  "modeSwitcher": {
+    "switchToDark": "Switch to dark mode",
+    "switchToLight": "Switch to light mode"
+  },
+  "header": {
+    "changeLanguage": "Change language",
+    "selectLanguage": "Select language",
+    "logout": "Log out",
+    "online": "You are online",
+    "offline": "You are offline"
+  },
+  "fileUpload": {
+    "title": "Upload file",
+    "dragDropOrClick": "Drag and drop file here or click to select",
+    "dropHere": "Drop file here!",
+    "selectFile": "Select file",
+    "removeFile": "Remove selected file",
+    "uploading": "Uploading...",
+    "uploadFile": "Upload file",
+    "success": "File uploaded successfully!",
+    "error": "An error occurred during file upload"
+  },
+  "fileListToolbar": {
+    "searchPlaceholder": "Search files...",
+    "sort": "Sort",
+    "listView": "List view",
+    "gridView": "Grid view",
+    "sortOptions": {
+      "name": "Name",
+      "size": "Size",
+      "date": "Upload date",
+      "mimeType": "File type"
+    }
+  },
+  "fileCard": {
+    "shareFile": "Share file",
+    "share": "Share",
+    "download": "Download file",
+    "delete": "Delete file",
+    "noConnectionDelete": "No internet connection. File deletion is only available online.",
+    "noConnectionDownload": "No internet connection. File download is only available online."
+  },
+  "deleteFileDialog": {
+    "title": "Delete file {{fileName}}?",
+    "description": "File {{fileName}} will be permanently deleted.",
+    "cancel": "No",
+    "confirm": "Yes"
+  },
+  "fileTable": {
+    "columns": {
+      "name": "Name",
+      "owner": "Owner",
+      "date": "Modified date",
+      "size": "File size",
+      "actions": "Actions"
+    },
+    "actions": {
+      "share": "Share",
+      "download": "Download",
+      "delete": "Delete"
+    }
+  },
+  "date": {
+    "updatedToday": "Updated: today",
+    "updatedYesterday": "Updated: yesterday",
+    "updatedDaysAgo": "Updated: {{days}} days ago"
+  },
+  "fileList": {
+    "empty": {
+      "noItems": "No items",
+      "noItemsFiltered": "No items match the search criteria."
+    }
+  },
+  "common": {
+    "close": "Close"
+  },
+  "documentDialog": {
+    "fetchError": "An error occurred while fetching file data. Please try again.",
+    "uploadedAt": "Uploaded: {{date}} {{time}}",
+    "sharedBy": "Shared by {{owner}}"
+  },
+  "imageDialog": {
+    "fetchError": "An error occurred while fetching file data. Please try again.",
+    "uploadedAt": "Uploaded: {{date}} {{time}}",
+    "sharedBy": "Shared by {{owner}}"
+  },
+  "videoPlayer": {
+    "uploadedAt": "Uploaded: {{date}} {{time}}",
+    "sharedBy": "Shared by: {{owner}}",
+    "quality": "Video quality:",
+    "qualityAuto": "Auto"
+  }
+}
+

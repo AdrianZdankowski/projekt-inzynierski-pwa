@@ -1,4 +1,6 @@
 import { FileMetadata } from './FileMetadata';
+import { SortField, SortOrder } from './SortTypes';
+import { ViewMode } from './FilterTypes';
 
 export interface FileListResponse {
   items: FileMetadata[];
@@ -16,7 +18,19 @@ export interface FileListResponse {
 export interface FileListParams {
   page?: number;
   pageSize?: number;
-  sortBy?: string;
-  sortDirection?: string;
+  sortBy?: SortField;
+  sortDirection?: SortOrder;
   q?: string;
+}
+
+export interface FileListFilters {
+  searchQuery: string;
+  sortField: SortField;
+  sortOrder: SortOrder;
+  viewMode: ViewMode;
+}
+
+export interface FileListPaginationState {
+  page: number;
+  pageSize: number;
 }

@@ -1,0 +1,133 @@
+{
+  "login": {
+    "title": "Zaloguj się",
+    "subtitle": "Wróć do aplikacji i przejmij kontrolę nad swoimi multimediami.",
+    "username": "Nazwa użytkownika",
+    "usernamePlaceholder": "Wpisz login",
+    "password": "Hasło",
+    "passwordPlaceholder": "Wpisz hasło",
+    "submit": "Zaloguj się",
+    "noAccount": "Nie masz konta?",
+    "registerLink": "Zarejestruj się",
+    "usernameError": "Nazwa użytkownika może mieć maksymalnie 32 znaki alfanumeryczne!",
+    "passwordError": "Hasło musi zawierać min. 8 znaków, wielką i małą literę, liczbę oraz znak specjalny!",
+    "loginError": "Użytkownik o podanej nazwie oraz wprowadzonym haśle nie istnieje. Spróbuj ponownie.",
+    "generalError": "Wystąpił błąd podczas logowania. Spróbuj ponownie.",
+    "accountCreated": "Konto utworzone! Zaloguj się.",
+    "connectionLost": "Utracono połączenie z serwerem. Zaloguj się ponownie, gdy połączenie zostanie przywrócone.",
+    "loginSuccess": "Zalogowano pomyślnie!"
+  },
+  "register": {
+    "title": "Zarejestruj się",
+    "username": "Nazwa użytkownika",
+    "password": "Hasło",
+    "repeatPassword": "Powtórz hasło",
+    "subtitle": "Stwórz konto i bezpiecznie zarządzaj swoimi plikami.",
+    "submit": "Zarejestruj",
+    "hasAccount": "Masz konto? Zaloguj się!",
+    "usernameError": "Nazwa użytkownika może mieć maksymalnie 32 znaki alfanumeryczne!",
+    "passwordError": "Hasło musi zawierać min. 8 znaków, wielką i małą literę, liczbę oraz znak specjalny!",
+    "repeatPasswordError": "Hasła nie są identyczne!",
+    "userExistsError": "Użytkownik o podanej nazwie już istnieje. Wybierz inną nazwę użytkownika.",
+    "generalError": "Wystąpił błąd podczas rejestracji. Spróbuj ponownie."
+  },
+  "languageSwitcher": {
+    "languages": {
+      "pl": "Polski",
+      "en": "Angielski"
+    }
+  },
+  "modeSwitcher": {
+    "switchToDark": "Przełącz na tryb ciemny",
+    "switchToLight": "Przełącz na tryb jasny"
+  },
+  "header": {
+    "changeLanguage": "Zmiana języka",
+    "selectLanguage": "Wybierz język",
+    "logout": "Wyloguj",
+    "online": "Jesteś online",
+    "offline": "Jesteś offline"
+  },
+  "fileUpload": {
+    "title": "Prześlij plik",
+    "dragDropOrClick": "Przeciągnij i upuść plik tutaj lub kliknij aby wybrać",
+    "dropHere": "Upuść plik tutaj!",
+    "selectFile": "Wybierz plik",
+    "removeFile": "Usuń wybrany plik",
+    "uploading": "Wysyłanie...",
+    "uploadFile": "Wyślij plik",
+    "success": "Plik został pomyślnie przesłany!",
+    "error": "Wystąpił błąd podczas przesyłania pliku"
+  },
+  "fileListToolbar": {
+    "searchPlaceholder": "Szukaj plików...",
+    "sort": "Sortuj",
+    "listView": "Widok listy",
+    "gridView": "Widok kafelków",
+    "sortOptions": {
+      "name": "Nazwa",
+      "size": "Rozmiar",
+      "date": "Data dodania",
+      "mimeType": "Typ pliku"
+    }
+  },
+  "fileCard": {
+    "shareFile": "Udostępnij plik",
+    "share": "Udostępnij",
+    "download": "Pobierz plik",
+    "delete": "Usuń plik",
+    "noConnectionDelete": "Brak połączenia z internetem. Usuwanie plików dostępne jest tylko online.",
+    "noConnectionDownload": "Brak połączenia z internetem. Pobieranie dostępne jest tylko online."
+  },
+  "deleteFileDialog": {
+    "title": "Usunąć plik {{fileName}}?",
+    "description": "Plik {{fileName}} zostanie permanentnie usunięty.",
+    "cancel": "Nie",
+    "confirm": "Tak"
+  },
+  "fileTable": {
+    "columns": {
+      "name": "Nazwa",
+      "owner": "Właściciel",
+      "date": "Data modyfikacji",
+      "size": "Rozmiar pliku",
+      "actions": "Akcje"
+    },
+    "actions": {
+      "share": "Udostępnij",
+      "download": "Pobierz",
+      "delete": "Usuń"
+    }
+  },
+  "date": {
+    "updatedToday": "Aktualizacja: dzisiaj",
+    "updatedYesterday": "Aktualizacja: wczoraj",
+    "updatedDaysAgo": "Aktualizacja: {{days}} dni temu"
+  },
+  "fileList": {
+    "empty": {
+      "noItems": "Brak elementów",
+      "noItemsFiltered": "Brak elementów spełniających kryteria wyszukiwania."
+    }
+  },
+  "common": {
+    "close": "Zamknij"
+  },
+  "documentDialog": {
+    "fetchError": "Błąd przy pobieraniu danych pliku. Spróbuj ponownie.",
+    "uploadedAt": "Przesłane: {{date}} {{time}}",
+    "sharedBy": "Udostępnione przez {{owner}}"
+  },
+  "imageDialog": {
+    "fetchError": "Błąd przy pobieraniu danych pliku. Spróbuj ponownie.",
+    "uploadedAt": "Przesłane: {{date}} {{time}}",
+    "sharedBy": "Udostępnione przez {{owner}}"
+  },
+  "videoPlayer": {
+    "uploadedAt": "Przesłane: {{date}} {{time}}",
+    "sharedBy": "Udostępnione przez: {{owner}}",
+    "quality": "Jakość wideo:",
+    "qualityAuto": "Auto"
+  }
+}
+

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { decodeUserRole } from "../lib/decodeUserRole";
+import { decodeUserRole } from "../utils/decodeUserRole";
 import axiosInstance from "../api/axiosInstance";
 
 interface AuthContextType {
