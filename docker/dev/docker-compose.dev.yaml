@@ -48,7 +48,7 @@ services:
       dockerfile: Dockerfile
     container_name: pwa-frontend
     environment:
-      - API_BASE_URL=http://backend:8080/api
+      - API_BASE_URL=${API_BASE_URL}
     ports:
       - "3000:80"
     depends_on:
