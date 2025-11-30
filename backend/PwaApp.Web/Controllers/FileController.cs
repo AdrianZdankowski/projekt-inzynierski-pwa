@@ -15,7 +15,6 @@ using WebApplication1;
 
 namespace backend.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
     public class FileController(
         IAzureBlobService azureBlobService,
@@ -23,7 +22,7 @@ namespace backend.Controllers
         IAppDbContext appDbContext,
         IConfiguration config,
         IFileConverter fileConverter,
-        IFileAccessValidator fileAccessValidator) : ControllerBase
+        IFileAccessValidator fileAccessValidator) : ApiControllerBase
     {
         [Authorize]
         [HttpPost("upload")]
@@ -62,16 +61,6 @@ namespace backend.Controllers
             {
                 return StatusCode(500, $"Upload failed: {ex.Message}");
             }
-        }
-
-        private Guid GetUserIdOrThrow()
-        {
-            var c = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(c, out var id))
-            {
-                throw new UnauthorizedAccessException("Invalid or missing user ID");
-            }
-            return id;
         }
 
         [Authorize]
