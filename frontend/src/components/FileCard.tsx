@@ -141,6 +141,8 @@ const FileCard = ({
             WebkitLineClamp: '2',
             WebkitBoxOrient: 'vertical',
             fontSize: '1.25rem',
+            whiteSpace: "nowrap",
+            maxWidth: { xs: "95%", sm: "95%" },
             lineHeight: '1.3',
             minHeight: '2em',
             color: theme.palette.text.primary,
