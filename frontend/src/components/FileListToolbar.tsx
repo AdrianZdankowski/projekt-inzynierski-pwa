@@ -72,7 +72,7 @@ const FileListToolbar = ({
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        marginBottom: '32px',
+        marginBottom: '16px',
         padding: isMobile ? '0 10px' : '0 20px'
     }}>
       <TextField

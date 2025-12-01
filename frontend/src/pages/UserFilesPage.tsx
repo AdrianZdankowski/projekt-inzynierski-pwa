@@ -7,6 +7,7 @@ import { useTheme } from '@mui/material/styles';
 const UserFilesPage = () => {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [refreshFiles, setRefreshFiles] = useState<(() => void) | null>(null);
+    const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
     const theme = useTheme();
 
     const handleOpenUploadModal = () => {
@@ -25,6 +26,10 @@ const UserFilesPage = () => {
         setRefreshFiles(() => refreshFn);
     }, []);
 
+    const handleFolderChange = useCallback((folderId: string | null) => {
+        setCurrentFolderId(folderId);
+    }, []);
+
     return (
         <Container
             sx={{
@@ -35,7 +40,10 @@ const UserFilesPage = () => {
                 paddingBottom: '24px'
             }}
         >
-                <FileList onRefreshReady={handleRefreshReady} />
+                <FileList 
+                    onRefreshReady={handleRefreshReady}
+                    onFolderChange={handleFolderChange}
+                />
                 
             <Fab
                 color="primary"
@@ -73,6 +81,7 @@ const UserFilesPage = () => {
                     isOpen={isUploadModalOpen} 
                     onClose={handleCloseUploadModal}
                     onFileUploaded={handleFileUploaded}
+                    currentFolderId={currentFolderId}
                 />
         </Container>
     );

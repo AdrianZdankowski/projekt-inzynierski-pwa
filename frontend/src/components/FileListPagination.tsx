@@ -34,7 +34,7 @@ const FileListPagination = ({
         justifyContent: { xs: 'center', sm: 'space-between' },
         alignItems: 'center',
         gap: { xs: '0px', sm: '32px' },
-        paddingTop: '40px',
+        paddingTop: '20px',
         paddingBottom: '0px',
         position: 'relative',
         width: '100%'

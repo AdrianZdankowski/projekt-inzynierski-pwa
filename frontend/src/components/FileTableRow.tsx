@@ -14,6 +14,8 @@ import {
   Share as ShareIcon,
   Download as DownloadIcon,
   Delete as DeleteIcon,
+  Folder as FolderIcon,
+  FolderShared as FolderSharedIcon,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { FileMetadata } from '../types/FileMetadata';
@@ -37,7 +39,8 @@ const FileTableRow = ({
   const { t } = useTranslation();
   const { downloadFile, shareFile } = useFileOperations();
   const theme = useTheme();
-  const FileIcon = getFileIcon(file.mimeType);
+  const isFolder = file.type === 'folder';
+  const FileIcon = isFolder ? (file.isShared ? FolderSharedIcon : FolderIcon) : getFileIcon(file.mimeType);
   const fileColor = getFileTypeColor(file.mimeType);
 
   const actions: TableAction<FileMetadata>[] = [
@@ -60,6 +63,10 @@ const FileTableRow = ({
       onClick: (row) => onDeleteDialogOpen(row),
     },
   ];
+
+  const visibleActions = isFolder
+    ? actions.filter(action => action.id !== 'download')
+    : actions;
 
   const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
     event.stopPropagation();
@@ -84,11 +91,16 @@ const FileTableRow = ({
           <FileIcon sx={{ color: fileColor, fontSize: '24px' }} />
           {isShared && <SharedIcon sx={{ fontSize: '18px', color: theme.palette.success.main }} />}
           <Typography
+            title={file.name}
             sx={{
               fontWeight: 'medium',
               fontSize: '0.9rem',
               lineHeight: '1',
-              mt: '0.3rem',
+              mt: '0.2rem',
+              maxWidth: { xs: '140px', sm: '220px', md: '260px' },
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}
           >
             {file.name}
@@ -136,7 +148,7 @@ const FileTableRow = ({
         <Typography
           sx={{
             lineHeight: '1',
-            mt: '0.3rem',
+            mt: '0.2rem',
           }}
         >
           {formatDate(file.date, t)}
@@ -150,10 +162,10 @@ const FileTableRow = ({
         <Typography
           sx={{
             lineHeight: '1',
-            mt: '0.3rem',
+            mt: '0.2rem',
           }}
         >
-          {formatFileSize(file.size)}
+          {isFolder ? '-' : formatFileSize(file.size ?? 0)}
         </Typography>
       ),
     },
@@ -190,17 +202,22 @@ const FileTableRow = ({
           },
         }}
       >
-        <Box sx={{ 
-            display: 'flex', 
-            gap: '8px', 
-            justifyContent: 'center' 
-        }}>
-          {actions.map((action) => (
+        <Box
+          sx={{
+            display: 'flex',
+            gap: '8px',
+            justifyContent: 'center',
+          }}
+        >
+          {visibleActions.map((action) => (
             <Tooltip key={action.id} title={t(action.labelKey)}>
               <IconButton
                 size="small"
                 sx={{
-                  color: action.id === 'share' ? theme.palette.info.main : theme.palette.grey[500],
+                  color:
+                    action.id === 'share'
+                      ? theme.palette.info.main
+                      : theme.palette.grey[500],
                 }}
                 onClick={(e) => handleActionClick(e, action)}
               >

@@ -25,11 +25,12 @@ const calculateMD5Checksum = async (file: File): Promise<string> => {
 
 export const FileUploadService = {
   
-  async getUploadLink(file: File) {
+  async getUploadLink(file: File, folderId?: string | null) {
     const uploadLinkResponse  = await axiosInstance.post("/file/generate-upload-link", {
       fileName: file.name,
       mimeType: file.type,
       expectedSize: file.size,
+      folderId: folderId ?? null,
     });
 
     if (uploadLinkResponse.status !== 200) {
@@ -119,8 +120,8 @@ export const FileUploadService = {
     }
   },
 
-  async uploadFile(file: File) {
-    const { fileId, uploadUrl } = await this.getUploadLink(file);
+  async uploadFile(file: File, folderId?: string | null) {
+    const { fileId, uploadUrl } = await this.getUploadLink(file, folderId);
     
     if (file.size <= CHUNK_THRESHOLD) {
       console.log("Uploading directly (single PUT)...");

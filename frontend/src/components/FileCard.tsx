@@ -1,5 +1,5 @@
 import { Card, CardContent, CardActions, Typography, IconButton, Button, Box, Tooltip, Avatar, useTheme } from '@mui/material';
-import { Delete as DeleteIcon, Share as ShareIcon, Download as DownloadIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Share as ShareIcon, Download as DownloadIcon, Folder as FolderIcon, FolderShared as FolderSharedIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { FileMetadata } from '../types/FileMetadata';
 import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
@@ -21,7 +21,8 @@ const FileCard = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const { downloadFile, shareFile } = useFileOperations();
-  const FileIcon = getFileIcon(file.mimeType);
+  const isFolder = file.type === 'folder';
+  const FileIcon = isFolder ? (file.isShared ? FolderSharedIcon : FolderIcon) : getFileIcon(file.mimeType);
   const fileColor = getFileTypeColor(file.mimeType);
 
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -31,7 +32,9 @@ const FileCard = ({
 
   const handleDownloadClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    downloadFile(file.id);
+    if (!isFolder) {
+      downloadFile(file.id);
+    }
   };
 
   const handleShareClick = (e: React.MouseEvent) => {
@@ -59,27 +62,29 @@ const FileCard = ({
       }}
       onClick={() => onFileClick(file, isShared)}
     >
-      <Tooltip title={t('fileCard.download')}>
-        <IconButton
-          sx={{
-            position: 'absolute',
-            top: '12px',
-            left: '12px',
-            zIndex: '2',
-            backgroundColor: theme.palette.background.paper,
-            color: theme.palette.text.primary,
-            '&:hover': {
-              backgroundColor: theme.palette.mode === 'dark' 
-                ? theme.palette.grey[800] 
-                : theme.palette.grey[400],
-            }
-          }}
-          onClick={handleDownloadClick}
-          size="small"
-        >
-          <DownloadIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
+      {!isFolder && (
+        <Tooltip title={t('fileCard.download')}>
+          <IconButton
+            sx={{
+              position: 'absolute',
+              top: '12px',
+              left: '12px',
+              zIndex: '2',
+              backgroundColor: theme.palette.background.paper,
+              color: theme.palette.text.primary,
+              '&:hover': {
+                backgroundColor: theme.palette.mode === 'dark' 
+                  ? theme.palette.grey[800] 
+                  : theme.palette.grey[400],
+              }
+            }}
+            onClick={handleDownloadClick}
+            size="small"
+          >
+            <DownloadIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      )}
 
       <Tooltip title={t('fileCard.delete')}>
         <IconButton
@@ -160,7 +165,9 @@ const FileCard = ({
               lineHeight: '1.5',
             }}
           >
-            {formatFileSize(file.size)} • {formatDate(file.date, t)}
+            {isFolder
+              ? formatDate(file.date, t)
+              : `${formatFileSize(file.size ?? 0)} • ${formatDate(file.date, t)}`}
           </Typography>
         </Box>
 

@@ -108,10 +108,22 @@
     "empty": {
       "noItems": "Brak elementów",
       "noItemsFiltered": "Brak elementów spełniających kryteria wyszukiwania."
+    },
+    "createFolder": {
+      "button": "Dodaj folder",
+      "dialogTitle": "Utwórz folder",
+      "nameLabel": "Nazwa folderu",
+      "namePlaceholder": "Wpisz nazwę folderu",
+      "defaultName": "Nowy folder",
+      "confirm": "Utwórz folder"
+    },
+    "breadcrumbs": {
+      "root": "Moje pliki"
     }
   },
   "common": {
-    "close": "Zamknij"
+    "close": "Zamknij",
+    "cancel": "Anuluj"
   },
   "documentDialog": {
     "fetchError": "Błąd przy pobieraniu danych pliku. Spróbuj ponownie.",
@@ -128,6 +140,24 @@
     "sharedBy": "Udostępnione przez: {{owner}}",
     "quality": "Jakość wideo:",
     "qualityAuto": "Auto"
+  },
+  "fileOperations": {
+    "common": {
+      "offlineError": "Brak połączenia z internetem. Ta operacja dostępna jest tylko online.",
+      "authRequired": "Wymagana autoryzacja. Zaloguj się ponownie.",
+      "forbidden": "Odmowa dostępu. Nie masz uprawnień do wykonania tej operacji.",
+      "genericError": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
+      "fetchError": "Nie udało się załadować plików. Spróbuj ponownie."
+    },
+    "folders": {
+      "createdSuccess": "Folder został utworzony pomyślnie.",
+      "deletedSuccess": "Folder został usunięty pomyślnie."
+    },
+    "files": {
+      "deleteSuccess": "Plik został usunięty pomyślnie.",
+      "downloadSuccess": "Plik został pobrany pomyślnie.",
+      "shareSuccess": "Plik został udostępniony pomyślnie."
+    }
   }
 }
 

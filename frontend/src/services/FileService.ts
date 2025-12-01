@@ -27,6 +27,7 @@ export const FileService = {
     if (sortBy) queryParams.append('sortBy', sortBy);
     if (params?.sortDirection) queryParams.append('sortDirection', params.sortDirection);
     if (params?.q) queryParams.append('q', params.q);
+    if (params?.folderId) queryParams.append('folderId', params.folderId);
 
     const response = await axiosInstance.get(`/file?${queryParams.toString()}`);
     return response.data;
