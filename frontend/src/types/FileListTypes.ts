@@ -21,6 +21,7 @@ export interface FileListParams {
   sortBy?: SortField;
   sortDirection?: SortOrder;
   q?: string;
+  folderId?: string;
 }
 
 export interface FileListFilters {

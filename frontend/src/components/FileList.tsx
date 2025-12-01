@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, useMediaQuery } from '@mui/material';
+import { Box, Typography, useMediaQuery, Button } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { FileListResponse, FileListParams, FileListFilters, FileListPaginationState } from '../types/FileListTypes';
 import { FileMetadata } from '../types/FileMetadata';
@@ -14,14 +14,18 @@ import FileListPagination from './FileListPagination';
 import FileCard from './FileCard';
 import { useFileOperations } from '../hooks/useFileOperations';
 import FileTable from './FileTable';
+import CreateFolderDialog from './CreateFolderDialog';
+import { CreateNewFolder as CreateNewFolderIcon } from '@mui/icons-material';
 import { useNotification } from '../context/NotificationContext';
 import { useTranslation } from 'react-i18next';
+import FileBreadcrumbs from './FileBreadcrumbs';
 
 interface FileListProps {
   onRefreshReady?: (refreshFn: () => void) => void;
+  onFolderChange?: (folderId: string | null) => void;
 }
 
-const FileList = ({ onRefreshReady }: FileListProps) => {
+const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
   const [fileListResponse, setFileListResponse] = useState<FileListResponse | null>(null);
   const [filters, setFilters] = useState<FileListFilters>({
     searchQuery: '',
@@ -38,6 +42,9 @@ const FileList = ({ onRefreshReady }: FileListProps) => {
   const [openVideoDialog, setOpenVideoDialog] = useState<boolean>(false);
   const [openDocumentDialog, setOpenDocumentDialog] = useState<boolean>(false);
   const [openImageDialog, setOpenImageDialog] = useState<boolean>(false);
+  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+  const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; name: string }[]>([]);
+  const [isCreateFolderDialogOpen, setIsCreateFolderDialogOpen] = useState<boolean>(false);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -45,10 +52,14 @@ const FileList = ({ onRefreshReady }: FileListProps) => {
   const [openDeleteFileDialog, setOpenDeleteFileDialog] = useState<boolean>(false);
 
   const { accessToken } = useAuth();
-  const { fetchFilesList, deleteFile } = useFileOperations();
+  const { fetchFilesList, deleteFile, deleteFolder } = useFileOperations();
   const { showNotification } = useNotification();
   const { t } = useTranslation();
   const [emptyNotificationShown, setEmptyNotificationShown] = useState(false);
+
+  useEffect(() => {
+    setBreadcrumbs([{ id: null, name: '' }]);
+  }, []);
   
   const fetchFiles = useCallback(async () => {
     const params: FileListParams = {
@@ -56,14 +67,15 @@ const FileList = ({ onRefreshReady }: FileListProps) => {
       pageSize: pagination.pageSize,
       sortBy: filters.sortField,
       sortDirection: filters.sortOrder,
-      q: filters.searchQuery || undefined
+      q: filters.searchQuery || undefined,
+      folderId: currentFolderId || undefined,
     };
     
     const response = await fetchFilesList(params);
     if (response) {
       setFileListResponse(response);
     }
-  }, [pagination, filters, fetchFilesList]);
+  }, [pagination, filters, fetchFilesList, currentFolderId]);
   
   useEffect(() => {
     fetchFiles();
@@ -115,20 +127,48 @@ const FileList = ({ onRefreshReady }: FileListProps) => {
     }
   }, [onRefreshReady, fetchFiles]);
 
+  useEffect(() => {
+    if (onFolderChange) {
+      onFolderChange(currentFolderId);
+    }
+  }, [currentFolderId, onFolderChange]);
+
   const handleDeleteFile = async (fileId: string) => {
-    const success = await deleteFile(fileId);
-    if (success) {
-      setFileListResponse(prev => (
-        {
-          ...prev!,
-          items: prev!.items.filter(f => f.id !== fileId)
-        }
-      ));
+    const isFolder = selectedFile?.id === fileId && selectedFile.type === 'folder';
+    const wasLastItemOnPage = files.length === 1;
+
+    const success = isFolder
+      ? await deleteFolder(fileId)
+      : await deleteFile(fileId);
+
+    if (!success) return;
+
+    setFileListResponse(prev => {
+      if (!prev) return prev;
+      const newItems = prev.items.filter(f => f.id !== fileId);
+      const newTotal = Math.max((prev.totalItems ?? 0) - 1, 0);
+      return {
+        ...prev,
+        items: newItems,
+        totalItems: newTotal,
+      };
+    });
+
+    if (wasLastItemOnPage && pagination.page > 1) {
+      setPagination(prev => ({ ...prev, page: 1 }));
     }
   };
  
   const handleFileClick = (file: FileMetadata, isShared: boolean) => {
     console.log('Open file:', file);
+
+    if (file.type === 'folder') {
+      setCurrentFolderId(file.id);
+      setPagination(prev => ({ ...prev, page: 1 }));
+      setBreadcrumbs(prev => [...prev, { id: file.id, name: file.name }]);
+      return;
+    }
+
     setSelectedFile(file);
     setIsSelectedFileShared(isShared);
 
@@ -191,14 +231,71 @@ const FileList = ({ onRefreshReady }: FileListProps) => {
     return file.userId !== currentUserId;
   };
 
+  const handleOpenCreateFolderDialog = () => {
+    setIsCreateFolderDialogOpen(true);
+  };
+
+  const handleCloseCreateFolderDialog = () => {
+    setIsCreateFolderDialogOpen(false);
+  };
+
+  const handleBreadcrumbClick = (index: number) => {
+    const target = breadcrumbs[index];
+    setBreadcrumbs(prev => prev.slice(0, index + 1));
+    setCurrentFolderId(target.id);
+    setPagination(prev => ({ ...prev, page: 1 }));
+  };
+
   return (
     <Box
       sx={{
-        paddingTop: '24px',
+        paddingTop: '18px',
         paddingBottom: '0px',
         px: isMobile ? '16px' : '24px',
       }}
     >
+      {breadcrumbs.length > 0 && (
+        <>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: '8px',
+              px: isMobile ? '4px' : '0px',
+              gap: '8px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <FileBreadcrumbs
+              items={breadcrumbs}
+              onBreadcrumbClick={handleBreadcrumbClick}
+            />
+
+            <Button
+              variant="outlined"
+              startIcon={<CreateNewFolderIcon />}
+              onClick={handleOpenCreateFolderDialog}
+              sx={{
+                fontSize: '0.85rem',
+                padding: isMobile ? '6px' : '8px 24px',
+                minWidth: isMobile ? '44px' : 'auto',
+                borderRadius: '12px',
+                fontWeight: '700',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: isMobile ? 'center' : 'flex-start',
+                '& .MuiButton-startIcon': {
+                  marginLeft: isMobile ? '6px' : '0px',
+                  marginBottom: isMobile ? '0px' : '2px',
+                },
+              }}
+            >
+              {!isMobile && t('fileList.createFolder.button')}
+            </Button>
+          </Box>
+        </>
+      )}
       {selectedFile && openVideoDialog && (
         <VideoDialog
           open={openVideoDialog}
@@ -234,7 +331,15 @@ const FileList = ({ onRefreshReady }: FileListProps) => {
           file={selectedFile}
         />
       )}
-      
+
+      {isCreateFolderDialogOpen && (
+        <CreateFolderDialog
+          open={isCreateFolderDialogOpen}
+          onClose={handleCloseCreateFolderDialog}
+          parentFolderId={currentFolderId}
+          onFolderCreated={fetchFiles}
+        />
+      )}
       <FileListToolbar
         onFiltersChange={handleFiltersChange}
       />
@@ -244,7 +349,7 @@ const FileList = ({ onRefreshReady }: FileListProps) => {
           display: 'flex',
           flexWrap: 'wrap',
           justifyContent: 'center',
-          gap: '24px',
+          gap: '16px',
           maxWidth: '1200px',
           margin: '0 auto',
         }}>

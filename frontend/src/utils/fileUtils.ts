@@ -1,7 +1,8 @@
 import { PictureAsPdf, Description, TableChart, Slideshow, Image, VideoFile, 
   AudioFile, InsertDriveFile } from '@mui/icons-material';
 
-export const getFileIcon = (mimeType: string) => {
+export const getFileIcon = (mimeType?: string | null) => {
+  if (!mimeType) return InsertDriveFile;
   if (mimeType.startsWith('image/')) return Image;
   if (mimeType.startsWith('video/')) return VideoFile;
   if (mimeType.startsWith('audio/')) return AudioFile;
@@ -12,7 +13,8 @@ export const getFileIcon = (mimeType: string) => {
   return InsertDriveFile;
 };
 
-export const getFileTypeColor = (mimeType: string) => {
+export const getFileTypeColor = (mimeType?: string | null) => {
+  if (!mimeType) return '#FBC02D';
   if (mimeType.startsWith('image/')) return '#4CAF50';
   if (mimeType.startsWith('video/')) return '#FF9800';
   if (mimeType.startsWith('audio/')) return '#9C27B0';

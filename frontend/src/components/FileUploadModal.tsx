@@ -12,9 +12,10 @@ interface FileUploadModalProps {
     isOpen: boolean;
     onClose: () => void;
     onFileUploaded?: () => void;
+  currentFolderId?: string | null;
 }
 
-const FileUploadModal = ({ isOpen, onClose, onFileUploaded }: FileUploadModalProps) => {
+const FileUploadModal = ({ isOpen, onClose, onFileUploaded, currentFolderId }: FileUploadModalProps) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const { t } = useTranslation();
@@ -72,8 +73,8 @@ const FileUploadModal = ({ isOpen, onClose, onFileUploaded }: FileUploadModalPro
 
         setUploading(true);
 
-        try {
-            await FileUploadService.uploadFile(selectedFile);
+      try {
+            await FileUploadService.uploadFile(selectedFile, currentFolderId);
 
             showNotification(t('fileUpload.success'), 'success');
 
