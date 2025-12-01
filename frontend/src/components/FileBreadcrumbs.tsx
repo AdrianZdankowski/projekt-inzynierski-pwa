@@ -34,7 +34,7 @@ const FileBreadcrumbs = ({ items, onBreadcrumbClick }: FileBreadcrumbsProps) => 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const maxItems = isMobile ? 2 : 4;
+  const maxItems = isMobile ? 2 : 5;
 
   const visibleItems = useMemo(
     () => {
@@ -103,8 +103,8 @@ const FileBreadcrumbs = ({ items, onBreadcrumbClick }: FileBreadcrumbsProps) => 
           isEllipsis || isRoot
             ? '60px'
             : isMobile
-            ? '200px'
-            : '250px';
+            ? '160px'
+            : '180px';
 
         const commonProps = {
           key: `${item.id ?? 'root'}-${originalIndex}`,
@@ -117,7 +117,7 @@ const FileBreadcrumbs = ({ items, onBreadcrumbClick }: FileBreadcrumbsProps) => 
               marginLeft: isRoot ? '14px' : '4px',
             },
             '& .MuiChip-label': {
-              maxWidth: isMobile ? '160px' : `220px`,
+              maxWidth: isMobile ? '120px' : `130px`,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
