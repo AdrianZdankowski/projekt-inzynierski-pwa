@@ -15,7 +15,6 @@ using WebApplication1;
 
 namespace backend.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
     public class FileController(
         IAzureBlobService azureBlobService,
@@ -23,7 +22,7 @@ namespace backend.Controllers
         IAppDbContext appDbContext,
         IConfiguration config,
         IFileConverter fileConverter,
-        IFileAccessValidator fileAccessValidator) : ControllerBase
+        IFileAccessValidator fileAccessValidator) : ApiControllerBase
     {
         [Authorize]
         [HttpPost("upload")]
@@ -62,16 +61,6 @@ namespace backend.Controllers
             {
                 return StatusCode(500, $"Upload failed: {ex.Message}");
             }
-        }
-
-        private Guid GetUserIdOrThrow()
-        {
-            var c = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(c, out var id))
-            {
-                throw new UnauthorizedAccessException("Invalid or missing user ID");
-            }
-            return id;
         }
 
         [Authorize]
@@ -547,14 +536,6 @@ namespace backend.Controllers
                 return Unauthorized("User does not have access to this file");
             }
 
-            // If file is in a folder, check if user has Update permission for that folder
-            if (file.ParentFolder != null)
-            {
-                if (!await fileAccessValidator.ValidateFolderPermissions(userId, file.ParentFolder, WebApplication1.PermissionFlags.Update))
-                {
-                    return Unauthorized("User does not have permission to update files in this folder");
-                }
-            }
 
             // Only file owner can change the folder
             bool isOwner = file.UserId == userId;
