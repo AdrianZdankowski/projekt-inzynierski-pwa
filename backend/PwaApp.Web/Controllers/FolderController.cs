@@ -39,7 +39,9 @@ namespace backend.Controllers
                 return Unauthorized("Invalid or missing user ID");
             }
 
-            var folder = appDbContext.Folders.FirstOrDefault(f => f.id == folderId);
+            var folder = appDbContext.Folders
+                .Include(f => f.ParentFolder)
+                .FirstOrDefault(f => f.id == folderId);
             if (folder == null)
             {
                 return NotFound("Folder not found");
@@ -70,7 +72,7 @@ namespace backend.Controllers
                 return Unauthorized("Only folder owner can grant access");
             }
 
-            var user = appDbContext.Users.FirstOrDefault(x => x.id == request.UserId);
+            var user = appDbContext.Users.FirstOrDefault(x => x.username == request.UserName);
             if (user is null)
             {
                 return BadRequest("User does not exists");

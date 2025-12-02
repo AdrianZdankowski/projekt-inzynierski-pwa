@@ -10,12 +10,12 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
-  CloudDone as SharedIcon,
   Share as ShareIcon,
   Download as DownloadIcon,
   Delete as DeleteIcon,
   Folder as FolderIcon,
   FolderShared as FolderSharedIcon,
+  Star as StarIcon,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { FileMetadata } from '../types/FileMetadata';
@@ -26,51 +26,62 @@ import { useFileOperations } from '../hooks/useFileOperations';
 interface FileTableRowProps {
   file: FileMetadata;
   isShared: boolean;
-  onFileClick: (file: FileMetadata, isShared: boolean) => void;
+  canDeleteFromFolder?: boolean;
+  onFileClick: (file: FileMetadata) => void;
   onDeleteDialogOpen: (file: FileMetadata) => void;
+  onShareDialogOpen: (file: FileMetadata) => void;
 }
 
 const FileTableRow = ({
   file,
   isShared,
+  canDeleteFromFolder = false,
   onFileClick,
   onDeleteDialogOpen,
+  onShareDialogOpen,
 }: FileTableRowProps) => {
   const { t } = useTranslation();
-  const { downloadFile, shareFile } = useFileOperations();
+  const { downloadFile } = useFileOperations();
   const theme = useTheme();
   const isFolder = file.type === 'folder';
   const FileIcon = isFolder ? (file.isShared ? FolderSharedIcon : FolderIcon) : getFileIcon(file.mimeType);
   const fileColor = getFileTypeColor(file.mimeType);
 
-  const actions: TableAction<FileMetadata>[] = [
-    {
+  const canDelete = !isShared || canDeleteFromFolder;
+  const canShare = !isShared;
+
+  const actions: TableAction<FileMetadata>[] = [];
+  
+  if (canShare) {
+    actions.push({
       id: 'share',
       labelKey: 'fileTable.actions.share',
       icon: <ShareIcon fontSize="small" />,
-      onClick: (row) => shareFile(row.id),
-    },
-    {
+      onClick: (row) => onShareDialogOpen(row),
+    });
+  }
+  
+  if (!isFolder) {
+    actions.push({
       id: 'download',
       labelKey: 'fileTable.actions.download',
       icon: <DownloadIcon fontSize="small" />,
       onClick: (row) => downloadFile(row.id),
-    },
-    {
+    });
+  }
+  
+  if (canDelete) {
+    actions.push({
       id: 'delete',
       labelKey: 'fileTable.actions.delete',
       icon: <DeleteIcon fontSize="small" />,
       onClick: (row) => onDeleteDialogOpen(row),
-    },
-  ];
-
-  const visibleActions = isFolder
-    ? actions.filter(action => action.id !== 'download')
-    : actions;
+    });
+  }
 
   const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
     event.stopPropagation();
-    onFileClick(file, isShared);
+    onFileClick(file);
   };
 
   const handleActionClick = (e: MouseEvent, action: TableAction<FileMetadata>) => {
@@ -86,25 +97,47 @@ const FileTableRow = ({
         <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
-            gap: '12px' 
+            gap: '12px',
+            position: 'relative'
         }}>
           <FileIcon sx={{ color: fileColor, fontSize: '24px' }} />
-          {isShared && <SharedIcon sx={{ fontSize: '18px', color: theme.palette.success.main }} />}
-          <Typography
-            title={file.name}
-            sx={{
-              fontWeight: 'medium',
-              fontSize: '0.9rem',
-              lineHeight: '1',
-              mt: '0.2rem',
-              maxWidth: { xs: '140px', sm: '220px', md: '260px' },
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {file.name}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Typography
+              title={file.name}
+              sx={{
+                fontWeight: 'medium',
+                fontSize: '0.9rem',
+                lineHeight: '1',
+                mt: '0.2rem',
+                maxWidth: { xs: '140px', sm: '220px', md: '260px' },
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {file.name}
+            </Typography>
+            {file.isShared && (
+              <IconButton
+                size="small"
+                disabled
+                sx={{
+                  color: theme.palette.warning.main,
+                  cursor: 'default',
+                  padding: '2px',
+                  marginLeft: '2px',
+                  '&:hover': {
+                    backgroundColor: 'transparent',
+                  },
+                  '&.Mui-disabled': {
+                    color: theme.palette.warning.main,
+                  }
+                }}
+              >
+                <StarIcon fontSize="small" />
+              </IconButton>
+            )}
+          </Box>
         </Box>
       ),
     },
@@ -115,8 +148,8 @@ const FileTableRow = ({
         <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
-            justifyContent: 'center', 
-            gap: '12px' 
+            gap: '12px',
+            marginLeft: '24px' 
         }}>
           <Avatar
             sx={{
@@ -126,6 +159,7 @@ const FileTableRow = ({
               color: theme.palette.primary.contrastText,
               fontSize: '0.85rem',
               fontWeight: 'bold',
+              flexShrink: 0,
             }}
           >
             {file.ownerName.charAt(0).toUpperCase()}
@@ -133,7 +167,8 @@ const FileTableRow = ({
           <Typography
             sx={{
               fontSize: '0.9rem',
-              lineHeight: '1'
+              lineHeight: '1',
+              mt: '0.2rem',
             }}
           >
             {file.ownerName}
@@ -207,24 +242,36 @@ const FileTableRow = ({
             display: 'flex',
             gap: '8px',
             justifyContent: 'center',
+            alignItems: 'center',
           }}
         >
-          {visibleActions.map((action) => (
-            <Tooltip key={action.id} title={t(action.labelKey)}>
-              <IconButton
-                size="small"
-                sx={{
-                  color:
-                    action.id === 'share'
-                      ? theme.palette.info.main
-                      : theme.palette.grey[500],
-                }}
-                onClick={(e) => handleActionClick(e, action)}
-              >
-                {action.icon}
-              </IconButton>
-            </Tooltip>
-          ))}
+          {actions.length > 0 ? (
+            actions.map((action) => (
+              <Tooltip key={action.id} title={t(action.labelKey)}>
+                <IconButton
+                  size="small"
+                  sx={{
+                    color:
+                      action.id === 'share'
+                        ? theme.palette.info.main
+                        : theme.palette.grey[500],
+                  }}
+                  onClick={(e) => handleActionClick(e, action)}
+                >
+                  {action.icon}
+                </IconButton>
+              </Tooltip>
+            ))
+          ) : (
+            <Typography
+              sx={{
+                color: theme.palette.text.secondary,
+                fontSize: '0.9rem',
+              }}
+            >
+              -
+            </Typography>
+          )}
         </Box>
       </TableCell>
     </TableRow>

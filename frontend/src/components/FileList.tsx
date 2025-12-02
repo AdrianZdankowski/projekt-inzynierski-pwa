@@ -9,10 +9,12 @@ import VideoDialog from './VideoDialog';
 import DocumentDialog from './DocumentDialog';
 import ImageDialog from './ImageDialog';
 import DeleteFileDialog from './DeleteFileDialog';
+import ShareDialog from './ShareDialog';
 import FileListToolbar from './FileListToolbar';
 import FileListPagination from './FileListPagination';
 import FileCard from './FileCard';
 import { useFileOperations } from '../hooks/useFileOperations';
+import { useFolderOperations } from '../hooks/useFolderOperations';
 import FileTable from './FileTable';
 import CreateFolderDialog from './CreateFolderDialog';
 import { CreateNewFolder as CreateNewFolderIcon } from '@mui/icons-material';
@@ -22,7 +24,7 @@ import FileBreadcrumbs from './FileBreadcrumbs';
 
 interface FileListProps {
   onRefreshReady?: (refreshFn: () => void) => void;
-  onFolderChange?: (folderId: string | null) => void;
+  onFolderChange?: (folderId: string | null, canAdd?: boolean) => void;
 }
 
 const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
@@ -38,13 +40,15 @@ const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
     pageSize: 10
   });
   const [selectedFile, setSelectedFile] = useState<FileMetadata | null>(null);
-  const [isSelectedFileShared, setIsSelectedFileShared] = useState<boolean>(false);
   const [openVideoDialog, setOpenVideoDialog] = useState<boolean>(false);
   const [openDocumentDialog, setOpenDocumentDialog] = useState<boolean>(false);
   const [openImageDialog, setOpenImageDialog] = useState<boolean>(false);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; name: string }[]>([]);
   const [isCreateFolderDialogOpen, setIsCreateFolderDialogOpen] = useState<boolean>(false);
+  const [openShareDialog, setOpenShareDialog] = useState<boolean>(false);
+  const [shareItemId, setShareItemId] = useState<string>('');
+  const [shareItemType, setShareItemType] = useState<'file' | 'folder'>('file');
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -52,7 +56,8 @@ const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
   const [openDeleteFileDialog, setOpenDeleteFileDialog] = useState<boolean>(false);
 
   const { accessToken } = useAuth();
-  const { fetchFilesList, deleteFile, deleteFolder } = useFileOperations();
+  const { fetchFilesList, deleteFile } = useFileOperations();
+  const { deleteFolder } = useFolderOperations();
   const { showNotification } = useNotification();
   const { t } = useTranslation();
   const [emptyNotificationShown, setEmptyNotificationShown] = useState(false);
@@ -129,9 +134,10 @@ const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
 
   useEffect(() => {
     if (onFolderChange) {
-      onFolderChange(currentFolderId);
+      const canAdd = currentFolderId === null ? true : (fileListResponse?.canAddToFolder ?? true);
+      onFolderChange(currentFolderId, canAdd);
     }
-  }, [currentFolderId, onFolderChange]);
+  }, [currentFolderId, fileListResponse?.canAddToFolder, onFolderChange]);
 
   const handleDeleteFile = async (fileId: string) => {
     const isFolder = selectedFile?.id === fileId && selectedFile.type === 'folder';
@@ -159,7 +165,7 @@ const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
     }
   };
  
-  const handleFileClick = (file: FileMetadata, isShared: boolean) => {
+  const handleFileClick = (file: FileMetadata) => {
     console.log('Open file:', file);
 
     if (file.type === 'folder') {
@@ -170,7 +176,6 @@ const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
     }
 
     setSelectedFile(file);
-    setIsSelectedFileShared(isShared);
 
     const mime = file.mimeType;
 
@@ -201,6 +206,17 @@ const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
   const handleOpenDeleteDialog = (file: FileMetadata) => {
     setSelectedFile(file);
     setOpenDeleteFileDialog(true);
+  };
+
+  const handleOpenShareDialog = (file: FileMetadata) => {
+    setShareItemId(file.id);
+    setShareItemType(file.type as 'file' | 'folder');
+    setOpenShareDialog(true);
+  };
+
+  const handleCloseShareDialog = () => {
+    setOpenShareDialog(false);
+    setShareItemId('');
   };
 
   const handleCloseVideoDialog = () => {
@@ -301,7 +317,6 @@ const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
           open={openVideoDialog}
           onClose={handleCloseVideoDialog}
           file={selectedFile}
-          isShared={isSelectedFileShared}
         />
       )}
 
@@ -310,7 +325,6 @@ const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
           open={openDocumentDialog}
           onClose={handleCloseDocumentDialog}
           file={selectedFile}
-          isShared={isSelectedFileShared}
         />
       )}
 
@@ -319,7 +333,6 @@ const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
           open={openImageDialog}
           onClose={handleCloseImageDialog}
           file={selectedFile}
-          isShared={isSelectedFileShared}
         />
       )}
 
@@ -338,6 +351,15 @@ const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
           onClose={handleCloseCreateFolderDialog}
           parentFolderId={currentFolderId}
           onFolderCreated={fetchFiles}
+        />
+      )}
+
+      {openShareDialog && shareItemId && (
+        <ShareDialog
+          open={openShareDialog}
+          onClose={handleCloseShareDialog}
+          itemId={shareItemId}
+          itemType={shareItemType}
         />
       )}
       <FileListToolbar
@@ -377,8 +399,10 @@ const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
               <FileCard
                 file={file}
                 isShared={isShared}
+                canDeleteFromFolder={fileListResponse?.canDeleteFromFolder}
                 onFileClick={handleFileClick}
                 onDeleteDialogOpen={handleOpenDeleteDialog}
+                onShareDialogOpen={handleOpenShareDialog}
               />
             </Box>
           );
@@ -388,8 +412,10 @@ const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
         <FileTable
           files={files}
           isSharedFile={isSharedFile}
+          canDeleteFromFolder={fileListResponse?.canDeleteFromFolder}
           onFileClick={handleFileClick}
           onDeleteDialogOpen={handleOpenDeleteDialog}
+          onShareDialogOpen={handleOpenShareDialog}
         />
       ) : null}
 

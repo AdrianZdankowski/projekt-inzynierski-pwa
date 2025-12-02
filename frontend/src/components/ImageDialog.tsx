@@ -10,10 +10,9 @@ interface ImageDialogProps {
     open: boolean;
     onClose: () => void;
     file: FileMetadata | null;
-    isShared: boolean;
 }
 
-const ImageDialog = ({open, onClose, file, isShared} : ImageDialogProps) => {
+const ImageDialog = ({open, onClose, file} : ImageDialogProps) => {
     if (!file) return null;
 
     const { t } = useTranslation();
@@ -78,15 +77,6 @@ const ImageDialog = ({open, onClose, file, isShared} : ImageDialogProps) => {
                 >
                     {file.name}
                 </Typography>
-                {isShared && (
-                    <Typography
-                        variant="subtitle2"
-                        color="text.secondary"
-                        sx={{ ml: '8px', flex: '1', overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-                    >
-                        {t("imageDialog.sharedBy", { owner: file.userId })}
-                    </Typography>
-                )}
                 <IconButton
                     aria-label={t("common.close")}
                     onClick={onClose}

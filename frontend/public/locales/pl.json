@@ -151,12 +151,29 @@
     },
     "folders": {
       "createdSuccess": "Folder został utworzony pomyślnie.",
-      "deletedSuccess": "Folder został usunięty pomyślnie."
+      "deletedSuccess": "Folder został usunięty pomyślnie.",
+      "shareSuccess": "Folder został udostępniony pomyślnie."
     },
     "files": {
       "deleteSuccess": "Plik został usunięty pomyślnie.",
       "downloadSuccess": "Plik został pobrany pomyślnie.",
       "shareSuccess": "Plik został udostępniony pomyślnie."
+    }
+  },
+  "shareDialog": {
+    "file": {
+      "dialogTitle": "Udostępnij plik"
+    },
+    "folder": {
+      "dialogTitle": "Udostępnij folder",
+      "canCreate": "Zezwól na dodawanie nowych plików do folderu",
+      "canDelete": "Zezwól na usuwanie plików z folderu"
+    },
+    "usernameLabel": "Nazwa użytkownika",
+    "usernamePlaceholder": "Wpisz nazwę użytkownika",
+    "confirm": "Udostępnij",
+    "errors": {
+      "userNotFound": "Użytkownik o podanej nazwie nie istnieje."
     }
   }
 }

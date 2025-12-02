@@ -8,6 +8,7 @@ const UserFilesPage = () => {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [refreshFiles, setRefreshFiles] = useState<(() => void) | null>(null);
     const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+    const [canAddToFolder, setCanAddToFolder] = useState<boolean>(true);
     const theme = useTheme();
 
     const handleOpenUploadModal = () => {
@@ -26,8 +27,9 @@ const UserFilesPage = () => {
         setRefreshFiles(() => refreshFn);
     }, []);
 
-    const handleFolderChange = useCallback((folderId: string | null) => {
+    const handleFolderChange = useCallback((folderId: string | null, canAdd?: boolean) => {
         setCurrentFolderId(folderId);
+        setCanAddToFolder(canAdd ?? true);
     }, []);
 
     return (
@@ -45,39 +47,41 @@ const UserFilesPage = () => {
                     onFolderChange={handleFolderChange}
                 />
                 
-            <Fab
-                color="primary"
-                aria-label="add"
-                onClick={handleOpenUploadModal}
-                size="large"
-                sx={{
-                    position: "fixed",
-                    bottom: {
-                        xs: theme.spacing(3),
-                        md: theme.spacing(4)
-                    },
-                    right: {
-                        xs: theme.spacing(3),
-                        md: theme.spacing(4)
-                    },
-                    width: {
-                        xs: '56px',
-                        md: '72px'
-                    },
-                    height: {
-                        xs: '56px',
-                        md: '72px'
-                    },
-                    fontSize: {
-                        xs: theme.spacing(4),
-                        md: theme.spacing(5)
-                    },
-                }}
-            >
-                +
-            </Fab>
+            {canAddToFolder && (
+                <Fab
+                    color="primary"
+                    aria-label="add"
+                    onClick={handleOpenUploadModal}
+                    size="large"
+                    sx={{
+                        position: "fixed",
+                        bottom: {
+                            xs: theme.spacing(3),
+                            md: theme.spacing(4)
+                        },
+                        right: {
+                            xs: theme.spacing(3),
+                            md: theme.spacing(4)
+                        },
+                        width: {
+                            xs: '56px',
+                            md: '72px'
+                        },
+                        height: {
+                            xs: '56px',
+                            md: '72px'
+                        },
+                        fontSize: {
+                            xs: theme.spacing(4),
+                            md: theme.spacing(5)
+                        },
+                    }}
+                >
+                    +
+                </Fab>
+            )}
 
-                <FileUploadModal 
+            <FileUploadModal 
                     isOpen={isUploadModalOpen} 
                     onClose={handleCloseUploadModal}
                     onFileUploaded={handleFileUploaded}

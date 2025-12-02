@@ -32,9 +32,9 @@ const StyledBreadcrumb = styled(Chip)(() => ({
 
 const FileBreadcrumbs = ({ items, onBreadcrumbClick }: FileBreadcrumbsProps) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
-  const maxItems = isMobile ? 2 : 5;
+  const maxItems = isTablet ? 2 : 5;
 
   const visibleItems = useMemo(
     () => {
@@ -102,7 +102,7 @@ const FileBreadcrumbs = ({ items, onBreadcrumbClick }: FileBreadcrumbsProps) => 
         const chipWidth =
           isEllipsis || isRoot
             ? '60px'
-            : isMobile
+            : isTablet
             ? '160px'
             : '180px';
 
@@ -114,10 +114,10 @@ const FileBreadcrumbs = ({ items, onBreadcrumbClick }: FileBreadcrumbsProps) => 
             width: chipWidth,
             maxWidth: chipWidth,
             '& .MuiChip-icon': {
-              marginLeft: isRoot ? '14px' : '4px',
+              marginLeft: isRoot ? '16px' : '4px',
             },
             '& .MuiChip-label': {
-              maxWidth: isMobile ? '120px' : `130px`,
+              maxWidth: isTablet ? '120px' : `130px`,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',

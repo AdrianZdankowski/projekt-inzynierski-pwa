@@ -151,12 +151,29 @@
     },
     "folders": {
       "createdSuccess": "Folder has been created successfully.",
-      "deletedSuccess": "Folder has been deleted successfully."
+      "deletedSuccess": "Folder has been deleted successfully.",
+      "shareSuccess": "Folder has been shared successfully."
     },
     "files": {
       "deleteSuccess": "File has been deleted successfully.",
       "downloadSuccess": "File has been downloaded successfully.",
       "shareSuccess": "File has been shared successfully."
+    }
+  },
+  "shareDialog": {
+    "file": {
+      "dialogTitle": "Share file"
+    },
+    "folder": {
+      "dialogTitle": "Share folder",
+      "canCreate": "Allow adding new files to the folder",
+      "canDelete": "Allow deleting files from the folder"
+    },
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Enter username",
+    "confirm": "Share",
+    "errors": {
+      "userNotFound": "User with the given username does not exist."
     }
   }
 }
