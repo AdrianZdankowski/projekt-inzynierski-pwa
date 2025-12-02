@@ -76,12 +76,15 @@ namespace backend.Test
         }
 
         [Test]
-        public void DeleteFile_NonExistentFile_ThrowsNullReferenceException()
+        public async Task DeleteFile_NonExistentFile_ReturnsNotFound()
         {
             var nonExistentFileId = Guid.NewGuid();
 
-            Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await fileController.DeleteFile(nonExistentFileId));
+            var result = await fileController.DeleteFile(nonExistentFileId);
+            
+            Assert.IsInstanceOf<NotFoundObjectResult>(result);
+            var notFoundResult = result as NotFoundObjectResult;
+            Assert.That(notFoundResult.Value, Is.EqualTo("File not found"));
             
             fileUploadServiceMock.Verify(s => s.DeleteFile(It.IsAny<Guid>()), Times.Never);
         }

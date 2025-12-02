@@ -13,6 +13,9 @@ export interface FileListResponse {
   sortBy: string;
   sortDir: string;
   q: string | null;
+  currentFolderPermissions?: number | null;
+  canAddToFolder?: boolean;
+  canDeleteFromFolder?: boolean;
 }
 
 export interface FileListParams {

@@ -12,45 +12,55 @@ namespace backend.Services
     {
         public async Task<bool> ValidateUserAccess(Guid userId, WebApplication1.File file)
         {
-            // Check if user is the file owner
             if (file.UserId.Equals(userId))
             {
                 return true;
             }
 
-            var fileAccess = context.FileAccesses.FirstOrDefault(f => f.file.id == file.id && f.user.id == userId);
+            var fileAccess = await context.FileAccesses
+                .FirstOrDefaultAsync(f => f.file.id == file.id && f.user.id == userId);
             if (fileAccess is not null)
             {
                 return true;
             }
 
-            // If file is in a folder, check if user has Read permission for that folder
-            // Load ParentFolder if not already loaded
-            if (file.ParentFolder == null)
+            if (file.ParentFolder != null)
             {
-                var fileWithFolder = await context.Files
+                var folder = await context.Folders
                     .Include(f => f.ParentFolder)
-                    .FirstOrDefaultAsync(f => f.id == file.id);
+                    .FirstOrDefaultAsync(f => f.id == file.ParentFolder.id);
                 
-                if (fileWithFolder?.ParentFolder != null)
+                if (folder != null)
                 {
-                    return await ValidateFolderPermissions(userId, fileWithFolder.ParentFolder, WebApplication1.PermissionFlags.Read);
+                    return await ValidateFolderPermissions(userId, folder, WebApplication1.PermissionFlags.Read);
                 }
             }
-            else
-            {
-                return await ValidateFolderPermissions(userId, file.ParentFolder, WebApplication1.PermissionFlags.Read);
-            }
-
+            
             return false;
         }
 
         public async Task<bool> ValidateDeletePermission(Guid userId, WebApplication1.File file)
         {
-            //currently only owner can delete file
             if (file.UserId.Equals(userId))
             {
                 return true;
+            }
+
+            if (file.ParentFolder != null)
+            {
+                var folder = await context.Folders
+                    .Include(f => f.ParentFolder)
+                    .FirstOrDefaultAsync(f => f.id == file.ParentFolder.id);
+                
+                if (folder != null)
+                {
+                    if (folder.OwnerId.Equals(userId))
+                    {
+                        return true;
+                    }
+
+                    return await ValidateFolderPermissions(userId, folder, WebApplication1.PermissionFlags.Delete);
+                }
             }
 
             return false;
@@ -133,6 +143,50 @@ namespace backend.Services
             }
 
             return false;
+        }
+
+        public async Task<int?> GetUserFolderPermissions(Guid userId, WebApplication1.Folder folder)
+        {
+            if (folder == null)
+            {
+                return null;
+            }
+
+            if (folder.OwnerId == userId)
+            {
+                return (int)(WebApplication1.PermissionFlags.Create | 
+                             WebApplication1.PermissionFlags.Read | 
+                             WebApplication1.PermissionFlags.Update | 
+                             WebApplication1.PermissionFlags.Delete);
+            }
+
+            var currentFolder = folder;
+            int? permissions = null;
+
+            while (currentFolder != null)
+            {
+                var folderAccess = await context.FolderAccesses
+                    .FirstOrDefaultAsync(fa => fa.user.id == userId && fa.folder.id == currentFolder.id);
+                
+                if (folderAccess != null)
+                {
+                    permissions = (int)folderAccess.permissions;
+                    break;
+                }
+
+                if (currentFolder.ParentFolder != null)
+                {
+                    currentFolder = await context.Folders
+                        .Include(f => f.ParentFolder)
+                        .FirstOrDefaultAsync(f => f.id == currentFolder.ParentFolder.id);
+                }
+                else
+                {
+                    currentFolder = null;
+                }
+            }
+
+            return permissions;
         }
     }
 }

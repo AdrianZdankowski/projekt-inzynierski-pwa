@@ -1,5 +1,5 @@
 import { Card, CardContent, CardActions, Typography, IconButton, Button, Box, Tooltip, Avatar, useTheme } from '@mui/material';
-import { Delete as DeleteIcon, Share as ShareIcon, Download as DownloadIcon, Folder as FolderIcon, FolderShared as FolderSharedIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Share as ShareIcon, Download as DownloadIcon, Folder as FolderIcon, FolderShared as FolderSharedIcon, Star as StarIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { FileMetadata } from '../types/FileMetadata';
 import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
@@ -8,22 +8,29 @@ import { useFileOperations } from '../hooks/useFileOperations';
 interface FileCardProps {
   file: FileMetadata;
   isShared: boolean;
-  onFileClick: (file: FileMetadata, isShared: boolean) => void;
+  canDeleteFromFolder?: boolean;
+  onFileClick: (file: FileMetadata) => void;
   onDeleteDialogOpen: (file: FileMetadata) => void;
+  onShareDialogOpen: (file: FileMetadata) => void;
 }
 
 const FileCard = ({
   file,
   isShared,
+  canDeleteFromFolder = false,
   onFileClick,
-  onDeleteDialogOpen
+  onDeleteDialogOpen,
+  onShareDialogOpen
 }: FileCardProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { downloadFile, shareFile } = useFileOperations();
+  const { downloadFile } = useFileOperations();
   const isFolder = file.type === 'folder';
   const FileIcon = isFolder ? (file.isShared ? FolderSharedIcon : FolderIcon) : getFileIcon(file.mimeType);
   const fileColor = getFileTypeColor(file.mimeType);
+  
+  const canDelete = !isShared || canDeleteFromFolder;
+  const canShare = !isShared;
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -39,7 +46,7 @@ const FileCard = ({
 
   const handleShareClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    shareFile(file.id);
+    onShareDialogOpen(file);
   };
 
   return (
@@ -60,7 +67,7 @@ const FileCard = ({
           boxShadow: 4,
         }
       }}
-      onClick={() => onFileClick(file, isShared)}
+      onClick={() => onFileClick(file)}
     >
       {!isFolder && (
         <Tooltip title={t('fileCard.download')}>
@@ -86,31 +93,61 @@ const FileCard = ({
         </Tooltip>
       )}
 
-      <Tooltip title={t('fileCard.delete')}>
+      {file.isShared && (
         <IconButton
+          size="small"
+          disabled
           sx={{
             position: 'absolute',
             top: '12px',
             right: '12px',
             zIndex: '2',
             backgroundColor: theme.palette.background.paper,
-            color: theme.palette.text.primary,
+            color: theme.palette.warning.main,
+            cursor: 'default',
             '&:hover': {
               backgroundColor: theme.palette.mode === 'dark' 
                 ? theme.palette.grey[800] 
                 : theme.palette.grey[400],
+            },
+            '&.Mui-disabled': {
+              color: theme.palette.warning.main,
+              backgroundColor: theme.palette.background.paper,
             }
           }}
-          onClick={handleDeleteClick}
-          size="small"
         >
-          <DeleteIcon fontSize="small" />
+          <StarIcon fontSize="small" />
         </IconButton>
-      </Tooltip>
+      )}
+
+      {canDelete && (
+        <Tooltip title={t('fileCard.delete')}>
+          <IconButton
+            sx={{
+              position: 'absolute',
+              top: file.isShared ? '48px' : '12px',
+              right: '12px',
+              zIndex: '2',
+              backgroundColor: theme.palette.background.paper,
+              color: theme.palette.text.primary,
+              '&:hover': {
+                backgroundColor: theme.palette.mode === 'dark' 
+                  ? theme.palette.grey[800] 
+                  : theme.palette.grey[400],
+              }
+            }}
+            onClick={handleDeleteClick}
+            size="small"
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      )}
 
       <Box
         sx={{
           height: '140px',
+          flexShrink: 0,
           backgroundColor: fileColor,
           display: 'flex',
           alignItems: 'center',
@@ -129,12 +166,14 @@ const FileCard = ({
 
       <CardContent
         sx={{
-          flexGrow: '1',
+          flex: '1 1 auto',
           padding: '16px',
+          paddingBottom: canShare ? '8px' : '24px',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
-          overflow: 'hidden'
+          justifyContent: 'flex-start',
+          overflow: 'hidden',
+          minHeight: '0px'
         }}
       >
         <Typography
@@ -145,24 +184,26 @@ const FileCard = ({
             display: '-webkit-box',
             WebkitLineClamp: '2',
             WebkitBoxOrient: 'vertical',
-            fontSize: '1.25rem',
+            fontSize: canShare ? '1.1rem' : '1.25rem',
             whiteSpace: "nowrap",
             maxWidth: { xs: "95%", sm: "95%" },
             lineHeight: '1.3',
             minHeight: '2em',
             color: theme.palette.text.primary,
+            marginBottom: canShare ? '0px' : '7px',
+            flexShrink: 0
           }}
           title={file.name}
         >
           {file.name}
         </Typography>
 
-        <Box sx={{ marginBottom: '12px' }}>
+        <Box sx={{ marginBottom: canShare ? '2px' : '12px', flexShrink: 0 }}>
           <Typography
             sx={{
-              fontSize: '0.9rem',
+              fontSize: canShare ? '0.85rem' : '1.1rem',
               color: theme.palette.text.secondary,
-              lineHeight: '1.5',
+              lineHeight: '1',
             }}
           >
             {isFolder
@@ -175,7 +216,9 @@ const FileCard = ({
           display: 'flex', 
           alignItems: 'center', 
           gap: '8px',
-          marginBottom: '8px'
+          marginTop: 'auto',
+          marginBottom: canShare ? '2px' : '8px',
+          flexShrink: 0
         }}>
           <Avatar 
             sx={{ 
@@ -207,29 +250,34 @@ const FileCard = ({
       <CardActions
         sx={{
           justifyContent: 'center',
-          padding: '8px 16px 16px 16px',
-          minHeight: 'auto',
-          flexShrink: '0'
+          padding: canShare ? '4px 16px 12px 16px' : '0px',
+          minHeight: canShare ? '56px' : '0px',
+          maxHeight: canShare ? '56px' : '0px',
+          flexShrink: '0',
+          display: canShare ? 'flex' : 'none',
+          alignItems: 'center'
         }}
       >
-        <Tooltip title={t('fileCard.shareFile')}>
-          <Button
-            variant="outlined"
-            startIcon={<ShareIcon />}
-            onClick={handleShareClick}
-            size="medium"
-            sx={{
-              fontSize: '0.85rem',
-              padding: '8px 24px',
-              minWidth: 'auto',
-              borderRadius: '12px',
-              width: 'auto',
-              fontWeight: '600',
-            }}
-          >
-            {t('fileCard.share')}
-          </Button>
-        </Tooltip>
+        {canShare && (
+          <Tooltip title={t('fileCard.shareFile')}>
+            <Button
+              variant="outlined"
+              startIcon={<ShareIcon />}
+              onClick={handleShareClick}
+              size="medium"
+              sx={{
+                fontSize: '0.85rem',
+                padding: '8px 24px',
+                minWidth: 'auto',
+                borderRadius: '12px',
+                width: 'auto',
+                fontWeight: '600',
+              }}
+            >
+              {t('fileCard.share')}
+            </Button>
+          </Tooltip>
+        )}
       </CardActions>
     </Card>
   );

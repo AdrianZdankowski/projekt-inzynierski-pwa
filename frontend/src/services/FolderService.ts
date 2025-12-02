@@ -15,6 +15,31 @@ export const FolderService = {
   async deleteFolder(folderId: string) {
     await axiosInstance.delete(`/folder/${folderId}`);
   },
+
+  async shareFolder(
+    folderId: string,
+    username: string,
+    permissions: {
+      canCreate: boolean;
+      canDelete: boolean;
+    }
+  ): Promise<void> {
+    let permissionFlags = 2; // Read is always included
+
+    if (permissions.canCreate) {
+      permissionFlags |= 1; // Create
+    }
+
+    if (permissions.canDelete) {
+      permissionFlags |= 8; // Delete
+    }
+
+    await axiosInstance.post('/folder/permissions', {
+      folderId,
+      userName: username,
+      permissions: permissionFlags,
+    });
+  },
 };
 
 
