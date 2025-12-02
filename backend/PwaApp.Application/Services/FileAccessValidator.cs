@@ -35,7 +35,7 @@ namespace backend.Services
                     return await ValidateFolderPermissions(userId, folder, WebApplication1.PermissionFlags.Read);
                 }
             }
-
+            
             return false;
         }
 

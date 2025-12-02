@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using backend.Data;
 using backend.DTO.Folder;
 using Microsoft.AspNetCore.Authorization;
@@ -10,19 +9,15 @@ using WebApplication1;
 
 namespace backend.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
-    public class FolderController(IAppDbContext appDbContext, IFileAccessValidator fileAccessValidator, IFolderService folderService): ControllerBase
+    public class FolderController(IAppDbContext appDbContext, IFileAccessValidator fileAccessValidator, IFolderService folderService): ApiControllerBase
     {
         [Authorize]
         [HttpPost]
         public async Task<ActionResult<CreateFolderDto>> AddFolderAsync(CreateFolderDto request)
         {
-            var claims = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(claims, out var userId))
-            {
-                return Unauthorized("Invalid or missing user ID");
-            }
+            Guid userId;
+            try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
 
             var folder = await folderService.AddFolderAsync(request, userId);
 
@@ -33,11 +28,8 @@ namespace backend.Controllers
         [HttpDelete("{folderId:guid}")]
         public async Task<ActionResult> DeleteFolder(Guid folderId) 
         {
-            var claims = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(claims, out var userId))
-            {
-                return Unauthorized("Invalid or missing user ID");
-            }
+            Guid userId;
+            try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
 
             var folder = appDbContext.Folders
                 .Include(f => f.ParentFolder)
@@ -59,11 +51,8 @@ namespace backend.Controllers
         [HttpPost("permissions")]
         public async Task<ActionResult> AddFolderPermissions(FolderPermissionsDto request)
         {
-            var claims = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(claims, out var userId))
-            {
-                return Unauthorized("Invalid or missing user ID");
-            }
+            Guid userId;
+            try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
 
             var folder = appDbContext.Folders.FirstOrDefault(f => f.id == request.FolderId);
             //todo: change in case other users should be able to grant access
@@ -86,11 +75,8 @@ namespace backend.Controllers
         [HttpGet("owned")]
         public async Task<ActionResult<List<FolderDto>>> GetUserOwnFolders()
         {
-            var claims = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(claims, out var userId))
-            {
-                return Unauthorized("Invalid or missing user ID");
-            }
+            Guid userId;
+            try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
 
             var folders = await folderService.GetUserOwnFoldersTreeAsync(userId);
             return Ok(folders);
@@ -100,11 +86,8 @@ namespace backend.Controllers
         [HttpGet("shared")]
         public async Task<ActionResult<List<FolderDto>>> GetUserSharedFolders()
         {
-            var claims = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(claims, out var userId))
-            {
-                return Unauthorized("Invalid or missing user ID");
-            }
+            Guid userId;
+            try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
 
             var folders = await folderService.GetUserSharedFoldersTreeAsync(userId);
             return Ok(folders);
@@ -114,11 +97,8 @@ namespace backend.Controllers
         [HttpPatch("{folderId:guid}")]
         public async Task<ActionResult<FolderDto>> UpdateFolder(Guid folderId, [FromBody] UpdateFolderDto updateDto)
         {
-            var claims = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(claims, out var userId))
-            {
-                return Unauthorized("Invalid or missing user ID");
-            }
+            Guid userId;
+            try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
 
             var folder = appDbContext.Folders
                 .Include(f => f.ParentFolder)
