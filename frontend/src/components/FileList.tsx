@@ -288,27 +288,29 @@ const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
               onBreadcrumbClick={handleBreadcrumbClick}
             />
 
-            <Button
-              variant="outlined"
-              startIcon={<CreateNewFolderIcon />}
-              onClick={handleOpenCreateFolderDialog}
-              sx={{
-                fontSize: '0.85rem',
-                padding: isMobile ? '6px' : '8px 24px',
-                minWidth: isMobile ? '44px' : 'auto',
-                borderRadius: '12px',
-                fontWeight: '700',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: isMobile ? 'center' : 'flex-start',
-                '& .MuiButton-startIcon': {
-                  marginLeft: isMobile ? '6px' : '0px',
-                  marginBottom: isMobile ? '0px' : '2px',
-                },
-              }}
-            >
-              {!isMobile && t('fileList.createFolder.button')}
-            </Button>
+            {(currentFolderId === null ? true : (fileListResponse?.canAddToFolder ?? true)) && (
+              <Button
+                variant="outlined"
+                startIcon={<CreateNewFolderIcon />}
+                onClick={handleOpenCreateFolderDialog}
+                sx={{
+                  fontSize: '0.85rem',
+                  padding: isMobile ? '6px' : '8px 24px',
+                  minWidth: isMobile ? '44px' : 'auto',
+                  borderRadius: '12px',
+                  fontWeight: '700',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: isMobile ? 'center' : 'flex-start',
+                  '& .MuiButton-startIcon': {
+                    marginLeft: isMobile ? '6px' : '0px',
+                    marginBottom: isMobile ? '0px' : '2px',
+                  },
+                }}
+              >
+                {!isMobile && t('fileList.createFolder.button')}
+              </Button>
+            )}
           </Box>
         </>
       )}
