@@ -17,9 +17,7 @@ const VideoTestPage = () => {
     return <>
     <VideoPlayer src={`${API_BASE_URL}/Stream/${state.file.id}/master.m3u8`} 
     fileName={state.file.name} 
-    ownerName={state.file.ownerName}
-    uploadTimestamp={state.file.date}
-    isShared={state.isShared}/>
+    uploadTimestamp={state.file.date}/>
     </>
 };
 
