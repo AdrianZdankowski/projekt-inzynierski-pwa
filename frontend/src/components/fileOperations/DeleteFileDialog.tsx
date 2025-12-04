@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useTranslation } from "react-i18next";
-import { FileMetadata } from "../types/FileMetadata";
+import { FileMetadata } from "../../types/FileMetadata";
 
 interface DeleteFileDialogProps {
     open: boolean;

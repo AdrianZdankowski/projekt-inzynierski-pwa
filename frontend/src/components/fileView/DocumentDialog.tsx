@@ -1,9 +1,9 @@
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import { Dialog, DialogTitle, DialogContent, Box, CircularProgress, Alert, Typography, IconButton, useMediaQuery } from '@mui/material';
 import CloseIcon from "@mui/icons-material/Close";
-import { FileMetadata } from "../types/FileMetadata";
+import { FileMetadata } from "../../types/FileMetadata";
 import { useEffect, useState } from "react";
-import { FileService } from "../services/FileService";
+import { FileService } from "../../services/FileService";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@mui/material/styles";
 import 'react-pdf/dist/Page/TextLayer.css';

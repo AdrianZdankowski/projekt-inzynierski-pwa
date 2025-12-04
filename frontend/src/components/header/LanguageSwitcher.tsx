@@ -2,8 +2,8 @@ import * as React from 'react';
 import { Select, MenuItem, SelectChangeEvent, Typography, useMediaQuery, useTheme, Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { PL as FlagPL, GB as FlagGB } from 'country-flag-icons/react/3x2';
-import { SupportedLanguage, languageOptions } from '../types/language';
-import { isSupportedLanguage } from '../services/LanguageService';
+import { SupportedLanguage, languageOptions } from '../../types/language';
+import { isSupportedLanguage } from '../../services/LanguageService';
 
 interface LanguageSwitcherProps {
   isCompactModeAvailable?: boolean;

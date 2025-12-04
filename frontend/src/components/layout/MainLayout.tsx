@@ -1,5 +1,5 @@
-import PWABadge from '../PWABadge';
-import Header from './header';
+import PWABadge from '../../PWABadge';
+import Header from '../header/Header';
 import { Outlet } from 'react-router-dom';
 
 const MainLayout = () => {

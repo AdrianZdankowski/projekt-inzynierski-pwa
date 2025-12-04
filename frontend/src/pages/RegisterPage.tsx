@@ -1,7 +1,7 @@
 import { Container, Box } from '@mui/material';
-import LanguageSwitcher from '../components/LanguageSwitcher';
+import LanguageSwitcher from '../components/header/LanguageSwitcher';
 import RegisterForm from '../components/form/RegisterForm';
-import Logo from '../components/Logo';
+import Logo from '../components/header/Logo';
 
 const RegisterPage = () => {
   return (

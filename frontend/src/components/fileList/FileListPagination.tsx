@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { Box, Pagination, MenuItem, Select, FormControl, useTheme, useMediaQuery } from '@mui/material';
-import { ITEMS_PER_PAGE_OPTIONS } from '../types/FilterTypes';
+import { ITEMS_PER_PAGE_OPTIONS } from '../../types/FilterTypes';
 
 interface FileListPaginationProps {
   totalItems: number;

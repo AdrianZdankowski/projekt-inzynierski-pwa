@@ -1,7 +1,7 @@
 import { IconButton, Tooltip } from '@mui/material';
 import { LightMode, DarkMode } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { useThemeMode } from '../context/ThemeModeContext';
+import { useThemeMode } from '../../context/ThemeModeContext';
 
 const ModeSwitcher = () => {
   const { mode, toggleMode } = useThemeMode();

@@ -1,12 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import MainLayout from './components/MainLayout.tsx'
+import MainLayout from './components/layout/MainLayout.tsx'
 import LoginPage from './pages/LoginPage.tsx'
 import RegisterPage from './pages/RegisterPage.tsx'
-import ProtectedRoute from './components/ProtectedRoute.tsx'
-import PublicRoute from './components/PublicRoute.tsx'
+import ProtectedRoute from './components/routeGuard/ProtectedRoute.tsx'
+import PublicRoute from './components/routeGuard/PublicRoute.tsx'
 import UserFilesPage from './pages/UserFilesPage.tsx'
 import { useAuth } from './context/AuthContext.tsx'
-import AxiosInterceptorWrapper from './components/AxiosInterceptorWrapper.ts'
+import AxiosInterceptorWrapper from './utils/AxiosInterceptorWrapper.ts'
 import Notification from './components/Notification.tsx'
 
 function App() {

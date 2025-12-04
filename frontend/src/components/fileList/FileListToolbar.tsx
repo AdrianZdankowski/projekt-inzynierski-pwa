@@ -3,9 +3,9 @@ import { Box, Typography, TextField, IconButton, Tooltip, Menu, MenuItem, InputA
 import { Sort as SortIcon, ViewModule as GridViewIcon, ViewList as ListViewIcon,
   ArrowUpward as ArrowUpIcon, ArrowDownward as ArrowDownIcon, Search as SearchIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { SORT_OPTIONS, SortField, SortOrder, getSortLabel } from '../types/SortTypes';
-import { ViewMode } from '../types/FilterTypes';
-import { FileListFilters } from '../types/FileListTypes';
+import { SORT_OPTIONS, SortField, SortOrder, getSortLabel } from '../../types/SortTypes';
+import { ViewMode } from '../../types/FilterTypes';
+import { FileListFilters } from '../../types/FileListTypes';
 
 interface FileListToolbarProps {
   onFiltersChange: (filters: FileListFilters) => void;

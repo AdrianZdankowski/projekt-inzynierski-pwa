@@ -5,8 +5,8 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import FolderIcon from '@mui/icons-material/Folder';
 import { Box, Button, Typography, CircularProgress, Modal, IconButton, useTheme, useMediaQuery } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { useNotification } from '../context/NotificationContext';
-import { FileUploadService } from '../services/FileUploadService';
+import { useNotification } from '../../context/NotificationContext';
+import { FileUploadService } from '../../services/FileUploadService';
 
 interface FileUploadModalProps {
     isOpen: boolean;
