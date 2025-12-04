@@ -11,7 +11,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { Close as CloseIcon, CreateNewFolder as CreateNewFolderIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
-import { useFolderOperations } from '../hooks/useFolderOperations';
+import { useFolderOperations } from '../../hooks/useFolderOperations';
 
 interface CreateFolderDialogProps {
   open: boolean;

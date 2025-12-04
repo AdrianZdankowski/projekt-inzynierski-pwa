@@ -9,7 +9,7 @@ import {
     Alert
 } from "@mui/material";
 import Hls, { LoaderCallbacks, LoaderConfiguration, LoaderContext } from "hls.js";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
 
 interface VideoPlayerProps {

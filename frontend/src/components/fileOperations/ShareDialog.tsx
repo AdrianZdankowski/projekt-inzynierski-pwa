@@ -13,8 +13,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { Close as CloseIcon, Person as PersonIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
-import { useFileOperations } from '../hooks/useFileOperations';
-import { useFolderOperations } from '../hooks/useFolderOperations';
+import { useFileOperations } from '../../hooks/useFileOperations';
+import { useFolderOperations } from '../../hooks/useFolderOperations';
 
 interface ShareDialogProps {
   open: boolean;

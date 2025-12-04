@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { FileMetadata } from "../types/FileMetadata";
-import { FileService } from "../services/FileService";
+import { FileMetadata } from "../../types/FileMetadata";
+import { FileService } from "../../services/FileService";
 import { Alert, Box, CircularProgress, Dialog, DialogContent, DialogTitle, Typography, IconButton, useMediaQuery } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useTranslation } from "react-i18next";

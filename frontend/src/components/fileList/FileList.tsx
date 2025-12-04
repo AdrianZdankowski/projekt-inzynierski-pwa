@@ -1,24 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, useMediaQuery, Button } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { FileListResponse, FileListParams, FileListFilters, FileListPaginationState } from '../types/FileListTypes';
-import { FileMetadata } from '../types/FileMetadata';
-import { useAuth } from '../context/AuthContext';
-import { decodeUserId } from '../utils/decodeUserId';
-import VideoDialog from './VideoDialog';
-import DocumentDialog from './DocumentDialog';
-import ImageDialog from './ImageDialog';
-import DeleteFileDialog from './DeleteFileDialog';
-import ShareDialog from './ShareDialog';
+import { FileListResponse, FileListParams, FileListFilters, FileListPaginationState } from '../../types/FileListTypes';
+import { FileMetadata } from '../../types/FileMetadata';
+import { useAuth } from '../../context/AuthContext';
+import { decodeUserId } from '../../utils/decodeUserId';
+import VideoDialog from '../fileView/VideoDialog';
+import DocumentDialog from '../fileView/DocumentDialog';
+import ImageDialog from '../fileView/ImageDialog';
+import DeleteFileDialog from '../fileOperations/DeleteFileDialog';
+import ShareDialog from '../fileOperations/ShareDialog';
 import FileListToolbar from './FileListToolbar';
 import FileListPagination from './FileListPagination';
 import FileCard from './FileCard';
-import { useFileOperations } from '../hooks/useFileOperations';
-import { useFolderOperations } from '../hooks/useFolderOperations';
+import { useFileOperations } from '../../hooks/useFileOperations';
+import { useFolderOperations } from '../../hooks/useFolderOperations';
 import FileTable from './FileTable';
-import CreateFolderDialog from './CreateFolderDialog';
+import CreateFolderDialog from '../fileOperations/CreateFolderDialog';
 import { CreateNewFolder as CreateNewFolderIcon } from '@mui/icons-material';
-import { useNotification } from '../context/NotificationContext';
+import { useNotification } from '../../context/NotificationContext';
 import { useTranslation } from 'react-i18next';
 import FileBreadcrumbs from './FileBreadcrumbs';
 
@@ -180,14 +180,20 @@ const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
     const mime = file.mimeType;
 
     if (mime === 'video/mp4') {
-      setOpenVideoDialog(true);
+      navigator.onLine ? setOpenVideoDialog(true) : showNotification(t('fileOperations.common.offlineFileError'), 'error');
+      return;
+    }
+
+    if (
+      mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      mime === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ) {
+      navigator.onLine ? setOpenDocumentDialog(true) : showNotification(t('fileOperations.common.offlineFileError'), 'error');
       return;
     }
 
     if (
       mime === 'application/pdf' ||
-      mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-      mime === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
       mime === 'text/plain'
     ) {
       setOpenDocumentDialog(true);

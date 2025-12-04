@@ -1,9 +1,9 @@
 import { Card, CardContent, CardActions, Typography, IconButton, Button, Box, Tooltip, Avatar, useTheme } from '@mui/material';
 import { Delete as DeleteIcon, Share as ShareIcon, Download as DownloadIcon, Folder as FolderIcon, FolderShared as FolderSharedIcon, Star as StarIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { FileMetadata } from '../types/FileMetadata';
-import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
-import { useFileOperations } from '../hooks/useFileOperations';
+import { FileMetadata } from '../../types/FileMetadata';
+import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../../utils/fileUtils';
+import { useFileOperations } from '../../hooks/useFileOperations';
 
 interface FileCardProps {
   file: FileMetadata;

@@ -1,8 +1,8 @@
 import { Dialog, DialogContent, DialogTitle, IconButton, Typography, useMediaQuery } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useTheme } from "@mui/material/styles";
-import { FileMetadata } from "../types/FileMetadata";
-import { API_BASE_URL } from "../api/axiosConfig";
+import { FileMetadata } from "../../types/FileMetadata";
+import { API_BASE_URL } from "../../api/axiosConfig";
 import VideoPlayer from "./VideoPlayer";
 
 interface VideoDialogProps {

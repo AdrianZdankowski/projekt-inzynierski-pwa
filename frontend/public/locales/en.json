@@ -144,6 +144,7 @@
   "fileOperations": {
     "common": {
       "offlineError": "No internet connection. This action is only available online.",
+      "offlineFileError": "This type of resource can only be opened online.",
       "authRequired": "Authorization required. Please log in again.",
       "forbidden": "Access denied. You do not have permission to perform this action.",
       "genericError": "An unexpected error occurred. Please try again.",

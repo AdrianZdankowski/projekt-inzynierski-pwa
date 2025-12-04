@@ -3,12 +3,12 @@ import {
   Container,
   Box,
 } from '@mui/material';
-import LanguageSwitcher from '../components/LanguageSwitcher';
+import LanguageSwitcher from '../components/header/LanguageSwitcher';
 import LoginForm from '../components/form/LoginForm';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { useTranslation } from 'react-i18next';
-import Logo from '../components/Logo';
+import Logo from '../components/header/Logo';
 
 const LoginPage = () => {
   const { logoutReason } = useAuth();

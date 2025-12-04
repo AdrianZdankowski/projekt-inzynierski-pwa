@@ -8,9 +8,9 @@ import {
   Paper,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { FileMetadata } from '../types/FileMetadata';
+import { FileMetadata } from '../../types/FileMetadata';
 import FileTableRow from './FileTableRow';
-import { TableColumn } from '../types/TableTypes';
+import { TableColumn } from '../../types/TableTypes';
 
 interface FileTableProps {
   files: FileMetadata[];

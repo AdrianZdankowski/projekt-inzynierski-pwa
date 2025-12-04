@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Container, Fab } from '@mui/material';
-import FileList from "../components/FileList";
-import FileUploadModal from "../components/FileUploadModal";
+import FileList from "../components/fileList/FileList";
+import FileUploadModal from "../components/fileOperations/FileUploadModal";
 import { useTheme } from '@mui/material/styles';
 
 const UserFilesPage = () => {

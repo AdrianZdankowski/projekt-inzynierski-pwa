@@ -18,10 +18,10 @@ import {
   Star as StarIcon,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { FileMetadata } from '../types/FileMetadata';
-import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../utils/fileUtils';
-import { TableAction, TableCellConfig } from '../types/TableTypes';
-import { useFileOperations } from '../hooks/useFileOperations';
+import { FileMetadata } from '../../types/FileMetadata';
+import { getFileIcon, getFileTypeColor, formatFileSize, formatDate } from '../../utils/fileUtils';
+import { TableAction, TableCellConfig } from '../../types/TableTypes';
+import { useFileOperations } from '../../hooks/useFileOperations';
 
 interface FileTableRowProps {
   file: FileMetadata;
