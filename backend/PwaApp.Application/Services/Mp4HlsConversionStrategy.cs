@@ -64,6 +64,23 @@ namespace backend.Services
 
             //upload files from /temp directory to azure
             await UploadAllFilesAsync(filesDirectory, targetDirectory);
+
+            //delete temp files immediately after upload
+            CleanupTempFiles(localDirectory, file.FileName, filesDirectory);
+        }
+
+        private static void CleanupTempFiles(string localDirectory, string fileName, string filesDirectory)
+        {
+            var downloadedFilePath = Path.Combine(localDirectory, fileName);
+            if (File.Exists(downloadedFilePath))
+            {
+                File.Delete(downloadedFilePath);
+            }
+
+            if (Directory.Exists(filesDirectory))
+            {
+                Directory.Delete(filesDirectory, true);
+            }
         }
 
         private static void RunProcess(string exePath, string arguments)
