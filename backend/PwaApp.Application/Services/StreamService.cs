@@ -66,9 +66,9 @@ namespace backend.Services
                 throw new UnauthorizedAccessException("User does not have access to this file");
             }
 
-            var file = azureBlobService.GetFile(azureBlobService.BuildUserScopedBlobName(video.UserId, video.id, fileName));
+            var file = await azureBlobService.GetFile(azureBlobService.BuildUserScopedBlobName(video.UserId, video.id, fileName));
 
-            return file.Result;
+            return file;
         }
     }
 }

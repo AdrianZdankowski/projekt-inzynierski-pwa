@@ -108,10 +108,22 @@
     "empty": {
       "noItems": "No items",
       "noItemsFiltered": "No items match the search criteria."
+    },
+    "createFolder": {
+      "button": "Add folder",
+      "dialogTitle": "Create folder",
+      "nameLabel": "Folder name",
+      "namePlaceholder": "Enter folder name",
+      "defaultName": "New folder",
+      "confirm": "Create folder"
+    },
+    "breadcrumbs": {
+      "root": "My files"
     }
   },
   "common": {
-    "close": "Close"
+    "close": "Close",
+    "cancel": "Cancel"
   },
   "documentDialog": {
     "fetchError": "An error occurred while fetching file data. Please try again.",
@@ -128,6 +140,41 @@
     "sharedBy": "Shared by: {{owner}}",
     "quality": "Video quality:",
     "qualityAuto": "Auto"
+  },
+  "fileOperations": {
+    "common": {
+      "offlineError": "No internet connection. This action is only available online.",
+      "authRequired": "Authorization required. Please log in again.",
+      "forbidden": "Access denied. You do not have permission to perform this action.",
+      "genericError": "An unexpected error occurred. Please try again.",
+      "fetchError": "Failed to load files. Please try again."
+    },
+    "folders": {
+      "createdSuccess": "Folder has been created successfully.",
+      "deletedSuccess": "Folder has been deleted successfully.",
+      "shareSuccess": "Folder has been shared successfully."
+    },
+    "files": {
+      "deleteSuccess": "File has been deleted successfully.",
+      "downloadSuccess": "File has been downloaded successfully.",
+      "shareSuccess": "File has been shared successfully."
+    }
+  },
+  "shareDialog": {
+    "file": {
+      "dialogTitle": "Share file"
+    },
+    "folder": {
+      "dialogTitle": "Share folder",
+      "canCreate": "Allow adding new files to the folder",
+      "canDelete": "Allow deleting files from the folder"
+    },
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Enter username",
+    "confirm": "Share",
+    "errors": {
+      "userNotFound": "User with the given username does not exist."
+    }
   }
 }
 

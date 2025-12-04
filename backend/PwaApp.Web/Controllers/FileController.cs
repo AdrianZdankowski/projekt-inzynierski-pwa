@@ -15,7 +15,6 @@ using WebApplication1;
 
 namespace backend.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
     public class FileController(
         IAzureBlobService azureBlobService,
@@ -23,7 +22,7 @@ namespace backend.Controllers
         IAppDbContext appDbContext,
         IConfiguration config,
         IFileConverter fileConverter,
-        IFileAccessValidator fileAccessValidator) : ControllerBase
+        IFileAccessValidator fileAccessValidator) : ApiControllerBase
     {
         [Authorize]
         [HttpPost("upload")]
@@ -62,16 +61,6 @@ namespace backend.Controllers
             {
                 return StatusCode(500, $"Upload failed: {ex.Message}");
             }
-        }
-
-        private Guid GetUserIdOrThrow()
-        {
-            var c = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(c, out var id))
-            {
-                throw new UnauthorizedAccessException("Invalid or missing user ID");
-            }
-            return id;
         }
 
         [Authorize]
@@ -223,24 +212,99 @@ namespace backend.Controllers
             Guid userId;
             try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
 
+            WebApplication1.Folder? currentFolder = null;
+            int? currentFolderPermissions = null;
+            bool canAddToFolder = false;
+            bool canDeleteFromFolder = false;
+
             var sharedFolders = new List<WebApplication1.Folder>();
+
+            IQueryable<WebApplication1.Folder> ownFolderQuery = appDbContext.Folders
+                .Where(f => f.OwnerId == userId); 
+
+            if (folderId is null) 
+                ownFolderQuery = ownFolderQuery.Where(f => f.ParentFolder == null); 
+            else
+                ownFolderQuery = ownFolderQuery.Where(f => f.ParentFolder != null && f.ParentFolder.id == folderId); 
+
+            var ownFolders = await ownFolderQuery.ToListAsync();
 
             if (folderId is not null)
             {
-                var folder = appDbContext.Folders.FirstOrDefault(f => f.id == folderId);
-                if (await fileAccessValidator.ValidateFolderPermissions(userId, folder, PermissionFlags.Read) == false)
+                currentFolder = await appDbContext.Folders
+                    .Include(f => f.ParentFolder)
+                    .FirstOrDefaultAsync(f => f.id == folderId);
+                
+                if (currentFolder == null)
+                {
+                    return NotFound("Folder not found");
+                }
+
+                if (await fileAccessValidator.ValidateFolderPermissions(userId, currentFolder, PermissionFlags.Read) == false)
                 {
                     return Unauthorized("User does not have access to this folder");
+                }
+
+                bool isOwner = currentFolder.OwnerId == userId;
+                if (isOwner)
+                {
+                    currentFolderPermissions = (int)(PermissionFlags.Create | 
+                                                     PermissionFlags.Read | 
+                                                     PermissionFlags.Update | 
+                                                     PermissionFlags.Delete);
+                    canAddToFolder = true;
+                    canDeleteFromFolder = true;
+                }
+                else
+                {
+                    currentFolderPermissions = await fileAccessValidator.GetUserFolderPermissions(userId, currentFolder);
+                    canAddToFolder = await fileAccessValidator.ValidateFolderAddPermission(userId, currentFolder);
+                    canDeleteFromFolder = await fileAccessValidator.ValidateFolderPermissions(userId, currentFolder, PermissionFlags.Delete);
+                }
+
+                if (isOwner)
+                {
+                    var allSubfolders = await appDbContext.Folders
+                        .Where(f => f.ParentFolder != null && f.ParentFolder.id == folderId)
+                        .ToListAsync();
+                    
+                    var ownSubfolderIds = ownFolders.Select(f => f.id).ToHashSet();
+                    sharedFolders = allSubfolders
+                        .Where(f => !ownSubfolderIds.Contains(f.id))
+                        .ToList();
+                }
+                else
+                {
+                    var sharedSubfolders = await appDbContext.Folders
+                        .Where(f => f.ParentFolder != null && f.ParentFolder.id == folderId)
+                        .ToListAsync();
+                    
+                    foreach (var subfolder in sharedSubfolders)
+                    {
+                        if (await fileAccessValidator.ValidateFolderPermissions(userId, subfolder, PermissionFlags.Read))
+                        {
+                            sharedFolders.Add(subfolder);
+                        }
+                    }
                 }
             }
             else
             {
-                //return shared folders
-                var sharedFoldersIds = appDbContext.FolderAccesses.Where(f => f.user.id ==  userId).Select(f => new {f.id }).ToList();
-                foreach (var sharedFolderId in sharedFoldersIds)
-                {
-                    sharedFolders.Add(appDbContext.Folders.FirstOrDefault(f => f.id.Equals(sharedFolderId)));
-                }
+                var sharedFoldersAccesses = await appDbContext.FolderAccesses
+                    .Include(fa => fa.folder)
+                    .ThenInclude(f => f.ParentFolder)
+                    .Where(fa => fa.user.id == userId)
+                    .ToListAsync();
+                
+                var allSharedFolders = sharedFoldersAccesses
+                    .Select(fa => fa.folder)
+                    .ToList();
+                
+                var sharedFolderIdsSet = allSharedFolders.Select(f => f.id).ToHashSet();
+                
+                sharedFolders = allSharedFolders
+                    .Where(f => f.ParentFolder == null || !sharedFolderIdsSet.Contains(f.ParentFolder.id))
+                    .ToList();
             }
 
             page = Math.Max(1, page);
@@ -257,16 +321,6 @@ namespace backend.Controllers
                 _ => "date"   //default
             };
 
-            IQueryable<WebApplication1.Folder> ownFolderQuery = appDbContext.Folders
-                .Where(f => f.OwnerId == userId); 
-
-            if (folderId is null) 
-                ownFolderQuery = ownFolderQuery.Where(f => f.ParentFolder == null); 
-            else
-                ownFolderQuery = ownFolderQuery.Where(f => f.ParentFolder.id == folderId); 
-
-            var ownFolders = await ownFolderQuery.ToListAsync();
-
             //if folderId == null sharedFolders already loaded above avoid duplicates
             if (folderId is null)
             {
@@ -277,8 +331,10 @@ namespace backend.Controllers
             }
             else
             {
-                //if we're not in root, we don't show shared root folders here
-                sharedFolders = new List<WebApplication1.Folder>();
+                var ownFolderIds = ownFolders.Select(f => f.id).ToHashSet();
+                sharedFolders = sharedFolders
+                    .Where(f => !ownFolderIds.Contains(f.id))
+                    .ToList();
             }
 
             //load own files with proper root/folder handling
@@ -288,29 +344,93 @@ namespace backend.Controllers
             if (folderId is null)
                 ownFileQuery = ownFileQuery.Where(f => f.ParentFolder == null);
             else
-                ownFileQuery = ownFileQuery.Where(f => f.ParentFolder.id == folderId);
+                ownFileQuery = ownFileQuery.Where(f => f.ParentFolder != null && f.ParentFolder.id == folderId);
 
             var ownFiles = await ownFileQuery.ToListAsync();
 
-            var SharedWithUserFileIds = appDbContext.FileAccesses
-                .Where(f => f.user.id == userId)
-                .Select(f => f.file.id)
-                .ToList();
+            var sharedFilesInFolder = new List<WebApplication1.File>();
+            if (folderId is not null && currentFolder != null)
+            {
+                bool isOwner = currentFolder.OwnerId == userId;
+                
+                if (isOwner)
+                {
+                    var allFilesInFolder = await appDbContext.Files
+                        .Where(f => f.ParentFolder != null && f.ParentFolder.id == folderId)
+                        .ToListAsync();
+                    
+                    var ownerOwnFileIds = ownFiles.Select(f => f.id).ToHashSet();
+                    sharedFilesInFolder = allFilesInFolder
+                        .Where(f => !ownerOwnFileIds.Contains(f.id))
+                        .ToList();
+                }
+                else
+                {
+                    var hasFolderAccess = await fileAccessValidator.ValidateFolderPermissions(
+                        userId, currentFolder, WebApplication1.PermissionFlags.Read);
+                    
+                    if (hasFolderAccess)
+                    {
+                        var filesInSharedFolder = await appDbContext.Files
+                            .Where(f => f.ParentFolder != null && 
+                                       f.ParentFolder.id == folderId &&
+                                       f.UserId == currentFolder.OwnerId)
+                            .ToListAsync();
+                        
+                        sharedFilesInFolder.AddRange(filesInSharedFolder);
+                    }
+                    
+                    var sharedFileAccesses = await appDbContext.FileAccesses
+                        .Include(fa => fa.file)
+                        .ThenInclude(f => f.ParentFolder)
+                        .Where(fa => fa.user.id == userId && 
+                                     fa.file.ParentFolder != null && 
+                                     fa.file.ParentFolder.id == folderId)
+                        .ToListAsync();
+                    
+                    var directlySharedFiles = sharedFileAccesses
+                        .Select(fa => fa.file)
+                        .ToList();
+                    
+                    var allFilesInFolder = sharedFilesInFolder
+                        .Concat(directlySharedFiles)
+                        .GroupBy(f => f.id)
+                        .Select(g => g.First())
+                        .ToList();
+                    
+                    sharedFilesInFolder = allFilesInFolder;
+                }
+            }
 
-            var SharedWithUserFiles = await appDbContext.Files
-                .Where(f => SharedWithUserFileIds.Contains(f.id))
-                .ToListAsync();
+            var SharedWithUserFiles = new List<WebApplication1.File>();
+            if (folderId == null)
+            {
+                var SharedWithUserFileIds = appDbContext.FileAccesses
+                    .Where(f => f.user.id == userId)
+                    .Select(f => f.file.id)
+                    .ToList();
+
+                SharedWithUserFiles = await appDbContext.Files
+                    .Where(f => SharedWithUserFileIds.Contains(f.id) && f.ParentFolder == null)
+                    .ToListAsync();
+            }
+
+            var allSharedFiles = sharedFilesInFolder
+                .Concat(SharedWithUserFiles)
+                .GroupBy(f => f.id)
+                .Select(g => g.First())
+                .ToList();
 
             // ADDED: avoid duplicate files (if user also owns file)
             var ownFileIds = ownFiles.Select(f => f.id).ToHashSet();
-            SharedWithUserFiles = SharedWithUserFiles
+            allSharedFiles = allSharedFiles
                 .Where(f => !ownFileIds.Contains(f.id))
                 .ToList();
         
             var ownerIds = ownFolders.Select(f => f.OwnerId)
                 .Concat(sharedFolders.Select(f => f.OwnerId))
                 .Concat(ownFiles.Select(f => f.UserId))
-                .Concat(SharedWithUserFiles.Select(f => f.UserId))
+                .Concat(allSharedFiles.Select(f => f.UserId))
                 .Distinct()
                 .ToList();
 
@@ -381,7 +501,7 @@ namespace backend.Controllers
 
             //shared files
             allItems.AddRange(
-                SharedWithUserFiles.Select(f => new backend.DTO.UserItemDto
+                allSharedFiles.Select(f => new backend.DTO.UserItemDto
                 {
                     Type = "file",
                     Id = f.id,
@@ -430,8 +550,6 @@ namespace backend.Controllers
             return Ok(new
             {
                 items = pageItems,
-                folders = ownFolders,
-                sharedFolders = sharedFolders,
                 page,
                 pageSize,
                 totalItems,
@@ -440,9 +558,13 @@ namespace backend.Controllers
                 hasPrev = page > 1,
                 sortBy = appliedKey,
                 sortDir = desc ? "desc" : "asc",
-                q
+                q,
+                currentFolderPermissions = currentFolderPermissions,
+                canAddToFolder = canAddToFolder,
+                canDeleteFromFolder = canDeleteFromFolder
             });
         }
+
 
         [Authorize]
         [HttpPost("share")]
@@ -497,9 +619,11 @@ namespace backend.Controllers
             Guid userId;
             try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
 
-            var file = appDbContext.Files.FirstOrDefault(f => f.id == id);
+            var file = await appDbContext.Files
+                .Include(f => f.ParentFolder)
+                .FirstOrDefaultAsync(f => f.id == id);
             if (file == null) return NotFound("File not found");
-            if (!fileAccessValidator.ValidateUserAccess(userId, file).Result) return Forbid("You are not allowed to access this file");
+            if (!await fileAccessValidator.ValidateUserAccess(userId, file)) return Forbid("You are not allowed to access this file");
             if (file.Status != WebApplication1.FileStatus.Uploaded) return Conflict("File is not ready for download");
 
             var ttl = TimeSpan.FromMinutes(10);
@@ -547,14 +671,6 @@ namespace backend.Controllers
                 return Unauthorized("User does not have access to this file");
             }
 
-            // If file is in a folder, check if user has Update permission for that folder
-            if (file.ParentFolder != null)
-            {
-                if (!await fileAccessValidator.ValidateFolderPermissions(userId, file.ParentFolder, WebApplication1.PermissionFlags.Update))
-                {
-                    return Unauthorized("User does not have permission to update files in this folder");
-                }
-            }
 
             // Only file owner can change the folder
             bool isOwner = file.UserId == userId;
@@ -603,7 +719,16 @@ namespace backend.Controllers
             Guid userId;
             try { userId = GetUserIdOrThrow(); } catch { return Unauthorized("Invalid or missing user ID"); }
 
-            if (!await fileAccessValidator.ValidateDeletePermission(userId, appDbContext.Files.FirstOrDefault(f => f.id == id)))
+            var file = await appDbContext.Files
+                .Include(f => f.ParentFolder)
+                .FirstOrDefaultAsync(f => f.id == id);
+            
+            if (file == null)
+            {
+                return NotFound("File not found");
+            }
+
+            if (!await fileAccessValidator.ValidateDeletePermission(userId, file))
             {
                 return Unauthorized("User does not have permission to delete this file");
             }

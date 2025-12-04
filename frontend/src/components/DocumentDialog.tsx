@@ -13,10 +13,9 @@ interface DocumentDialogProps {
     open: boolean; 
     onClose: () => void;
     file: FileMetadata | null;
-    isShared: boolean;
 }
 
-const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) => {
+const DocumentDialog = ({open, onClose, file} : DocumentDialogProps) => {
     if (!file) return null;
 
     const { t } = useTranslation();
@@ -79,15 +78,6 @@ const DocumentDialog = ({open, onClose, file, isShared} : DocumentDialogProps) =
                 >
                     {file.name}
                 </Typography>
-                {isShared && (
-                    <Typography
-                        variant="subtitle2"
-                        color="text.secondary"
-                        sx={{ ml: '8px', flex: '1', overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-                    >
-                        {t("documentDialog.sharedBy", { owner: file.userId })}
-                    </Typography>
-                )}
                 <IconButton
                     aria-label={t("common.close")}
                     onClick={onClose}

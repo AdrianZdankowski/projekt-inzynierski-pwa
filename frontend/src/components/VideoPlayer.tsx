@@ -15,9 +15,7 @@ import { useTranslation } from "react-i18next";
 interface VideoPlayerProps {
     src: string;
     fileName: string;
-    ownerName: string;
     uploadTimestamp: string;
-    isShared: boolean;
 }
 
 interface LevelInfo {
@@ -26,7 +24,7 @@ interface LevelInfo {
     bitrate: number;
 }
 
-const VideoPlayer = ({src, fileName, ownerName, uploadTimestamp, isShared}: VideoPlayerProps) => {
+const VideoPlayer = ({src, fileName, uploadTimestamp}: VideoPlayerProps) => {
 
     const autoQuality = -1;
 
@@ -157,11 +155,6 @@ const VideoPlayer = ({src, fileName, ownerName, uploadTimestamp, isShared}: Vide
                     <Typography variant="body2" gutterBottom>
                         {t("videoPlayer.uploadedAt", { date: uploadDate, time: uploadTime })}
                     </Typography>
-                {isShared && 
-                    <Typography variant="subtitle1" gutterBottom>
-                        {t("videoPlayer.sharedBy", { owner: ownerName })}
-                    </Typography>
-                }
                 </Box>
                 <Box sx={{
                     display: "grid",

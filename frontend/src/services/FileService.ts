@@ -27,6 +27,7 @@ export const FileService = {
     if (sortBy) queryParams.append('sortBy', sortBy);
     if (params?.sortDirection) queryParams.append('sortDirection', params.sortDirection);
     if (params?.q) queryParams.append('q', params.q);
+    if (params?.folderId) queryParams.append('folderId', params.folderId);
 
     const response = await axiosInstance.get(`/file?${queryParams.toString()}`);
     return response.data;
@@ -60,14 +61,11 @@ export const FileService = {
     }
   },
 
-  async shareFile(fileId: string, userId: string): Promise<void> {
-    await axiosInstance.post(`/file/${fileId}/share`, { userId });
-  },
-
-  async shareFileDownload(fileId: string): Promise<void> {
-    // TODO: Implement proper sharing endpoint in backend
-    // For now, download the file
-    await this.downloadFile(fileId);
+  async shareFile(fileId: string, username: string): Promise<void> {
+    await axiosInstance.post('/file/share', { 
+      fileId, 
+      userName: username 
+    });
   },
 
   async getUserFile(fileId: string): Promise<SingleFileMetadata> {

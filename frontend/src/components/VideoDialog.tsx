@@ -7,12 +7,11 @@ import VideoPlayer from "./VideoPlayer";
 
 interface VideoDialogProps {
     file: FileMetadata | null;
-    isShared: boolean;
     open: boolean;
     onClose: () => void;
 }
 
-const VideoDialog = ({file, isShared, open, onClose} : VideoDialogProps) => {
+const VideoDialog = ({file, open, onClose} : VideoDialogProps) => {
 
     if (!file) return null;
 
@@ -74,9 +73,7 @@ const VideoDialog = ({file, isShared, open, onClose} : VideoDialogProps) => {
                 <VideoPlayer 
                     src={`${API_BASE_URL}/Stream/${file.id}/master.m3u8`} 
                     fileName={file.name} 
-                    ownerName={file.ownerName}
                     uploadTimestamp={file.date}
-                    isShared={isShared}
                 />
             </DialogContent>
         </Dialog>

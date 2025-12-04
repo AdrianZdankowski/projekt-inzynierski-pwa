@@ -15,15 +15,19 @@ import { TableColumn } from '../types/TableTypes';
 interface FileTableProps {
   files: FileMetadata[];
   isSharedFile: (file: FileMetadata) => boolean;
-  onFileClick: (file: FileMetadata, isShared: boolean) => void;
+  canDeleteFromFolder?: boolean;
+  onFileClick: (file: FileMetadata) => void;
   onDeleteDialogOpen: (file: FileMetadata) => void;
+  onShareDialogOpen: (file: FileMetadata) => void;
 }
 
 const FileTable = ({
   files,
   isSharedFile,
+  canDeleteFromFolder,
   onFileClick,
   onDeleteDialogOpen,
+  onShareDialogOpen,
 }: FileTableProps) => {
   const { t } = useTranslation();
 
@@ -32,13 +36,13 @@ const FileTable = ({
       id: 'name',
       labelKey: 'fileTable.columns.name',
       align: 'left',
-      width: '20%',
+      width: '25%',
     },
     {
       id: 'owner',
       labelKey: 'fileTable.columns.owner',
       align: 'center',
-      width: '25%',
+      width: '20%',
     },
     {
       id: 'date',
@@ -99,8 +103,10 @@ const FileTable = ({
                 key={file.id}
                 file={file}
                 isShared={isShared}
+                canDeleteFromFolder={canDeleteFromFolder}
                 onFileClick={onFileClick}
                 onDeleteDialogOpen={onDeleteDialogOpen}
+                onShareDialogOpen={onShareDialogOpen}
               />
             );
           })}
