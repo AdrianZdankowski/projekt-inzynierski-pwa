@@ -180,14 +180,20 @@ const FileList = ({ onRefreshReady, onFolderChange }: FileListProps) => {
     const mime = file.mimeType;
 
     if (mime === 'video/mp4') {
-      setOpenVideoDialog(true);
+      navigator.onLine ? setOpenVideoDialog(true) : showNotification(t('fileOperations.common.offlineFileError'), 'error');
+      return;
+    }
+
+    if (
+      mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      mime === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ) {
+      navigator.onLine ? setOpenDocumentDialog(true) : showNotification(t('fileOperations.common.offlineFileError'), 'error');
       return;
     }
 
     if (
       mime === 'application/pdf' ||
-      mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-      mime === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
       mime === 'text/plain'
     ) {
       setOpenDocumentDialog(true);

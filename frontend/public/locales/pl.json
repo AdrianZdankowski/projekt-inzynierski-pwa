@@ -144,6 +144,7 @@
   "fileOperations": {
     "common": {
       "offlineError": "Brak połączenia z internetem. Ta operacja dostępna jest tylko online.",
+      "offlineFileError": "Ten typ zasobu może być otwarty tylko online.",
       "authRequired": "Wymagana autoryzacja. Zaloguj się ponownie.",
       "forbidden": "Odmowa dostępu. Nie masz uprawnień do wykonania tej operacji.",
       "genericError": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
