@@ -38,6 +38,18 @@ export const useAxiosInterceptor = () => {
           return Promise.reject(error);
         }
 
+        if (originalRequest.url?.includes('/auth/refresh-token')) {
+          console.log('Refresh token wygasł lub jest nieprawidłowy');
+          logout("network");
+          navigate('/login', { replace: true });
+          return Promise.reject(error);
+        }
+
+        if (error.response?.status === 403) {
+          console.log('Błąd 403 - brak uprawnień lub wygasły token');
+          return Promise.reject(error);
+        }
+
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
@@ -52,6 +64,12 @@ export const useAxiosInterceptor = () => {
               }
               throw new Error("No access token in response!");
             })
+            .catch((refreshError) => {
+              console.error('Błąd podczas odświeżania tokena:', refreshError);
+              logout("network");
+              navigate('/login', { replace: true });
+              throw refreshError;
+            })
             .finally(() => {
               refreshPromise = null;
             });
@@ -63,8 +81,6 @@ export const useAxiosInterceptor = () => {
             return axiosInstance(originalRequest);
           }
           catch (refreshError) {
-            logout("network");
-            navigate('/login', { replace: true });
             return Promise.reject(refreshError);
           }
         }

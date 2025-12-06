@@ -25,6 +25,7 @@ const DocumentDialog = ({open, onClose, file} : DocumentDialogProps) => {
     const [sasLink, setSasLink] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [fetchError, setFetchError] = useState<string>('');
+    const [retryCount, setRetryCount] = useState<number>(0);
 
     let uploadDate;
     let uploadTime;
@@ -37,11 +38,22 @@ const DocumentDialog = ({open, onClose, file} : DocumentDialogProps) => {
         const fetchFileLink = async () => {
             try {
                 setLoading(true);
+                setFetchError('');
                 const response = await FileService.getUserFile(file.id);
                 setSasLink(response.downloadUrl);
+                setRetryCount(0);
             }
             catch (error: any) {
-                console.error(error);
+                console.error('Błąd podczas pobierania linku do pliku:', error);
+                
+                if (error.response?.status === 403 && retryCount < 2) {
+                    setRetryCount(prev => prev + 1);
+                    setTimeout(() => {
+                        fetchFileLink();
+                    }, 1000);
+                    return;
+                }
+                
                 setFetchError(t("documentDialog.fetchError"));
             }
             finally {
@@ -49,8 +61,10 @@ const DocumentDialog = ({open, onClose, file} : DocumentDialogProps) => {
             }
         };
 
-        fetchFileLink();
-    }, [file.id]);
+        if (open && file.id) {
+            fetchFileLink();
+        }
+    }, [file.id, open, t]);
 
     const documents = sasLink ? [{uri: sasLink}] : [];
 

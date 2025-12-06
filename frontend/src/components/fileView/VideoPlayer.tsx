@@ -37,6 +37,7 @@ const VideoPlayer = ({src, fileName, uploadTimestamp}: VideoPlayerProps) => {
     const [levels, setLevels] = useState<LevelInfo[]>([]);
     const [currentQuality, setCurrentQuality] = useState<number>(autoQuality);
     const [error, setError] = useState<string>('');
+    const [retryCount, setRetryCount] = useState<number>(0);
 
     let uploadDate;
     let uploadTime;
@@ -74,6 +75,8 @@ const VideoPlayer = ({src, fileName, uploadTimestamp}: VideoPlayerProps) => {
                     bitrate: level.bitrate
                 }));
                 setLevels(qualityLevels);
+                setRetryCount(0); 
+                setError('');
             });
 
             hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
@@ -85,18 +88,30 @@ const VideoPlayer = ({src, fileName, uploadTimestamp}: VideoPlayerProps) => {
                 if (data.fatal) {
                     switch (data.type) {
                     case Hls.ErrorTypes.NETWORK_ERROR:
-                        setError('Błąd sieci. Nie udało się załadować wideo.');
-                        hls.startLoad(); 
+                        if (data.response?.code === 403 && retryCount < 2) {
+                            setRetryCount(prev => prev + 1);
+                            setError(t('videoPlayer.retrying'));
+                            setTimeout(() => {
+                                hls.startLoad();
+                            }, 1000);
+                        } else {
+                            setError(t('videoPlayer.networkError'));
+                            if (retryCount < 2) {
+                                hls.startLoad();
+                            }
+                        }
                         break;
                     case Hls.ErrorTypes.MEDIA_ERROR:
-                        setError('Błąd odtwarzania pliku multimedialnego.');
+                        setError(t('videoPlayer.mediaError'));
                         hls.recoverMediaError();
                         break;
                     default:
-                        setError('Nieoczekiwany błąd odtwarzania.');
+                        setError(t('videoPlayer.unexpectedError'));
                         hls.destroy();
                         break;
                     }
+                } else if (data.response?.code === 403) {
+                    console.warn('Błąd 403 - możliwy wygasły token');
                 }
             });
         } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
