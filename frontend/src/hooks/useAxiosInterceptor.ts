@@ -30,8 +30,7 @@ export const useAxiosInterceptor = () => {
 
         if (!error.response) {
           if (!navigator.onLine) {
-            console.log('Offline: żądanie może być obsłużone z cache przez SW');
-            return Promise.reject(error); // SW może mieć odpowiedź w cache
+            return Promise.reject(error);
           }
           
           console.error('Network error while online:', error.message);
@@ -39,14 +38,12 @@ export const useAxiosInterceptor = () => {
         }
 
         if (originalRequest.url?.includes('/auth/refresh-token')) {
-          console.log('Refresh token wygasł lub jest nieprawidłowy');
           logout("network");
           navigate('/login', { replace: true });
           return Promise.reject(error);
         }
 
         if (error.response?.status === 403) {
-          console.log('Błąd 403 - brak uprawnień lub wygasły token');
           return Promise.reject(error);
         }
 
@@ -65,7 +62,6 @@ export const useAxiosInterceptor = () => {
               throw new Error("No access token in response!");
             })
             .catch((refreshError) => {
-              console.error('Błąd podczas odświeżania tokena:', refreshError);
               logout("network");
               navigate('/login', { replace: true });
               throw refreshError;

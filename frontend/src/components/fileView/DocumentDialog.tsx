@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { FileService } from "../../services/FileService";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@mui/material/styles";
+import { useAuth } from "../../context/AuthContext";
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 
@@ -19,13 +20,13 @@ const DocumentDialog = ({open, onClose, file} : DocumentDialogProps) => {
     if (!file) return null;
 
     const { t } = useTranslation();
+    const { refreshSession } = useAuth();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     const [sasLink, setSasLink] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [fetchError, setFetchError] = useState<string>('');
-    const [retryCount, setRetryCount] = useState<number>(0);
 
     let uploadDate;
     let uploadTime;
@@ -35,23 +36,21 @@ const DocumentDialog = ({open, onClose, file} : DocumentDialogProps) => {
     uploadTime = file.date.slice(11,16);
 
     useEffect(() => {
-        const fetchFileLink = async () => {
+        const fetchFileLink = async (isRetry: boolean = false) => {
             try {
                 setLoading(true);
                 setFetchError('');
                 const response = await FileService.getUserFile(file.id);
                 setSasLink(response.downloadUrl);
-                setRetryCount(0);
             }
             catch (error: any) {
-                console.error('Błąd podczas pobierania linku do pliku:', error);
-                
-                if (error.response?.status === 403 && retryCount < 2) {
-                    setRetryCount(prev => prev + 1);
-                    setTimeout(() => {
-                        fetchFileLink();
-                    }, 1000);
-                    return;
+                if ((error.response?.status === 401 || error.response?.status === 403) && !isRetry) {
+                    const refreshed = await refreshSession();
+                    
+                    if (refreshed) {
+                        await fetchFileLink(true);
+                        return;
+                    }
                 }
                 
                 setFetchError(t("documentDialog.fetchError"));
@@ -64,7 +63,7 @@ const DocumentDialog = ({open, onClose, file} : DocumentDialogProps) => {
         if (open && file.id) {
             fetchFileLink();
         }
-    }, [file.id, open, t]);
+    }, [file.id, open, t, refreshSession]);
 
     const documents = sasLink ? [{uri: sasLink}] : [];
 

@@ -5,6 +5,7 @@ import { FileMetadata } from "../../types/FileMetadata";
 import { API_BASE_URL } from "../../api/axiosConfig";
 import VideoPlayer from "./VideoPlayer";
 import { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 interface VideoDialogProps {
     file: FileMetadata | null;
@@ -18,6 +19,7 @@ const VideoDialog = ({file, open, onClose} : VideoDialogProps) => {
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const { refreshSession } = useAuth();
     const [videoKey, setVideoKey] = useState<number>(0);
 
     useEffect(() => {
@@ -83,6 +85,7 @@ const VideoDialog = ({file, open, onClose} : VideoDialogProps) => {
                     src={`${API_BASE_URL}/Stream/${file.id}/master.m3u8`} 
                     fileName={file.name} 
                     uploadTimestamp={file.date}
+                    refreshSession={refreshSession}
                 />
             </DialogContent>
         </Dialog>

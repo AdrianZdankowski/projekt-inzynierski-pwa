@@ -5,6 +5,7 @@ import { Alert, Box, CircularProgress, Dialog, DialogContent, DialogTitle, Typog
 import CloseIcon from "@mui/icons-material/Close";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@mui/material/styles";
+import { useAuth } from "../../context/AuthContext";
 
 interface ImageDialogProps {
     open: boolean;
@@ -16,6 +17,7 @@ const ImageDialog = ({open, onClose, file} : ImageDialogProps) => {
     if (!file) return null;
 
     const { t } = useTranslation();
+    const { refreshSession } = useAuth();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -31,14 +33,24 @@ const ImageDialog = ({open, onClose, file} : ImageDialogProps) => {
     uploadTime = file.date.slice(11,16);
 
     useEffect(() => {
-            const fetchFileLink = async () => {
+            const fetchFileLink = async (isRetry: boolean = false) => {
                 try {
                     setLoading(true);
+                    setFetchError('');
                     const response = await FileService.getUserFile(file.id);
                     setSasLink(response.downloadUrl);
                 }
                 catch (error: any) {
-                    console.error(error);
+                    
+                    if ((error.response?.status === 401 || error.response?.status === 403) && !isRetry) {
+                        const refreshed = await refreshSession();
+                        
+                        if (refreshed) {
+                            await fetchFileLink(true);
+                            return;
+                        }
+                    }
+                    
                     setFetchError(t("imageDialog.fetchError"));
                 }
                 finally {
@@ -46,8 +58,10 @@ const ImageDialog = ({open, onClose, file} : ImageDialogProps) => {
                 }
             };
     
-            fetchFileLink();
-        }, [file.id]);
+            if (open && file.id) {
+                fetchFileLink();
+            }
+        }, [file.id, open, t, refreshSession]);
 
     return (
         <Dialog 
