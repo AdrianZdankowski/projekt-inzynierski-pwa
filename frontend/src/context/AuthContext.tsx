@@ -6,6 +6,7 @@ interface AuthContextType {
     accessToken: string | null;
     login: (accessToken: string) => void;
     logout: (reason?: string) => void;
+    refreshSession: () => Promise<boolean>;
     isAuthenticated: boolean;
     isRefreshing: boolean;
     userRole?: string;
@@ -33,18 +34,34 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
         setLogoutReason(reason);
     };
 
+    const refreshSession = async (): Promise<boolean> => {
+       try {
+        const response = await axiosInstance.post('/auth/refresh-token', 
+            {}, 
+            {withCredentials: true}
+        );
+
+        const newToken = response.data.accessToken;
+        if (newToken) {
+            login(newToken);
+            return true;
+        }
+        logout();
+        return false;
+       } 
+       catch (error) {
+        console.log("Failed to refresh session");
+        logout();
+        return false;
+       }
+    };
+
     const restoreSession = async () => {
        try {
         const isLoggedIn = localStorage.getItem("isLoggedIn");
 
         if (isLoggedIn) {
-            const response = await axiosInstance.post('/auth/refresh-token', 
-                {}, 
-                {withCredentials: true}
-            );
-
-            const newToken = response.data.accessToken;
-            newToken ? login(newToken) : logout();
+            await refreshSession();
         }
         else {
             logout();
@@ -63,7 +80,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{accessToken, login, logout, isAuthenticated: !!accessToken, isRefreshing, userRole, logoutReason}}>
+        <AuthContext.Provider value={{accessToken, login, logout, refreshSession, isAuthenticated: !!accessToken, isRefreshing, userRole, logoutReason}}>
             {children}
         </AuthContext.Provider>
     );

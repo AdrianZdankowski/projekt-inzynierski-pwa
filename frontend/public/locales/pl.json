@@ -139,7 +139,10 @@
     "uploadedAt": "Przesłane: {{date}} {{time}}",
     "sharedBy": "Udostępnione przez: {{owner}}",
     "quality": "Jakość wideo:",
-    "qualityAuto": "Auto"
+    "qualityAuto": "Auto",
+    "networkError": "Błąd sieci. Nie udało się załadować wideo.",
+    "mediaError": "Błąd odtwarzania pliku multimedialnego.",
+    "unexpectedError": "Wystąpił nieoczekiwany błąd podczas odtwarzania wideo."
   },
   "fileOperations": {
     "common": {

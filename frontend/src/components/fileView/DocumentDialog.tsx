@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { FileService } from "../../services/FileService";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@mui/material/styles";
+import { useAuth } from "../../context/AuthContext";
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 
@@ -19,6 +20,7 @@ const DocumentDialog = ({open, onClose, file} : DocumentDialogProps) => {
     if (!file) return null;
 
     const { t } = useTranslation();
+    const { refreshSession } = useAuth();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -34,14 +36,23 @@ const DocumentDialog = ({open, onClose, file} : DocumentDialogProps) => {
     uploadTime = file.date.slice(11,16);
 
     useEffect(() => {
-        const fetchFileLink = async () => {
+        const fetchFileLink = async (isRetry: boolean = false) => {
             try {
                 setLoading(true);
+                setFetchError('');
                 const response = await FileService.getUserFile(file.id);
                 setSasLink(response.downloadUrl);
             }
             catch (error: any) {
-                console.error(error);
+                if ((error.response?.status === 401 || error.response?.status === 403) && !isRetry) {
+                    const refreshed = await refreshSession();
+                    
+                    if (refreshed) {
+                        await fetchFileLink(true);
+                        return;
+                    }
+                }
+                
                 setFetchError(t("documentDialog.fetchError"));
             }
             finally {
@@ -49,8 +60,10 @@ const DocumentDialog = ({open, onClose, file} : DocumentDialogProps) => {
             }
         };
 
-        fetchFileLink();
-    }, [file.id]);
+        if (open && file.id) {
+            fetchFileLink();
+        }
+    }, [file.id, open, t, refreshSession]);
 
     const documents = sasLink ? [{uri: sasLink}] : [];
 

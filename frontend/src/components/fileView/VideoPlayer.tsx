@@ -16,6 +16,7 @@ interface VideoPlayerProps {
     src: string;
     fileName: string;
     uploadTimestamp: string;
+    refreshSession: () => Promise<boolean>;
 }
 
 interface LevelInfo {
@@ -24,7 +25,7 @@ interface LevelInfo {
     bitrate: number;
 }
 
-const VideoPlayer = ({src, fileName, uploadTimestamp}: VideoPlayerProps) => {
+const VideoPlayer = ({src, fileName, uploadTimestamp, refreshSession}: VideoPlayerProps) => {
 
     const autoQuality = -1;
 
@@ -74,26 +75,38 @@ const VideoPlayer = ({src, fileName, uploadTimestamp}: VideoPlayerProps) => {
                     bitrate: level.bitrate
                 }));
                 setLevels(qualityLevels);
+                setError('');
             });
 
             hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
                 setCurrentQuality(data.level);
             });
 
-            hls.on(Hls.Events.ERROR, (_, data) => {
+            hls.on(Hls.Events.ERROR, async (_, data) => {
                 console.error("HLS error:", data);
                 if (data.fatal) {
                     switch (data.type) {
                     case Hls.ErrorTypes.NETWORK_ERROR:
-                        setError('Błąd sieci. Nie udało się załadować wideo.');
-                        hls.startLoad(); 
+                        if (data.response?.code === 401 || data.response?.code === 403 || data.response?.code === 500) {
+                            const refreshed = await refreshSession();
+                            
+                            if (refreshed) {
+                                setError('');
+                                hls.startLoad();
+                            } else {
+                                setError(t('videoPlayer.networkError'));
+                            }
+                        } else {
+                            setError(t('videoPlayer.networkError'));
+                            hls.startLoad();
+                        }
                         break;
                     case Hls.ErrorTypes.MEDIA_ERROR:
-                        setError('Błąd odtwarzania pliku multimedialnego.');
+                        setError(t('videoPlayer.mediaError'));
                         hls.recoverMediaError();
                         break;
                     default:
-                        setError('Nieoczekiwany błąd odtwarzania.');
+                        setError(t('videoPlayer.unexpectedError'));
                         hls.destroy();
                         break;
                     }
