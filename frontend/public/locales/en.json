@@ -139,7 +139,10 @@
     "uploadedAt": "Uploaded: {{date}} {{time}}",
     "sharedBy": "Shared by: {{owner}}",
     "quality": "Video quality:",
-    "qualityAuto": "Auto"
+    "qualityAuto": "Auto",
+    "networkError": "Network error. Failed to load video.",
+    "mediaError": "Error playing media file.",
+    "unexpectedError": "An unexpected error occurred while playing the video."
   },
   "fileOperations": {
     "common": {

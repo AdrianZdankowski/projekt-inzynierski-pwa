@@ -4,6 +4,8 @@ import { useTheme } from "@mui/material/styles";
 import { FileMetadata } from "../../types/FileMetadata";
 import { API_BASE_URL } from "../../api/axiosConfig";
 import VideoPlayer from "./VideoPlayer";
+import { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 interface VideoDialogProps {
     file: FileMetadata | null;
@@ -17,6 +19,14 @@ const VideoDialog = ({file, open, onClose} : VideoDialogProps) => {
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const { refreshSession } = useAuth();
+    const [videoKey, setVideoKey] = useState<number>(0);
+
+    useEffect(() => {
+        if (open) {
+            setVideoKey(prev => prev + 1);
+        }
+    }, [open, file?.id]);
 
     return (
         <Dialog
@@ -70,10 +80,12 @@ const VideoDialog = ({file, open, onClose} : VideoDialogProps) => {
                     overflowY: isMobile ? "auto" : "hidden",
                 }}
             >
-                <VideoPlayer 
+                <VideoPlayer
+                    key={videoKey}
                     src={`${API_BASE_URL}/Stream/${file.id}/master.m3u8`} 
                     fileName={file.name} 
                     uploadTimestamp={file.date}
+                    refreshSession={refreshSession}
                 />
             </DialogContent>
         </Dialog>

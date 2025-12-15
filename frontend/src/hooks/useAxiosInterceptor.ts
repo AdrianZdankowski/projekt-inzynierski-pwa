@@ -30,11 +30,20 @@ export const useAxiosInterceptor = () => {
 
         if (!error.response) {
           if (!navigator.onLine) {
-            console.log('Offline: żądanie może być obsłużone z cache przez SW');
-            return Promise.reject(error); // SW może mieć odpowiedź w cache
+            return Promise.reject(error);
           }
           
           console.error('Network error while online:', error.message);
+          return Promise.reject(error);
+        }
+
+        if (originalRequest.url?.includes('/auth/refresh-token')) {
+          logout("network");
+          navigate('/login', { replace: true });
+          return Promise.reject(error);
+        }
+
+        if (error.response?.status === 403) {
           return Promise.reject(error);
         }
 
@@ -52,6 +61,11 @@ export const useAxiosInterceptor = () => {
               }
               throw new Error("No access token in response!");
             })
+            .catch((refreshError) => {
+              logout("network");
+              navigate('/login', { replace: true });
+              throw refreshError;
+            })
             .finally(() => {
               refreshPromise = null;
             });
@@ -63,8 +77,6 @@ export const useAxiosInterceptor = () => {
             return axiosInstance(originalRequest);
           }
           catch (refreshError) {
-            logout("network");
-            navigate('/login', { replace: true });
             return Promise.reject(refreshError);
           }
         }
