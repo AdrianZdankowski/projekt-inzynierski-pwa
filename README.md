@@ -411,5 +411,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 📄 License
 
 This project is part of an engineering thesis project.
-
----
