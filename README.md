@@ -256,8 +256,8 @@ This setup builds Docker images locally from source code.
    AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=...
    AZURE_STORAGE_CONTAINER_NAME=uploads
    API_BASE_URL=http://localhost:5105
-   VITE_CHUNK_SIZE=4194304
-   VITE_CHUNK_THRESHOLD=10485760
+   VITE_CHUNK_SIZE=4
+   VITE_CHUNK_THRESHOLD=4
    ```
 
 3. **Start the services:**
