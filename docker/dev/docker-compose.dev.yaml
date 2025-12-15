@@ -48,6 +48,8 @@ services:
       dockerfile: Dockerfile
       args:
         - VITE_API_BASE_URL=${API_BASE_URL}
+        - VITE_CHUNK_SIZE=${VITE_CHUNK_SIZE}
+        - VITE_CHUNK_THRESHOLD=${VITE_CHUNK_THRESHOLD}
     container_name: pwa-frontend
     ports:
       - "3000:80"
