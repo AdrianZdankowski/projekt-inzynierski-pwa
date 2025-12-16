@@ -3,8 +3,8 @@ import axiosInstance from "../api/axiosInstance";
 // @ts-ignore
 import SparkMD5 from "spark-md5";
 
-const CHUNK_SIZE = 4 * 1024 * 1024;
-const CHUNK_THRESHOLD = 4 * 1024 * 1024;
+const CHUNK_SIZE = (parseInt(import.meta.env.VITE_CHUNK_SIZE || '4', 10) || 4) * 1024 * 1024; // 4 MB default
+const CHUNK_THRESHOLD = (parseInt(import.meta.env.VITE_CHUNK_THRESHOLD || '4', 10) || 4) * 1024 * 1024; // 4 MB default
 
 const generateBlockId = (index: number) => {
   const prefix = `block-${index.toString().padStart(6, '0')}`;
